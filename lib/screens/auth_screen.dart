@@ -85,74 +85,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     )
                   ],
                 ),
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback premium parrot avatar
-                      return Container(
-                        color: const Color(0xFFE8F5E9),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Positioned(
-                              top: 25,
-                              child: Container(
-                                width: 70,
-                                height: 70,
-                                decoration: const BoxDecoration(
-                                  color: primaryGreen,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                            // Parrot face elements
-                            Positioned(
-                              top: 40,
-                              left: 35,
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 45,
-                              left: 42,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Colors.black,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 48,
-                              right: 32,
-                              child: Container(
-                                width: 22,
-                                height: 28,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF8D6E63), // Beak
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(15),
-                                    bottomRight: Radius.circular(15),
-                                    topRight: Radius.circular(5),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                child: (
+                  const Image(image: AssetImage('assets/images/logotipo.png'))
                 ),
               ),
               const SizedBox(height: 16),

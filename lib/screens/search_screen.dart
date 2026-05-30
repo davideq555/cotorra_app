@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/search_provider.dart';
 import '../data/models/models.dart';
+import 'upload_screen.dart';
+import 'profile_settings_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -103,8 +105,9 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.add, color: Colors.white, size: 22),
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Subir documento no implementado')),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const UploadScreen()),
                         );
                       },
                     ),
@@ -407,6 +410,232 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  Widget _buildProfileTab() {
+    const primaryGreen = Color(0xFF7CB342);
+    
+    return ListView(
+      padding: const EdgeInsets.all(20.0),
+      children: [
+        // User Info Section
+        Center(
+          child: Column(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  color: primaryGreen,
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Text(
+                    'M',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'María González',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'maria.gonzalez@universidad.edu',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F8E9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'ALUMNO',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: primaryGreen,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 32),
+        // Stats Row
+        Row(
+          children: [
+            Expanded(
+              child: Card(
+                color: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Colors.grey.shade100),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        '12',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: primaryGreen,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Favoritos',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Card(
+                color: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Colors.grey.shade100),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        '3',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: primaryGreen,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Documentos',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        // Settings Action
+        Card(
+          color: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.grey.shade100),
+          ),
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F8E9),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.settings_outlined, color: primaryGreen, size: 20),
+            ),
+            title: const Text(
+              'Configuración de Perfil',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileSettingsScreen()),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 32),
+        // Mis Documentos Header
+        const Text(
+          'Mis Documentos Subidos',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Owned documents list mockup
+        ...[
+          _buildMyDocItem('Resumen Álgebra II - Matrices', 'Matemáticas', 'Aprobado'),
+          _buildMyDocItem('Laboratorio 1 Electrónica', 'Física', 'Aprobado'),
+          _buildMyDocItem('Final Programación 2025', 'Programación', 'Pendiente'),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildMyDocItem(String title, String materia, String status) {
+    const primaryGreen = Color(0xFF7CB342);
+    final isApproved = status == 'Aprobado';
+
+    return Card(
+      color: Colors.white,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade100),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F8E9),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.description, color: primaryGreen, size: 22),
+        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+        subtitle: Text(materia, style: const TextStyle(fontSize: 11)),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: isApproved ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            status,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: isApproved ? Colors.green.shade700 : Colors.orange.shade700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   List<Documento> _mockDocuments() {
     return [
       Documento(
@@ -496,7 +725,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ? _buildSearchTab()
               : _selectedIndex == 2
                   ? _buildPlaceholderTab('Mis Favoritos')
-                  : _buildPlaceholderTab('Mi Perfil'),
+                  : _buildProfileTab(),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
