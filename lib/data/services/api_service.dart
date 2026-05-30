@@ -7,7 +7,7 @@ class ApiService {
 
   Future<Token> login(String username, String password) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/login/access-token'),
+      Uri.parse('$baseUrl/auth/login/form'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: {'username': username, 'password': password},
     );

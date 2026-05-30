@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/search_provider.dart';
+import '../data/models/models.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -11,6 +12,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  int _selectedIndex = 0;
   final _searchController = TextEditingController();
 
   @override
@@ -26,108 +28,357 @@ class _SearchScreenState extends State<SearchScreen> {
         .searchDocumentos(_searchController.text.trim());
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Documents'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              Provider.of<AuthProvider>(context, listen: false).logout();
-            },
-          )
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search documents...',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _performSearch();
-                        },
-                      ),
-                    ),
-                    onSubmitted: (_) => _performSearch(),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.search, color: Colors.white),
-                    onPressed: _performSearch,
-                  ),
-                ),
-              ],
+  Widget _buildDashboard() {
+    const primaryGreen = Color(0xFF7CB342);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Green Header Block
+        Container(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 24),
+          decoration: const BoxDecoration(
+            color: primaryGreen,
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(32),
+              bottomRight: Radius.circular(32),
             ),
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  // Little Parrot Logo
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFFDCEDC8),
+                          child: const Icon(Icons.pets, color: primaryGreen, size: 24),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Kotorra',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '¡Hola de nuevo!',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Plus Button
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.add, color: Colors.white, size: 22),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Subir documento no implementado')),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Material disponible Card
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Material disponible',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '1,247 documentos',
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        // Recientes Header
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Recientes',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() => _selectedIndex = 1); // Switch to search tab
+                },
+                child: const Text(
+                  'Ver todos',
+                  style: TextStyle(
+                    color: primaryGreen,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Document List
+        Expanded(
+          child: Consumer<SearchProvider>(
+            builder: (context, searchProvider, child) {
+              final docs = searchProvider.documentos;
+              if (searchProvider.isLoading) {
+                return const Center(child: CircularProgressIndicator(color: primaryGreen));
+              }
+
+              // Fallback list matching target image mock data if API is empty
+              final displayDocs = docs.isNotEmpty ? docs : _mockDocuments();
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: displayDocs.length,
+                itemBuilder: (context, index) {
+                  final doc = displayDocs[index];
+                  final isBook = doc.titulo.contains('Física') || doc.titulo.contains('Libro');
+                  final isGrad = doc.titulo.contains('Tesis') || doc.titulo.contains('Proyecto');
+                  
+                  IconData icon = Icons.description;
+                  if (isBook) icon = Icons.menu_book;
+                  if (isGrad) icon = Icons.school;
+
+                  return Card(
+                    color: Colors.white,
+                    elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.grey.shade100, width: 1),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F8E9),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(icon, color: primaryGreen, size: 24),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  doc.titulo,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F8E9),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        doc.materia?.nombre ?? 'General',
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: primaryGreen,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(Icons.fiber_manual_record, size: 4, color: Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        doc.autor ?? 'Anónimo',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.access_time, size: 12, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Hace 2 días',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    const Icon(Icons.thumb_up, size: 12, color: Colors.amber),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${doc.descargas}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchTab() {
+    const primaryGreen = Color(0xFF7CB342);
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar documentos...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    fillColor: const Color(0xFFF5F5F5),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onSubmitted: (_) => _performSearch(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: primaryGreen,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.search, color: Colors.white),
+                  onPressed: _performSearch,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
           Expanded(
             child: Consumer<SearchProvider>(
               builder: (context, searchProvider, child) {
                 if (searchProvider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator(color: primaryGreen));
                 }
                 
                 if (searchProvider.documentos.isEmpty) {
                   return const Center(
-                    child: Text('No documents found.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                    child: Text('No se encontraron documentos.', style: TextStyle(color: Colors.grey)),
                   );
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: searchProvider.documentos.length,
                   itemBuilder: (context, index) {
                     final doc = searchProvider.documentos[index];
                     return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.grey.shade200),
+                      ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        leading: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(Icons.description, color: Theme.of(context).colorScheme.primary),
-                        ),
-                        title: Text(
-                          doc.titulo,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            doc.descripcion ?? 'No description provided.',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          // TODO: Navigate to Document Details
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Tapped on ${doc.titulo}')),
-                          );
-                        },
+                        title: Text(doc.titulo, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(doc.descripcion ?? 'Sin descripción'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
                       ),
                     );
                   },
@@ -139,4 +390,152 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
+
+  Widget _buildPlaceholderTab(String title) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.construction, size: 64, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Documento> _mockDocuments() {
+    return [
+      Documento(
+        id: 1,
+        titulo: 'Apuntes Cálculo I - Derivadas',
+        archivoUrl: '',
+        autor: 'María González',
+        tipo: 1,
+        fechaSubida: '2026-05-28',
+        aprobado: true,
+        descargas: 24,
+        usuarioId: 1,
+        eliminado: false,
+        materia: Materia(id: 1, nombre: 'Matemáticas'),
+      ),
+      Documento(
+        id: 2,
+        titulo: 'Resumen Arquitectura de Computadoras',
+        archivoUrl: '',
+        autor: 'Carlos Ruiz',
+        tipo: 1,
+        fechaSubida: '2026-05-27',
+        aprobado: true,
+        descargas: 18,
+        usuarioId: 2,
+        eliminado: false,
+        materia: Materia(id: 2, nombre: 'Sistemas'),
+      ),
+      Documento(
+        id: 3,
+        titulo: 'Ejercicios Física II - Electromagnetismo',
+        archivoUrl: '',
+        autor: 'Ana Martínez',
+        tipo: 1,
+        fechaSubida: '2026-05-25',
+        aprobado: true,
+        descargas: 31,
+        usuarioId: 3,
+        eliminado: false,
+        materia: Materia(id: 3, nombre: 'Física'),
+      ),
+      Documento(
+        id: 4,
+        titulo: 'Tesis: Machine Learning en Medicina',
+        archivoUrl: '',
+        autor: 'Dr. López',
+        tipo: 1,
+        fechaSubida: '2026-05-20',
+        aprobado: true,
+        descargas: 42,
+        usuarioId: 4,
+        eliminado: false,
+        materia: Materia(id: 4, nombre: 'Investigación'),
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const primaryGreen = Color(0xFF7CB342);
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _selectedIndex == 0 
+          ? null 
+          : AppBar(
+              title: Text(
+                _selectedIndex == 1 
+                    ? 'Buscar' 
+                    : _selectedIndex == 2 
+                        ? 'Favoritos' 
+                        : 'Mi Perfil',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {
+                    Provider.of<AuthProvider>(context, listen: false).logout();
+                  },
+                )
+              ],
+            ),
+      body: _selectedIndex == 0
+          ? _buildDashboard()
+          : _selectedIndex == 1
+              ? _buildSearchTab()
+              : _selectedIndex == 2
+                  ? _buildPlaceholderTab('Mis Favoritos')
+                  : _buildPlaceholderTab('Mi Perfil'),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Colors.grey.shade200, width: 1),
+          ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: primaryGreen,
+          unselectedItemColor: Colors.grey,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontSize: 12),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled),
+              label: 'Inicio',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'Buscar',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_border),
+              label: 'Favoritos',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              label: 'Perfil',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+

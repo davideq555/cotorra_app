@@ -30,7 +30,7 @@ class AuthProvider with ChangeNotifier {
   Future<bool> register(UsuarioCreate userCreate) async {
     try {
       await _apiService.register(userCreate);
-      return await login(userCreate.email, userCreate.password);
+      return await login(userCreate.email, userCreate.contrasena);
     } catch (e) {
       print('Register error: $e');
       return false;
