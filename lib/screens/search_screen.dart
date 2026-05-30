@@ -5,6 +5,7 @@ import '../providers/search_provider.dart';
 import '../data/models/models.dart';
 import 'upload_screen.dart';
 import 'profile_settings_screen.dart';
+import 'document_view_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -28,6 +29,135 @@ class _SearchScreenState extends State<SearchScreen> {
   void _performSearch() {
     Provider.of<SearchProvider>(context, listen: false)
         .searchDocumentos(_searchController.text.trim());
+  }
+
+// Unified congruent card component for all document lists in the app
+  Widget _buildDocumentCard(Documento doc, {Widget? trailing}) {
+    const primaryGreen = Color(0xFF7CB342);
+    final isBook = doc.titulo.contains('Física') || doc.titulo.contains('Libro') || doc.titulo.contains('Análisis');
+    final isGrad = doc.titulo.contains('Tesis') || doc.titulo.contains('Proyecto') || doc.titulo.contains('Final');
+    
+    IconData icon = Icons.description;
+    if (isBook) icon = Icons.menu_book;
+    if (isGrad) icon = Icons.school;
+    return Card(
+      color: Colors.white,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade100, width: 1),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DocumentViewScreen(documento: doc),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(14.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F8E9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: primaryGreen, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      doc.titulo,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F8E9),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            doc.materia?.nombre ?? 'General',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: primaryGreen,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.fiber_manual_record, size: 4, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            doc.autor ?? 'Anónimo',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time, size: 12, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Hace 2 días',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        const Icon(Icons.thumb_up, size: 12, color: Colors.amber),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${doc.descargas}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              if (trailing != null) ...[
+                const SizedBox(width: 8),
+                trailing,
+              ]
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildDashboard() {
@@ -96,7 +226,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.add, color: Colors.white, size: 22),
+                      icon: const Icon(Icons.upload, color: Colors.white, size: 22),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -149,25 +279,25 @@ class _SearchScreenState extends State<SearchScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Recientes',
+                'Ultimos Documentos',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  setState(() => _selectedIndex = 1); // Switch to search tab
-                },
-                child: const Text(
-                  'Ver todos',
-                  style: TextStyle(
-                    color: primaryGreen,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              // TextButton(
+              //   onPressed: () {
+              //     setState(() => _selectedIndex = 1); // Switch to search tab
+              //   },
+              //   child: const Text(
+              //     'Ver todos',
+              //     style: TextStyle(
+              //       color: primaryGreen,
+              //       fontWeight: FontWeight.w600,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -188,117 +318,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: displayDocs.length,
                 itemBuilder: (context, index) {
-                  final doc = displayDocs[index];
-                  final isBook = doc.titulo.contains('Física') || doc.titulo.contains('Libro');
-                  final isGrad = doc.titulo.contains('Tesis') || doc.titulo.contains('Proyecto');
-                  
-                  IconData icon = Icons.description;
-                  if (isBook) icon = Icons.menu_book;
-                  if (isGrad) icon = Icons.school;
-
-                  return Card(
-                    color: Colors.white,
-                    elevation: 0,
-                    margin: const EdgeInsets.only(bottom: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: Colors.grey.shade100, width: 1),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F8E9),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(icon, color: primaryGreen, size: 24),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  doc.titulo,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF1F8E9),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        doc.materia?.nombre ?? 'General',
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: primaryGreen,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Icon(Icons.fiber_manual_record, size: 4, color: Colors.grey),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        doc.autor ?? 'Anónimo',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.access_time, size: 12, color: Colors.grey),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Hace 2 días',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 14),
-                                    const Icon(Icons.thumb_up, size: 12, color: Colors.amber),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${doc.descargas}',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  return _buildDocumentCard(displayDocs[index]);
                 },
               );
             },
@@ -354,29 +374,14 @@ class _SearchScreenState extends State<SearchScreen> {
                   return const Center(child: CircularProgressIndicator(color: primaryGreen));
                 }
                 
-                if (searchProvider.documentos.isEmpty) {
-                  return const Center(
-                    child: Text('No se encontraron documentos.', style: TextStyle(color: Colors.grey)),
-                  );
-                }
+                final displayDocs = searchProvider.documentos.isNotEmpty 
+                    ? searchProvider.documentos 
+                    : _mockDocuments();
 
                 return ListView.builder(
-                  itemCount: searchProvider.documentos.length,
+                  itemCount: displayDocs.length,
                   itemBuilder: (context, index) {
-                    final doc = searchProvider.documentos[index];
-                    return Card(
-                      color: Colors.white,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      child: ListTile(
-                        title: Text(doc.titulo, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(doc.descripcion ?? 'Sin descripción'),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-                      ),
-                    );
+                    return _buildDocumentCard(displayDocs[index]);
                   },
                 );
               },
@@ -576,54 +581,72 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        // Owned documents list mockup
-        ...[
-          _buildMyDocItem('Resumen Álgebra II - Matrices', 'Matemáticas', 'Aprobado'),
-          _buildMyDocItem('Laboratorio 1 Electrónica', 'Física', 'Aprobado'),
-          _buildMyDocItem('Final Programación 2025', 'Programación', 'Pendiente'),
-        ],
+        // Congruent cards with custom trailing status chips
+        _buildDocumentCard(
+          Documento(
+            id: 101,
+            titulo: 'Resumen Álgebra II - Matrices',
+            archivoUrl: '',
+            autor: 'María González',
+            tipo: 1,
+            fechaSubida: '2026-05-28',
+            aprobado: true,
+            descargas: 14,
+            usuarioId: 1,
+            eliminado: false,
+            materia: Materia(id: 1, nombre: 'Matemáticas'),
+          ),
+          trailing: _buildStatusChip('Aprobado', Colors.green),
+        ),
+        _buildDocumentCard(
+          Documento(
+            id: 102,
+            titulo: 'Laboratorio 1 Electrónica',
+            archivoUrl: '',
+            autor: 'María González',
+            tipo: 2,
+            fechaSubida: '2026-05-25',
+            aprobado: true,
+            descargas: 8,
+            usuarioId: 1,
+            eliminado: false,
+            materia: Materia(id: 3, nombre: 'Física'),
+          ),
+          trailing: _buildStatusChip('Aprobado', Colors.green),
+        ),
+        _buildDocumentCard(
+          Documento(
+            id: 103,
+            titulo: 'Final Programación 2025',
+            archivoUrl: '',
+            autor: 'María González',
+            tipo: 1,
+            fechaSubida: '2026-05-29',
+            aprobado: false,
+            descargas: 0,
+            usuarioId: 1,
+            eliminado: false,
+            materia: Materia(id: 5, nombre: 'Programación'),
+          ),
+          trailing: _buildStatusChip('Pendiente', Colors.orange),
+        ),
       ],
     );
   }
 
-  Widget _buildMyDocItem(String title, String materia, String status) {
-    const primaryGreen = Color(0xFF7CB342);
-    final isApproved = status == 'Aprobado';
-
-    return Card(
-      color: Colors.white,
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade100),
+  Widget _buildStatusChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F8E9),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.description, color: primaryGreen, size: 22),
-        ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: Text(materia, style: const TextStyle(fontSize: 11)),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: isApproved ? const Color(0xFFE8F5E9) : const Color(0xFFFFF3E0),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            status,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: isApproved ? Colors.green.shade700 : Colors.orange.shade700,
-            ),
-          ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: color.withOpacity(0.9),
         ),
       ),
     );
@@ -662,7 +685,7 @@ class _SearchScreenState extends State<SearchScreen> {
         titulo: 'Ejercicios Física II - Electromagnetismo',
         archivoUrl: '',
         autor: 'Ana Martínez',
-        tipo: 1,
+        tipo: 2,
         fechaSubida: '2026-05-25',
         aprobado: true,
         descargas: 31,
