@@ -55,19 +55,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   Container(
                     width: 44,
                     height: 44,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        fit: BoxFit.cover,
+                    child: Image.asset(
+                        'assets/images/free.png',
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: const Color(0xFFDCEDC8),
                           child: const Icon(Icons.pets, color: primaryGreen, size: 24),
                         ),
-                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -84,7 +77,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                         Text(
-                          '¡Hola de nuevo!',
+                          '¡Hola de nuevo! Comparte tu conocimiento',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
