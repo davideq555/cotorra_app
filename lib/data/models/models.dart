@@ -1,6 +1,11 @@
 // Models and schemas for CotorraApp to map API responses
-
+/*
+admin@gmail.com
+123456
+*/
 enum RolEnum { ALUMNO, DOCENTE, ADMIN }
+
+////////////  TOKEN /////////////
 
 class Token {
   final String accessToken;
@@ -23,6 +28,7 @@ class Token {
   }
 }
 
+////////////////////  USUARIO ///////////////////////////////////
 class Usuario {
   final String nombre;
   final String email;
@@ -71,6 +77,9 @@ class Usuario {
   }
 }
 
+
+/////////////  CREATE USER ///////////////////
+
 class UsuarioCreate {
   final String nombre;
   final String email;
@@ -96,6 +105,8 @@ class UsuarioCreate {
     };
   }
 }
+
+////////////    CARRERA   ///////////
 
 class Carrera {
   final int id;
@@ -137,6 +148,8 @@ class Carrera {
   }
 }
 
+//////////  TAG ////////////
+
 class Tag {
   final int id;
   final String nombre;
@@ -158,10 +171,12 @@ class Tag {
   }
 }
 
+////////// TIPO DOCUMENTO ////////////
+
 class TipoDocumento {
   final int id;
   final String nombre;
-  final String? descripcion;
+  final String? descripcion;  // no esta en el back ni en la base datos
 
   TipoDocumento({required this.id, required this.nombre, this.descripcion});
 
@@ -181,6 +196,8 @@ class TipoDocumento {
     };
   }
 }
+
+////////////  MATERIA ////////////
 
 class Materia {
   final int id;
@@ -208,6 +225,8 @@ class Materia {
     };
   }
 }
+
+//////////////  DOCUMENTO //////////////
 
 class Documento {
   final int id;
