@@ -1,28 +1,34 @@
 // Models and schemas for CotorraApp to map API responses
-
+/*
+admin@gmail.com
+123456
+*/
 enum RolEnum { ALUMNO, DOCENTE, ADMIN }
 
-class Token {
-  final String accessToken;
-  final String tokenType;
+////////////  TOKEN /////////////
 
-  Token({required this.accessToken, required this.tokenType});
+// class Token {
+//   final String accessToken;
+//   final String tokenType;
+//
+//   Token({required this.accessToken, required this.tokenType});
+//
+//   factory Token.fromJson(Map<String, dynamic> json) {
+//     return Token(
+//       accessToken: json['access_token'] ?? '',
+//       tokenType: json['token_type'] ?? '',
+//     );
+//   }
+//
+//   Map<String, dynamic> toJson() {
+//     return {
+//       'access_token': accessToken,
+//       'token_type': tokenType,
+//     };
+//   }
+// }
 
-  factory Token.fromJson(Map<String, dynamic> json) {
-    return Token(
-      accessToken: json['access_token'] ?? '',
-      tokenType: json['token_type'] ?? '',
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'access_token': accessToken,
-      'token_type': tokenType,
-    };
-  }
-}
-
+////////////////////  USUARIO ///////////////////////////////////
 class Usuario {
   final String nombre;
   final String email;
@@ -71,6 +77,9 @@ class Usuario {
   }
 }
 
+
+/////////////  CREATE USER ///////////////////
+
 class UsuarioCreate {
   final String nombre;
   final String email;
@@ -96,6 +105,8 @@ class UsuarioCreate {
     };
   }
 }
+
+////////////    CARRERA   ///////////
 
 class Carrera {
   final int id;
@@ -137,6 +148,8 @@ class Carrera {
   }
 }
 
+//////////  TAG ////////////
+
 class Tag {
   final int id;
   final String nombre;
@@ -158,10 +171,12 @@ class Tag {
   }
 }
 
+////////// TIPO DOCUMENTO ////////////
+
 class TipoDocumento {
   final int id;
   final String nombre;
-  final String? descripcion;
+  final String? descripcion;  // no esta en el back ni en la base datos
 
   TipoDocumento({required this.id, required this.nombre, this.descripcion});
 
@@ -181,6 +196,8 @@ class TipoDocumento {
     };
   }
 }
+
+////////////  MATERIA ////////////
 
 class Materia {
   final int id;
@@ -208,6 +225,8 @@ class Materia {
     };
   }
 }
+
+//////////////  DOCUMENTO //////////////
 
 class Documento {
   final int id;
