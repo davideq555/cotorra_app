@@ -1,4 +1,4 @@
-import 'package:cotorra_app/data/models/enums.dart';
+import 'package:cotorra_app/models/enums.dart';
 
 class Usuario {
   final String nombre;

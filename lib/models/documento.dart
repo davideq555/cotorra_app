@@ -1,7 +1,7 @@
-import 'package:cotorra_app/data/models/materia.dart';
-import 'package:cotorra_app/data/models/tag.dart';
-import 'package:cotorra_app/data/models/tipoDocumento.dart';
-import 'package:cotorra_app/data/models/usuario.dart';
+import 'package:cotorra_app/models/materia.dart';
+import 'package:cotorra_app/models/tag.dart';
+import 'package:cotorra_app/models/tipoDocumento.dart';
+import 'package:cotorra_app/models/usuario.dart';
 
 class Documento {
   final int id;
