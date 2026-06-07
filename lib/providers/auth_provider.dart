@@ -3,7 +3,7 @@ import 'package:cotorra_app/models/usuarioCreate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/services/api_service.dart';
-import '../data/models/models.dart';
+
 
 class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();

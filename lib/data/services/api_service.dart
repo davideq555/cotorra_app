@@ -5,7 +5,6 @@ import 'package:cotorra_app/models/usuario.dart';
 import 'package:cotorra_app/models/usuarioCreate.dart';
 
 import 'package:http/http.dart' as http;
-import '../models/models.dart';
 
 class ApiService {
   static const String baseUrl = 'https://apicotorra.deqa.com.ar/api/v1';

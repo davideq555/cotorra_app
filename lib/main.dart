@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/search_provider.dart';
 import 'screens/auth_screen.dart';
-import 'screens/search_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   runApp(const CotorraApp());
@@ -33,7 +33,7 @@ class CotorraApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.system, // o ThemeMode.dark
             home: auth.isAuthenticated
-                ? const SearchScreen()
+                ? const MainScreen()
                 : const AuthScreen(),
           );
         },
