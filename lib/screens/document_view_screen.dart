@@ -1,5 +1,5 @@
+import 'package:cotorra_app/models/documento.dart';
 import 'package:flutter/material.dart';
-import '../data/models/models.dart';
 
 class DocumentViewScreen extends StatefulWidget {
   final Documento documento;

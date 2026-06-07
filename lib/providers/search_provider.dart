@@ -1,6 +1,6 @@
+import 'package:cotorra_app/models/documento.dart';
 import 'package:flutter/foundation.dart';
 import '../data/services/api_service.dart';
-import '../data/models/models.dart';
 import 'auth_provider.dart';
 
 class SearchProvider with ChangeNotifier {

@@ -30,6 +30,8 @@ class CotorraApp extends StatelessWidget {
             title: 'CotorraApp',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: ThemeMode.system, // o ThemeMode.dark
             home: auth.isAuthenticated
                 ? const SearchScreen()
                 : const AuthScreen(),

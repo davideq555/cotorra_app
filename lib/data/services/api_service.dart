@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/models/token.dart';
+import 'package:cotorra_app/models/usuario.dart';
+import 'package:cotorra_app/models/usuarioCreate.dart';
+
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
 

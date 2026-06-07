@@ -1,11 +1,16 @@
+import 'package:cotorra_app/models/documento.dart';
+import 'package:cotorra_app/models/materia.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/search_provider.dart';
-import '../data/models/models.dart';
 import 'upload_screen.dart';
 import 'profile_settings_screen.dart';
 import 'document_view_screen.dart';
+
+import 'package:cotorra_app/widgets/documentCard.dart';
+import 'package:cotorra_app/widgets/statusChip.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -27,148 +32,28 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _performSearch() {
-    Provider.of<SearchProvider>(context, listen: false)
-        .searchDocumentos(_searchController.text.trim());
+    Provider.of<SearchProvider>(
+      context,
+      listen: false,
+    ).searchDocumentos(_searchController.text.trim());
   }
 
-// Unified congruent card component for all document lists in the app
-  Widget _buildDocumentCard(Documento doc, {Widget? trailing}) {
-    const primaryGreen = Color(0xFF7CB342);
-    final isBook = doc.titulo.contains('Física') || doc.titulo.contains('Libro') || doc.titulo.contains('Análisis');
-    final isGrad = doc.titulo.contains('Tesis') || doc.titulo.contains('Proyecto') || doc.titulo.contains('Final');
-    
-    IconData icon = Icons.description;
-    if (isBook) icon = Icons.menu_book;
-    if (isGrad) icon = Icons.school;
-    return Card(
-      color: Colors.white,
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade100, width: 1),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DocumentViewScreen(documento: doc),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F8E9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: primaryGreen, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      doc.titulo,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F8E9),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            doc.materia?.nombre ?? 'General',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: primaryGreen,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.fiber_manual_record, size: 4, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            doc.autor ?? 'Anónimo',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.access_time, size: 12, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Hace 2 días',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        const Icon(Icons.thumb_up, size: 12, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${doc.descargas}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              if (trailing != null) ...[
-                const SizedBox(width: 8),
-                trailing,
-              ]
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  ///////////////////////////////////////////////////////
 
   Widget _buildDashboard() {
     const primaryGreen = Color(0xFF7CB342);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Green Header Block
         Container(
-          padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 24),
+          padding: const EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 40,
+            bottom: 24,
+          ),
           decoration: const BoxDecoration(
             color: primaryGreen,
             borderRadius: BorderRadius.only(
@@ -186,11 +71,15 @@ class _SearchScreenState extends State<SearchScreen> {
                     width: 44,
                     height: 44,
                     child: Image.asset(
-                        'assets/images/free.png',
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFFDCEDC8),
-                          child: const Icon(Icons.pets, color: primaryGreen, size: 24),
+                      'assets/images/free.png',
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFFDCEDC8),
+                        child: const Icon(
+                          Icons.pets,
+                          color: primaryGreen,
+                          size: 24,
                         ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -226,11 +115,17 @@ class _SearchScreenState extends State<SearchScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.upload, color: Colors.white, size: 22),
+                      icon: const Icon(
+                        Icons.upload,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const UploadScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const UploadScreen(),
+                          ),
                         );
                       },
                     ),
@@ -240,7 +135,10 @@ class _SearchScreenState extends State<SearchScreen> {
               const SizedBox(height: 24),
               // Material disponible Card
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 24,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.18),
                   borderRadius: BorderRadius.circular(20),
@@ -308,7 +206,9 @@ class _SearchScreenState extends State<SearchScreen> {
             builder: (context, searchProvider, child) {
               final docs = searchProvider.documentos;
               if (searchProvider.isLoading) {
-                return const Center(child: CircularProgressIndicator(color: primaryGreen));
+                return const Center(
+                  child: CircularProgressIndicator(color: primaryGreen),
+                );
               }
 
               // Fallback list matching target image mock data if API is empty
@@ -318,7 +218,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: displayDocs.length,
                 itemBuilder: (context, index) {
-                  return _buildDocumentCard(displayDocs[index]);
+                  return DocumentCard(doc: displayDocs[index]);
                 },
               );
             },
@@ -328,9 +228,11 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  /////////////////////////////////////////////////////////////
+
   Widget _buildSearchTab() {
     const primaryGreen = Color(0xFF7CB342);
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
       child: Column(
@@ -371,17 +273,19 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Consumer<SearchProvider>(
               builder: (context, searchProvider, child) {
                 if (searchProvider.isLoading) {
-                  return const Center(child: CircularProgressIndicator(color: primaryGreen));
+                  return const Center(
+                    child: CircularProgressIndicator(color: primaryGreen),
+                  );
                 }
-                
-                final displayDocs = searchProvider.documentos.isNotEmpty 
-                    ? searchProvider.documentos 
+
+                final displayDocs = searchProvider.documentos.isNotEmpty
+                    ? searchProvider.documentos
                     : _mockDocuments();
 
                 return ListView.builder(
                   itemCount: displayDocs.length,
                   itemBuilder: (context, index) {
-                    return _buildDocumentCard(displayDocs[index]);
+                    return DocumentCard(doc: displayDocs[index]);
                   },
                 );
               },
@@ -392,6 +296,8 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  /////////////////////////////////////////////////////////////////
+
   Widget _buildPlaceholderTab(String title) {
     return Center(
       child: Column(
@@ -401,16 +307,22 @@ class _SearchScreenState extends State<SearchScreen> {
           const SizedBox(height: 16),
           Text(
             title,
-            style: const TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.grey,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
     );
   }
 
+  /////////////////////////////////////////////////////////////////
+
   Widget _buildProfileTab() {
     const primaryGreen = Color(0xFF7CB342);
-    
+
     return ListView(
       padding: const EdgeInsets.all(20.0),
       children: [
@@ -448,14 +360,14 @@ class _SearchScreenState extends State<SearchScreen> {
               const SizedBox(height: 4),
               const Text(
                 'maria.gonzalez@universidad.edu',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F8E9),
                   borderRadius: BorderRadius.circular(12),
@@ -555,17 +467,27 @@ class _SearchScreenState extends State<SearchScreen> {
                 color: Color(0xFFF1F8E9),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.settings_outlined, color: primaryGreen, size: 20),
+              child: const Icon(
+                Icons.settings_outlined,
+                color: primaryGreen,
+                size: 20,
+              ),
             ),
             title: const Text(
               'Configuración de Perfil',
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+            trailing: const Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: Colors.grey,
+            ),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ProfileSettingsScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const ProfileSettingsScreen(),
+                ),
               );
             },
           ),
@@ -582,8 +504,8 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         const SizedBox(height: 12),
         // Congruent cards with custom trailing status chips
-        _buildDocumentCard(
-          Documento(
+        DocumentCard(
+          doc: Documento(
             id: 101,
             titulo: 'Resumen Álgebra II - Matrices',
             archivoUrl: '',
@@ -596,12 +518,15 @@ class _SearchScreenState extends State<SearchScreen> {
             eliminado: false,
             materia: Materia(id: 1, nombre: 'Matemáticas'),
           ),
-          trailing: _buildStatusChip('Aprobado', Colors.green),
+          trailing: StatusChip(label: 'Aprobado',color: Colors.green),
         ),
-        _buildDocumentCard(
-          Documento(
+        DocumentCard(
+          doc: Documento(
+            // Agregado 'doc:'
             id: 102,
+            // Agregado 'id:'
             titulo: 'Laboratorio 1 Electrónica',
+            // Agregado 'titulo:'
             archivoUrl: '',
             autor: 'María González',
             tipo: 2,
@@ -610,12 +535,18 @@ class _SearchScreenState extends State<SearchScreen> {
             descargas: 8,
             usuarioId: 1,
             eliminado: false,
-            materia: Materia(id: 3, nombre: 'Física'),
+            materia: Materia(
+              id: 3,
+              nombre: 'Física',
+            ), // Agregado 'id:' y 'nombre:'
           ),
-          trailing: _buildStatusChip('Aprobado', Colors.green),
+          trailing: StatusChip(
+            label: 'Aprobado',
+            color: Colors.green,
+          ), // Agregado 'trailing:'
         ),
-        _buildDocumentCard(
-          Documento(
+        DocumentCard(
+          doc: Documento(
             id: 103,
             titulo: 'Final Programación 2025',
             archivoUrl: '',
@@ -628,30 +559,14 @@ class _SearchScreenState extends State<SearchScreen> {
             eliminado: false,
             materia: Materia(id: 5, nombre: 'Programación'),
           ),
-          trailing: _buildStatusChip('Pendiente', Colors.orange),
+          trailing: StatusChip(label: 'Pendiente', color:  Colors.orange),
         ),
       ],
     );
   }
 
-  Widget _buildStatusChip(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: color.withOpacity(0.9),
-        ),
-      ),
-    );
-  }
 
+  ////////////////////////////////////////////////////
   List<Documento> _mockDocuments() {
     return [
       Documento(
@@ -709,22 +624,27 @@ class _SearchScreenState extends State<SearchScreen> {
     ];
   }
 
+  ///////////////////////////////////////////////////////////////////
+
   @override
   Widget build(BuildContext context) {
     const primaryGreen = Color(0xFF7CB342);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _selectedIndex == 0 
-          ? null 
+      appBar: _selectedIndex == 0
+          ? null
           : AppBar(
               title: Text(
-                _selectedIndex == 1 
-                    ? 'Buscar' 
-                    : _selectedIndex == 2 
-                        ? 'Favoritos' 
-                        : 'Mi Perfil',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                _selectedIndex == 1
+                    ? 'Buscar'
+                    : _selectedIndex == 2
+                    ? 'Favoritos'
+                    : 'Mi Perfil',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
               actions: [
                 IconButton(
@@ -732,16 +652,16 @@ class _SearchScreenState extends State<SearchScreen> {
                   onPressed: () {
                     Provider.of<AuthProvider>(context, listen: false).logout();
                   },
-                )
+                ),
               ],
             ),
       body: _selectedIndex == 0
           ? _buildDashboard()
           : _selectedIndex == 1
-              ? _buildSearchTab()
-              : _selectedIndex == 2
-                  ? _buildPlaceholderTab('Mis Favoritos')
-                  : _buildProfileTab(),
+          ? _buildSearchTab()
+          : _selectedIndex == 2
+          ? _buildPlaceholderTab('Mis Favoritos')
+          : _buildProfileTab(),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -758,17 +678,17 @@ class _SearchScreenState extends State<SearchScreen> {
           type: BottomNavigationBarType.fixed,
           selectedItemColor: primaryGreen,
           unselectedItemColor: Colors.grey,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
           unselectedLabelStyle: const TextStyle(fontSize: 12),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_filled),
               label: 'Inicio',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Buscar',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite_border),
               label: 'Favoritos',
@@ -783,4 +703,3 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
-
