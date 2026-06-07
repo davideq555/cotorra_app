@@ -1,3 +1,5 @@
+import 'package:cotorra_app/models/usuario.dart';
+import 'package:cotorra_app/models/usuarioCreate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/services/api_service.dart';
