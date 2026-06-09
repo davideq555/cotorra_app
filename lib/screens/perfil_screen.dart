@@ -85,11 +85,11 @@ class _PerfilScreenState extends State<PerfilScreen>{
             children: [
               Expanded(
                 child: Card(
-                  color: Colors.white,
+                  // color: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.grey.shade100),
+                    // side: BorderSide(color: Colors.grey.shade100),
                   ),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -116,12 +116,12 @@ class _PerfilScreenState extends State<PerfilScreen>{
               const SizedBox(width: 16),
               Expanded(
                 child: Card(
-                  color: Colors.white,
+                  // color: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.grey.shade100),
-                  ),
+                  // shape: RoundedRectangleBorder(
+                  //   borderRadius: BorderRadius.circular(16),
+                  //   side: BorderSide(color: Colors.grey.shade100),
+                  // ),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: Column(
@@ -149,17 +149,17 @@ class _PerfilScreenState extends State<PerfilScreen>{
           const SizedBox(height: 24),
           // Settings Action
           Card(
-            color: Colors.white,
+            // color: Colors.white,
             elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.grey.shade100),
-            ),
+            // shape: RoundedRectangleBorder(
+            //   borderRadius: BorderRadius.circular(16),
+            //   // side: BorderSide(color: Colors.grey.shade100),
+            // ),
             child: ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF1F8E9),
+                  // color: Color(0xFFF1F8E9),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

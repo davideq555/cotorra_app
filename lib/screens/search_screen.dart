@@ -36,7 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   decoration: InputDecoration(
                     hintText: 'Buscar documentos...',
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    fillColor: const Color(0xFFF5F5F5),
+                    // fillColor: const Color(0xFFF5F5F5),
                     filled: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),

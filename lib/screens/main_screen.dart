@@ -34,7 +34,7 @@ class _MainScreenState extends State<MainScreen> {
     const primaryGreen = Color(0xFF7CB342);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      // backgroundColor: Colors.white,
       appBar: _selectedIndex == 0
           ? null
           : AppBar(

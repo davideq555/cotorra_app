@@ -16,7 +16,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     const primaryGreen = Color(0xFF7CB342);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      // backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         title: const Text(
           'Configuración',
@@ -141,11 +141,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   Widget _buildSettingsCard({required List<Widget> children}) {
     return Card(
-      color: Colors.white,
+      // color: Colors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade100),
+        // side: BorderSide(color: Colors.grey.shade100),
       ),
       child: Column(
         children: children,
@@ -165,7 +165,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F8E9),
+          // color: const Color(0xFFF1F8E9),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: primaryGreen, size: 20),

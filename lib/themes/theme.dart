@@ -1,6 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-class AppTheme{
+class AppTheme {
   static ThemeData lightTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(
       seedColor: const Color(0xFF2E7D32), // Premium Green
@@ -30,15 +32,9 @@ class AppTheme{
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(
-          color: Color(0xFF2E7D32),
-          width: 2,
-        ),
+        borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 2),
       ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 16,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -46,11 +42,19 @@ class AppTheme{
         foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),
+    cardTheme: CardThemeData(
+      color: Colors.white,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade100, width: 1),
+      ),
+    ),
+
   );
 
   static ThemeData darkTheme = ThemeData(
@@ -64,6 +68,7 @@ class AppTheme{
     fontFamily: 'Roboto',
 
     scaffoldBackgroundColor: const Color(0xFF121212),
+    //Colors.black26,//const Color(Colors.black26), //Color(0xFF121212),
     cardColor: const Color(0xFF1E1E1E),
 
     appBarTheme: const AppBarTheme(
@@ -86,15 +91,9 @@ class AppTheme{
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(
-          color: Color(0xFF81C784),
-          width: 2,
-        ),
+        borderSide: const BorderSide(color: Color(0xFF81C784), width: 2),
       ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 16,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -103,9 +102,7 @@ class AppTheme{
         foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),
   );

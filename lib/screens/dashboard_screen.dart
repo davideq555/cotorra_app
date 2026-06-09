@@ -91,7 +91,8 @@ class _DashboardScreenState extends State<DashboardScreen>{
                     ),
                     child: IconButton(
                       icon: const Icon(
-                        Icons.upload,
+                        // Icons.upload,
+                        Icons.add,
                         color: Colors.white,
                         size: 22,
                       ),
@@ -156,7 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen>{
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  // color: Colors.black87,
                 ),
               ),
               // TextButton(
