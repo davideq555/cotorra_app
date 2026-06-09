@@ -1,0 +1,60 @@
+import 'package:cotorra_app/models/documento.dart';
+import 'package:cotorra_app/models/materia.dart';
+
+////////////////////////////////////////////////////
+List<Documento> mockDocuments() {
+  return [
+    Documento(
+      id: 1,
+      titulo: 'Apuntes Cálculo I - Derivadas',
+      archivoUrl: '',
+      autor: 'María González',
+      tipo: 1,
+      fechaSubida: '2026-05-28',
+      aprobado: true,
+      descargas: 24,
+      usuarioId: 1,
+      eliminado: false,
+      materia: Materia(id: 1, nombre: 'Matemáticas'),
+    ),
+    Documento(
+      id: 2,
+      titulo: 'Resumen Arquitectura de Computadoras',
+      archivoUrl: '',
+      autor: 'Carlos Ruiz',
+      tipo: 1,
+      fechaSubida: '2026-05-27',
+      aprobado: true,
+      descargas: 18,
+      usuarioId: 2,
+      eliminado: false,
+      materia: Materia(id: 2, nombre: 'Sistemas'),
+    ),
+    Documento(
+      id: 3,
+      titulo: 'Ejercicios Física II - Electromagnetismo',
+      archivoUrl: '',
+      autor: 'Ana Martínez',
+      tipo: 2,
+      fechaSubida: '2026-05-25',
+      aprobado: true,
+      descargas: 31,
+      usuarioId: 3,
+      eliminado: false,
+      materia: Materia(id: 3, nombre: 'Física'),
+    ),
+    Documento(
+      id: 4,
+      titulo: 'Tesis: Machine Learning en Medicina',
+      archivoUrl: '',
+      autor: 'Dr. López',
+      tipo: 1,
+      fechaSubida: '2026-05-20',
+      aprobado: true,
+      descargas: 42,
+      usuarioId: 4,
+      eliminado: false,
+      materia: Materia(id: 4, nombre: 'Investigación'),
+    ),
+  ];
+}

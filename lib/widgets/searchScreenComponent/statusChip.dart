@@ -24,21 +24,3 @@ class StatusChip extends StatelessWidget{
       ),
     );
   }}
-
-// Widget StatusChip(String label, Color color) {
-  // return Container(
-  //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-  //   decoration: BoxDecoration(
-  //     color: color.withOpacity(0.1),
-  //     borderRadius: BorderRadius.circular(20),
-  //   ),
-  //   child: Text(
-  //     label,
-  //     style: TextStyle(
-  //       fontSize: 10,
-  //       fontWeight: FontWeight.bold,
-  //       color: color.withOpacity(0.9),
-  //     ),
-  //   ),
-  // );
-// }
