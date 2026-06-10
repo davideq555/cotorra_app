@@ -65,50 +65,50 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Preferencias',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildSettingsCard(
-            children: [
-              SwitchListTile(
-                activeColor: primaryGreen,
-                secondary: const Icon(Icons.notifications_none, color: primaryGreen),
-                title: const Text(
-                  'Notificaciones',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                ),
-                subtitle: const Text('Avisar cuando se apruebe mi documento'),
-                value: _notificationsEnabled,
-                onChanged: (val) {
-                  setState(() {
-                    _notificationsEnabled = val;
-                  });
-                },
-              ),
-              const Divider(height: 1, indent: 56),
-              SwitchListTile(
-                activeColor: primaryGreen,
-                secondary: const Icon(Icons.dark_mode_outlined, color: primaryGreen),
-                title: const Text(
-                  'Modo Oscuro',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                ),
-                subtitle: const Text('Tema oscuro para la aplicación'),
-                value: _darkModeEnabled,
-                onChanged: (val) {
-                  setState(() {
-                    _darkModeEnabled = val;
-                  });
-                },
-              ),
-            ],
-          ),
+          // const Text(
+          //   'Preferencias',
+          //   style: TextStyle(
+          //     fontSize: 14,
+          //     fontWeight: FontWeight.bold,
+          //     color: Colors.grey,
+          //   ),
+          // ),
+          // const SizedBox(height: 12),
+          // _buildSettingsCard(
+          //   children: [
+          //     SwitchListTile(
+          //       activeColor: primaryGreen,
+          //       secondary: const Icon(Icons.notifications_none, color: primaryGreen),
+          //       title: const Text(
+          //         'Notificaciones',
+          //         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          //       ),
+          //       subtitle: const Text('Avisar cuando se apruebe mi documento'),
+          //       value: _notificationsEnabled,
+          //       onChanged: (val) {
+          //         setState(() {
+          //           _notificationsEnabled = val;
+          //         });
+          //       },
+          //     ),
+          //     const Divider(height: 1, indent: 56),
+          //     SwitchListTile(
+          //       activeColor: primaryGreen,
+          //       secondary: const Icon(Icons.dark_mode_outlined, color: primaryGreen),
+          //       title: const Text(
+          //         'Modo Oscuro',
+          //         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          //       ),
+          //       subtitle: const Text('Tema oscuro para la aplicación'),
+          //       value: _darkModeEnabled,
+          //       onChanged: (val) {
+          //         setState(() {
+          //           _darkModeEnabled = val;
+          //         });
+          //       },
+          //     ),
+          //   ],
+          // ),
           const SizedBox(height: 24),
           const Text(
             'Soporte & Legal',

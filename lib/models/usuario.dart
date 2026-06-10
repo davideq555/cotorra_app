@@ -1,47 +1,42 @@
-import 'package:cotorra_app/models/enums.dart';
+import 'enums.dart';
 
 class Usuario {
+  final int id;
   final String nombre;
   final String email;
   final RolEnum rol;
-  final int id;
-  final String fechaCreacion;
+  final String? fechaCreacion;
   final bool verificado;
 
   Usuario({
+    required this.id,
     required this.nombre,
     required this.email,
     required this.rol,
-    required this.id,
-    required this.fechaCreacion,
-    required this.verificado,
+    this.fechaCreacion,
+    this.verificado = false,
   });
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
-    RolEnum parsedRol = RolEnum.ALUMNO;
-    final rolStr = json['rol'];
-    if (rolStr == 'DOCENTE') {
-      parsedRol = RolEnum.DOCENTE;
-    } else if (rolStr == 'ADMIN') {
-      parsedRol = RolEnum.ADMIN;
-    }
-
     return Usuario(
+      id: json['id'] ?? 0,
       nombre: json['nombre'] ?? '',
       email: json['email'] ?? '',
-      rol: parsedRol,
-      id: json['id'] ?? 0,
-      fechaCreacion: json['fecha_creacion'] ?? '',
+      rol: RolEnum.values.firstWhere(
+        (e) => e.toString().split('.').last == json['rol'],
+        orElse: () => RolEnum.ALUMNO,
+      ),
+      fechaCreacion: json['fecha_creacion'],
       verificado: json['verificado'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'nombre': nombre,
       'email': email,
       'rol': rol.toString().split('.').last,
-      'id': id,
       'fecha_creacion': fechaCreacion,
       'verificado': verificado,
     };

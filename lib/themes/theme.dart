@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 class AppTheme {
   static ThemeData lightTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2E7D32), // Premium Green
+      // seedColor: const Color(0xFF2E7D32), // Premium Green
       primary: const Color(0xFF2E7D32),
       secondary: const Color(0xFF81C784),
       brightness: Brightness.light,
+      seedColor: Colors.blue,
+      surfaceContainer: Colors.red,
     ),
     useMaterial3: true,
     fontFamily: 'Roboto',
@@ -19,6 +21,7 @@ class AppTheme {
       foregroundColor: Colors.black87,
       centerTitle: true,
     ),
+
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: Colors.grey.shade100,
@@ -54,7 +57,6 @@ class AppTheme {
         side: BorderSide(color: Colors.grey.shade100, width: 1),
       ),
     ),
-
   );
 
   static ThemeData darkTheme = ThemeData(

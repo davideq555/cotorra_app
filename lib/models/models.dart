@@ -1,0 +1,16 @@
+export 'enums.dart';
+export 'token.dart';
+export 'usuario.dart';
+export 'usuarioCreate.dart';
+export 'universidad.dart';
+export 'facultad.dart';
+export 'carrera.dart';
+export 'materia.dart';
+export 'tipoDocumento.dart';
+export 'documento.dart';
+export 'tag.dart';
+export 'comentario.dart';
+export 'valoracion.dart';
+export 'usuarioCarrera.dart';
+export 'carreraMateria.dart';
+export 'documentoFavorito.dart';
