@@ -1,14 +1,21 @@
 import 'dart:convert';
 import 'package:cotorra_app/models/documento.dart';
+import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/token.dart';
 import 'package:cotorra_app/models/usuario.dart';
 import 'package:cotorra_app/models/usuarioCreate.dart';
 
 import 'package:http/http.dart' as http;
 
+// Servicio centralizado para interactuar con la API REST de Cotorra
+// Maneja autenticación, registro de usuarios y gestión de documentos
 class ApiService {
   static const String baseUrl = 'https://apicotorra.deqa.com.ar/api/v1';
 
+  // ==================== AUTENTICACIÓN ====================
+
+  /// Inicia sesión con credenciales username/password
+  /// Retorna un Token para usar en requests autenticadas
   Future<Token> login(String username, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/login/form'),
@@ -23,6 +30,8 @@ class ApiService {
     }
   }
 
+  /// Registra un nuevo usuario en la plataforma
+  /// Envía datos del nuevo usuario y retorna el Usuario creado
   Future<Usuario> register(UsuarioCreate usuarioCreate) async {
     final response = await http.post(
       Uri.parse('$baseUrl/usuarios/registro/'),
@@ -37,17 +46,85 @@ class ApiService {
     }
   }
 
-  Future<List<Documento>> getDocumentos(String token, {String? query}) async {
-    String url = '$baseUrl/documentos/';
-    if (query != null && query.isNotEmpty) {
-      // In a real app, you might want to use proper query parameters.
-      // Assuming there's a search parameter or we just fetch and filter client-side if API doesn't support it directly.
-      // We will add it as query parameter for now, e.g. ?q=query
-      url += '?q=${Uri.encodeComponent(query)}';
+  // ==================== USUARIOS ====================
+
+  /// Cambia la contraseña de un usuario
+  /// Requiere contraseña actual para verificar identidad
+  Future<Map<String, dynamic>> cambiarContrasena(
+    String token,
+    int usuarioId,
+    String contrasenaActual,
+    String contrasenaNueva,
+  ) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/usuarios/$usuarioId/cambiar-contraseña'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'contraseña_actual': contrasenaActual,
+        'contraseña_nueva': contrasenaNueva,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to change password: ${response.body}');
+    }
+  }
+
+  // ==================== MATERIAS ====================
+
+  /// Obtiene lista de materias con paginación opcional
+  /// Acceso público permitido
+  Future<List<Materia>> getMaterias({int skip = 0, int limit = 100}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/materias/?skip=$skip&limit=$limit'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Materia.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load materias: ${response.body}');
+    }
+  }
+
+  // ==================== DOCUMENTOS ====================
+
+  /// Obtiene lista de documentos aprobados con filtros y paginación
+  /// Params: q (búsqueda), tipo, materia_id, año_academico, sort_by, sort_order
+  Future<List<Documento>> getDocumentos(
+    String token, {
+    String? query,
+    int? tipo,
+    int? materiaId,
+    String? anoAcademico,
+    String sortBy = 'fecha_subida',
+    String sortOrder = 'desc',
+    int skip = 0,
+    int limit = 20,
+  }) async {
+    final params = <String, String>{
+      'skip': skip.toString(),
+      'limit': limit.toString(),
+      'sort_by': sortBy,
+      'sort_order': sortOrder,
+    };
+    if (query != null && query.isNotEmpty) params['q'] = query;
+    if (tipo != null) params['tipo'] = tipo.toString();
+    if (materiaId != null) params['materia_id'] = materiaId.toString();
+    if (anoAcademico != null && anoAcademico.isNotEmpty) {
+      params['año_academico'] = anoAcademico;
     }
 
+    final uri = Uri.parse('$baseUrl/documentos/').replace(queryParameters: params);
+
     final response = await http.get(
-      Uri.parse(url),
+      uri,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -62,10 +139,54 @@ class ApiService {
     }
   }
 
-  // Example to get a single document details
-  Future<Documento> getDocumento(String token, int id) async {
+  /// Obtiene detalle de un documento específico por su ID
+  Future<Documento> getDocumento(int documentoId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/documentos/$id'),
+      Uri.parse('$baseUrl/documentos/$documentoId'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      return Documento.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load document: ${response.body}');
+    }
+  }
+
+  /// Obtiene los 6 documentos mejor rankeados (por descargas + valoración)
+  Future<List<Documento>> getMejoresDocumentos() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/documentos/mejores'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Documento.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load best documents: ${response.body}');
+    }
+  }
+
+  /// Obtiene documentos de un usuario específico
+  /// Solo admins pueden ver otros usuarios; usuarios normales ven solo los suyos
+  Future<List<Documento>> getDocumentosUsuario(
+    String token,
+    int usuarioId, {
+    int skip = 0,
+    int limit = 20,
+    bool includeDeleted = false,
+  }) async {
+    final uri = Uri.parse('$baseUrl/documentos/usuario/$usuarioId').replace(
+      queryParameters: {
+        'skip': skip.toString(),
+        'limit': limit.toString(),
+        'include_deleted': includeDeleted.toString(),
+      },
+    );
+
+    final response = await http.get(
+      uri,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -73,9 +194,176 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Documento.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load user documents: ${response.body}');
+    }
+  }
+
+  /// Crea un documento a partir de datos (tipo FILE)
+  /// Requiere token de autenticación
+  Future<Documento> createDocumento(
+    String token,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/documentos/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
       return Documento.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to load document details: ${response.body}');
+      throw Exception('Failed to create document: ${response.body}');
+    }
+  }
+
+  /// Sube un documento con archivo (multipart)
+  /// Solo tipo FILE; retorna el Documento creado
+  Future<Documento> uploadDocumento(
+    String token, {
+    required String titulo,
+    required String archivoBase64,
+    required int tipo,
+    String? descripcion,
+    String? autor,
+    int? materiaId,
+    String? anoAcademico,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/documentos/upload'),
+    );
+
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['titulo'] = titulo;
+    request.fields['archivo'] = archivoBase64;
+    request.fields['tipo'] = tipo.toString();
+    if (descripcion != null) request.fields['descripcion'] = descripcion;
+    if (autor != null) request.fields['autor'] = autor;
+    if (materiaId != null) request.fields['materia_id'] = materiaId.toString();
+    if (anoAcademico != null) request.fields['año_academico'] = anoAcademico;
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 201) {
+      return Documento.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to upload document: ${response.body}');
+    }
+  }
+
+  /// Crea un documento a partir de un enlace externo (Google Drive, YouTube, GitHub, etc.)
+  /// Solo tipo LINK
+  Future<Documento> createDocumentoLink(
+    String token, {
+    required String titulo,
+    required String urlExterna,
+    required int tipo,
+    String? descripcion,
+    String? autor,
+    int? materiaId,
+    String? anoAcademico,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/documentos/link'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'titulo': titulo,
+        'url_externa': urlExterna,
+        'tipo': tipo,
+        if (descripcion != null) 'descripcion': descripcion,
+        if (autor != null) 'autor': autor,
+        if (materiaId != null) 'materia_id': materiaId,
+        if (anoAcademico != null) 'año_academico': anoAcademico,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      return Documento.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to create link document: ${response.body}');
+    }
+  }
+
+  /// Actualiza un documento existente
+  Future<Documento> updateDocumento(
+    String token,
+    int documentoId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/documentos/$documentoId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200) {
+      return Documento.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to update document: ${response.body}');
+    }
+  }
+
+  /// Elimina un documento (borrado lógico)
+  Future<void> deleteDocumento(String token, int documentoId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/documentos/$documentoId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete document: ${response.body}');
+    }
+  }
+
+  /// Descarga un documento, incrementando el contador de descargas
+  /// Retorna la URL/bytes del archivo
+  Future<dynamic> descargarDocumento(int documentoId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/documentos/$documentoId/descargar'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to download document: ${response.body}');
+    }
+  }
+
+  // ==================== FAVORITOS ====================
+
+  /// Alterna el estado de favorito de un documento (agregar/quitar)
+  /// Retorna {message, success, is_favorite}
+  Future<Map<String, dynamic>> toggleFavorito(String token, int documentoId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/favoritos/toggle/$documentoId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to toggle favorite: ${response.body}');
     }
   }
 }
