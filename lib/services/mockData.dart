@@ -56,5 +56,18 @@ List<Documento> mockDocuments() {
       eliminado: false,
       materia: Materia(id: 4, nombre: 'Investigación'),
     ),
+    Documento(
+      id: 5,
+      titulo: 'Laboratorio: Maquina Virtual',
+      archivoUrl: '',
+      autor: 'Dr. López',
+      tipo: 1,
+      fechaSubida: '2026-05-20',
+      aprobado: true,
+      descargas: 42,
+      usuarioId: 4,
+      eliminado: false,
+      materia: Materia(id: 4, nombre: 'Informatica'),
+    ),
   ];
 }

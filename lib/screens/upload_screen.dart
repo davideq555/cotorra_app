@@ -77,7 +77,7 @@ class _UploadScreenState extends State<UploadScreen> {
     const primaryGreen = Color(0xFF7CB342);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      // backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Compartir Material',
@@ -101,7 +101,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 child: Container(
                   height: 160,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F8E9),
+                    // color: const Color(0xFFF1F8E9),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: primaryGreen.withOpacity(0.4),
@@ -153,7 +153,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 controller: _titleController,
                 decoration: InputDecoration(
                   hintText: 'Ej. Apuntes Análisis Matemático I - Límites',
-                  fillColor: const Color(0xFFF5F5F5),
+                  // fillColor: const Color(0xFFF5F5F5),
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -177,7 +177,7 @@ class _UploadScreenState extends State<UploadScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  // color: const Color(0xFFF5F5F5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: DropdownButtonHideUnderline(
@@ -217,7 +217,7 @@ class _UploadScreenState extends State<UploadScreen> {
                       controller: _tagController,
                       decoration: InputDecoration(
                         hintText: 'Ej. derivadas, finales, apuntes',
-                        fillColor: const Color(0xFFF5F5F5),
+                        // fillColor: const Color(0xFFF5F5F5),
                         filled: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -257,7 +257,7 @@ class _UploadScreenState extends State<UploadScreen> {
                           fontSize: 12,
                         ),
                       ),
-                      backgroundColor: const Color(0xFFF1F8E9),
+                      // backgroundColor: const Color(0xFFF1F8E9),
                       deleteIcon: const Icon(Icons.close, size: 14, color: primaryGreen),
                       onDeleted: () => _removeTag(tag),
                       shape: RoundedRectangleBorder(

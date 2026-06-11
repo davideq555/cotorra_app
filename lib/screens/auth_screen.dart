@@ -65,7 +65,7 @@ class _AuthScreenState extends State<AuthScreen> {
     const primaryGreen = Color(0xFF7CB342); // Matching the exact UI green
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      // backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
@@ -77,7 +77,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  // color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -116,7 +116,8 @@ class _AuthScreenState extends State<AuthScreen> {
               Container(
                 padding: const EdgeInsets.all(28.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  // color: Colors.white,
+                  color: Colors.white10,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
@@ -136,7 +137,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          // color: Colors.black87,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -147,7 +148,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            // color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -155,7 +156,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           controller: _nombreController,
                           decoration: InputDecoration(
                             hintText: 'Tu nombre',
-                            fillColor: const Color(0xFFF5F5F5),
+                            // fillColor: const Color(0xFFF5F5F5),
                             filled: true,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -172,7 +173,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          // color: Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -180,7 +181,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         controller: _emailController,
                         decoration: InputDecoration(
                           hintText: 'tu.email@universidad.edu',
-                          fillColor: const Color(0xFFF5F5F5),
+                          // fillColor: const Color(0xFFF5F5F5),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -197,15 +198,15 @@ class _AuthScreenState extends State<AuthScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          // color: Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _passwordController,
                         decoration: InputDecoration(
-                          hintText: '••••••••',
-                          fillColor: const Color(0xFFF5F5F5),
+                          hintText: 'contraseña',
+                          // fillColor: const Color(0xFFF5F5F5),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),

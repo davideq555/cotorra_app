@@ -1,7 +1,7 @@
-import 'package:cotorra_app/models/materia.dart';
-import 'package:cotorra_app/models/tag.dart';
-import 'package:cotorra_app/models/tipoDocumento.dart';
-import 'package:cotorra_app/models/usuario.dart';
+import 'materia.dart';
+import 'tag.dart';
+import 'tipoDocumento.dart';
+import 'usuario.dart';
 
 class Documento {
   final int id;
@@ -11,22 +11,19 @@ class Documento {
   final String? descripcion;
   final int tipo;
   final int? materiaId;
-  final String? anoAcademico; // mapped to "año_academico"
-  final String fechaSubida; // mapped to "fecha_subida"
-  //final String fechaEliminacion; // no esta en base de datos pero si en diagrama
+  final String? anoAcademico;
+  final String? fechaSubida;
   final bool aprobado;
   final int descargas;
-  final int usuarioId; // mapped to "usuario_id"
+  final int usuarioId;
   final bool eliminado;
-
-
+  final double valoracionPromedio;
+  final int totalValoraciones;
 
   final Usuario? usuario;
   final TipoDocumento? tipoDocumento;
   final Materia? materia;
   final List<Tag>? tags;
-
-
 
   Documento({
     required this.id,
@@ -37,11 +34,13 @@ class Documento {
     required this.tipo,
     this.materiaId,
     this.anoAcademico,
-    required this.fechaSubida,
-    required this.aprobado,
-    required this.descargas,
+    this.fechaSubida,
+    this.aprobado = false,
+    this.descargas = 0,
     required this.usuarioId,
-    required this.eliminado,
+    this.eliminado = false,
+    this.valoracionPromedio = 0.0,
+    this.totalValoraciones = 0,
     this.usuario,
     this.tipoDocumento,
     this.materia,
@@ -49,11 +48,6 @@ class Documento {
   });
 
   factory Documento.fromJson(Map<String, dynamic> json) {
-    List<Tag>? tagsList;
-    if (json['tags'] != null && json['tags'] is List) {
-      tagsList = (json['tags'] as List).map((t) => Tag.fromJson(t)).toList();
-    }
-
     return Documento(
       id: json['id'] ?? 0,
       titulo: json['titulo'] ?? '',
@@ -63,15 +57,17 @@ class Documento {
       tipo: json['tipo'] ?? 0,
       materiaId: json['materia_id'],
       anoAcademico: json['año_academico'],
-      fechaSubida: json['fecha_subida'] ?? '',
+      fechaSubida: json['fecha_subida'],
       aprobado: json['aprobado'] ?? false,
       descargas: json['descargas'] ?? 0,
       usuarioId: json['usuario_id'] ?? 0,
       eliminado: json['eliminado'] ?? false,
+      valoracionPromedio: (json['valoracion_promedio'] ?? 0.0).toDouble(),
+      totalValoraciones: json['total_valoraciones'] ?? 0,
       usuario: json['usuario'] != null ? Usuario.fromJson(json['usuario']) : null,
       tipoDocumento: json['tipo_documento'] != null ? TipoDocumento.fromJson(json['tipo_documento']) : null,
       materia: json['materia'] != null ? Materia.fromJson(json['materia']) : null,
-      tags: tagsList,
+      tags: (json['tags'] as List?)?.map((t) => Tag.fromJson(t)).toList(),
     );
   }
 
@@ -90,6 +86,8 @@ class Documento {
       'descargas': descargas,
       'usuario_id': usuarioId,
       'eliminado': eliminado,
+      'valoracion_promedio': valoracionPromedio,
+      'total_valoraciones': totalValoraciones,
       'usuario': usuario?.toJson(),
       'tipo_documento': tipoDocumento?.toJson(),
       'materia': materia?.toJson(),

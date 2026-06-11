@@ -16,7 +16,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     const primaryGreen = Color(0xFF7CB342);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      // backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         title: const Text(
           'Configuración',
@@ -65,50 +65,50 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Preferencias',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildSettingsCard(
-            children: [
-              SwitchListTile(
-                activeColor: primaryGreen,
-                secondary: const Icon(Icons.notifications_none, color: primaryGreen),
-                title: const Text(
-                  'Notificaciones',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                ),
-                subtitle: const Text('Avisar cuando se apruebe mi documento'),
-                value: _notificationsEnabled,
-                onChanged: (val) {
-                  setState(() {
-                    _notificationsEnabled = val;
-                  });
-                },
-              ),
-              const Divider(height: 1, indent: 56),
-              SwitchListTile(
-                activeColor: primaryGreen,
-                secondary: const Icon(Icons.dark_mode_outlined, color: primaryGreen),
-                title: const Text(
-                  'Modo Oscuro',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                ),
-                subtitle: const Text('Tema oscuro para la aplicación'),
-                value: _darkModeEnabled,
-                onChanged: (val) {
-                  setState(() {
-                    _darkModeEnabled = val;
-                  });
-                },
-              ),
-            ],
-          ),
+          // const Text(
+          //   'Preferencias',
+          //   style: TextStyle(
+          //     fontSize: 14,
+          //     fontWeight: FontWeight.bold,
+          //     color: Colors.grey,
+          //   ),
+          // ),
+          // const SizedBox(height: 12),
+          // _buildSettingsCard(
+          //   children: [
+          //     SwitchListTile(
+          //       activeColor: primaryGreen,
+          //       secondary: const Icon(Icons.notifications_none, color: primaryGreen),
+          //       title: const Text(
+          //         'Notificaciones',
+          //         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          //       ),
+          //       subtitle: const Text('Avisar cuando se apruebe mi documento'),
+          //       value: _notificationsEnabled,
+          //       onChanged: (val) {
+          //         setState(() {
+          //           _notificationsEnabled = val;
+          //         });
+          //       },
+          //     ),
+          //     const Divider(height: 1, indent: 56),
+          //     SwitchListTile(
+          //       activeColor: primaryGreen,
+          //       secondary: const Icon(Icons.dark_mode_outlined, color: primaryGreen),
+          //       title: const Text(
+          //         'Modo Oscuro',
+          //         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          //       ),
+          //       subtitle: const Text('Tema oscuro para la aplicación'),
+          //       value: _darkModeEnabled,
+          //       onChanged: (val) {
+          //         setState(() {
+          //           _darkModeEnabled = val;
+          //         });
+          //       },
+          //     ),
+          //   ],
+          // ),
           const SizedBox(height: 24),
           const Text(
             'Soporte & Legal',
@@ -141,11 +141,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   Widget _buildSettingsCard({required List<Widget> children}) {
     return Card(
-      color: Colors.white,
+      // color: Colors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade100),
+        // side: BorderSide(color: Colors.grey.shade100),
       ),
       child: Column(
         children: children,
@@ -165,7 +165,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F8E9),
+          // color: const Color(0xFFF1F8E9),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: primaryGreen, size: 20),

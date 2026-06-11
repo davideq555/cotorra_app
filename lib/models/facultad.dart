@@ -1,22 +1,22 @@
-class Materia {
+class Facultad {
   final int id;
   final String nombre;
   final String? descripcion;
-  final String? codigo;
+  final int universidadId;
 
-  Materia({
+  Facultad({
     required this.id,
     required this.nombre,
     this.descripcion,
-    this.codigo,
+    required this.universidadId,
   });
 
-  factory Materia.fromJson(Map<String, dynamic> json) {
-    return Materia(
+  factory Facultad.fromJson(Map<String, dynamic> json) {
+    return Facultad(
       id: json['id'] ?? 0,
       nombre: json['nombre'] ?? '',
       descripcion: json['descripcion'],
-      codigo: json['codigo'],
+      universidadId: json['universidad_id'] ?? 0,
     );
   }
 
@@ -25,7 +25,7 @@ class Materia {
       'id': id,
       'nombre': nombre,
       'descripcion': descripcion,
-      'codigo': codigo,
+      'universidad_id': universidadId,
     };
   }
 }

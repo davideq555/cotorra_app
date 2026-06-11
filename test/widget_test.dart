@@ -12,7 +12,11 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => AuthProvider()),
-          ChangeNotifierProvider(create: (_) => SearchProvider()),
+          // ChangeNotifierProvider(create: (_) => SearchProvider()), // error del test anterior solo agregue para quitar el error
+          ChangeNotifierProxyProvider<AuthProvider, SearchProvider>(
+            create: (ctx) => SearchProvider(ctx.read<AuthProvider>()),
+            update: (ctx, auth, previous) => SearchProvider(auth),
+          ),
         ],
         child: const CotorraApp(),
       ),

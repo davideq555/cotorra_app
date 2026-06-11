@@ -1,13 +1,12 @@
-import 'package:cotorra_app/models/documento.dart';
+import 'package:cotorra_app/models/models.dart';
 import 'package:cotorra_app/screens/document_view_manger_screen.dart';
-import 'package:cotorra_app/widgets/searchScreenComponent/statusChip.dart';
 import 'package:flutter/material.dart';
 
-class DocumentCard extends StatelessWidget{
+class DocumentCard extends StatelessWidget {
   final Documento doc;
-  StatusChip? trailing;
+  final Widget? trailing;
 
-  DocumentCard({
+  const DocumentCard({
     super.key,
     required this.doc,
     this.trailing,
@@ -15,21 +14,24 @@ class DocumentCard extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF7CB342);
-    final isBook = doc.titulo.contains('Física') || doc.titulo.contains('Libro') || doc.titulo.contains('Análisis');
-    final isGrad = doc.titulo.contains('Tesis') || doc.titulo.contains('Proyecto') || doc.titulo.contains('Final');
-
+    final primaryGreen = Theme.of(context).colorScheme.primary;
+    
+    // Logic for icons
     IconData icon = Icons.description;
-    if (isBook) icon = Icons.menu_book;
-    if (isGrad) icon = Icons.school;
+    final titulo = doc.titulo.toLowerCase();
+    if (titulo.contains('física') || titulo.contains('libro') || titulo.contains('análisis')) {
+      icon = Icons.menu_book;
+    } else if (titulo.contains('tesis') || titulo.contains('proyecto') || titulo.contains('final')) {
+      icon = Icons.school;
+    }
+
     return Card(
-      // color: Colors.cyan, //Colors.white,
-      // elevation: 0,
-      // margin: const EdgeInsets.only(bottom: 14),
-      // shape: RoundedRectangleBorder(
-      //   borderRadius: BorderRadius.circular(16),
-      //   side: BorderSide( color: Colors.grey.shade100,width: 1),  // color del borde de la Card | color: Colors.grey.shade100,
-      // ),
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
@@ -49,7 +51,7 @@ class DocumentCard extends StatelessWidget{
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  // color: const Color(0xFFF1F8E9),// color del cuadro de imagen(hoja, gorrito)
+                  color: primaryGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: primaryGreen, size: 24),
@@ -64,7 +66,6 @@ class DocumentCard extends StatelessWidget{
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        // color: Colors.black87,   //  titulo de la card
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -75,12 +76,12 @@ class DocumentCard extends StatelessWidget{
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            // color: const Color(0xFFF1F8E9),  // color del cuadro de materia(matematicas)
+                            color: primaryGreen.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             doc.materia?.nombre ?? 'General',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: primaryGreen,
