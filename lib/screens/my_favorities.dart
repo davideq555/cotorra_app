@@ -1,31 +1,14 @@
+import 'package:cotorra_app/widgets/common/placeholder_widget.dart';
 import 'package:flutter/material.dart';
 
-class MyFavorities extends StatefulWidget {
+class MyFavorities extends StatelessWidget {
   const MyFavorities({super.key});
 
   @override
-  State<StatefulWidget> createState() => _MyFavoritiesState();
-}
-
-class _MyFavoritiesState extends State<MyFavorities> {
-  @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.construction, size: 64, color: Colors.grey.shade300),
-          const SizedBox(height: 16),
-          Text(
-            "Mis Favoritos",
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+    return const PlaceholderWidget(
+      title: "Mis Favoritos",
+      icon: Icons.favorite_border,
     );
   }
 }
