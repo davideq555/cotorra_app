@@ -1,0 +1,54 @@
+strict_tdd: true
+context: |
+  cotorra_app is a Python, Dart/Flutter project.
+  Detected markers: pubspec.yaml.
+  Additional evidence: Dart/Flutter manifest detected via pubspec.yaml; Test-like files detected (1); examples: test/widget_test.dart.
+  Primary test command: dart test.
+  Unit tests: Dart test (dart test).
+  Integration tests: none.
+  E2E tests: none.
+rules:
+  proposal:
+    require_problem_statement: true
+  spec:
+    require_acceptance_criteria: true
+  design:
+    require_tradeoffs: true
+  tasks:
+    protect_review_workload: true
+  apply:
+    test_command: "dart test"
+  verify:
+    test_command: "dart test"
+testing:
+  detected: "2026-06-11"
+  runner:
+    command: "dart test"
+    framework: "Dart test"
+  layers:
+    unit: "Dart test"
+    integration: ""
+    e2e: ""
+  commands:
+    unit:
+      - scope: "."
+        command: "dart test"
+        framework: "Dart test"
+    integration:
+      []
+    e2e:
+      []
+  coverage:
+    command: ""
+    commands:
+      []
+quality:
+  lint: ""
+  lint_commands:
+    []
+  typecheck: ""
+  typecheck_commands:
+    []
+  format: ""
+  format_commands:
+    []
