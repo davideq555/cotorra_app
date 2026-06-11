@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cotorra_app/config/env.dart';
 import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/token.dart';
@@ -10,7 +11,8 @@ import 'package:http/http.dart' as http;
 // Servicio centralizado para interactuar con la API REST de Cotorra
 // Maneja autenticación, registro de usuarios y gestión de documentos
 class ApiService {
-  static const String baseUrl = 'https://apicotorra.deqa.com.ar/api/v1';
+  // URL base del API (configurable via .env)
+  String get baseUrl => Env.baseUrl;
 
   // ==================== AUTENTICACIÓN ====================
 
