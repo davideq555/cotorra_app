@@ -1,4 +1,4 @@
-import 'package:cotorra_app/data/services/mockData.dart';
+import 'package:cotorra_app/services/mockData.dart';
 import 'package:cotorra_app/providers/search_provider.dart';
 import 'package:cotorra_app/widgets/common/document_card.dart';
 import 'package:flutter/material.dart';
