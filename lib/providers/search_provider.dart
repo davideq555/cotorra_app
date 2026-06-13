@@ -11,6 +11,7 @@ class SearchProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String _selectedCategory = 'Todos';
+  bool _mejoresDocumentosLoaded = false;
 
   SearchProvider(this.authProvider);
 
@@ -28,6 +29,34 @@ class SearchProvider with ChangeNotifier {
   void setCategory(String category) {
     _selectedCategory = category;
     notifyListeners();
+  }
+
+  /// Carga los documentos mejor rankeados para el dashboard
+  /// Solo carga una vez; llamadas subsiguientes son no-ops hasta que se llame reloadMejoresDocumentos
+  Future<void> loadMejoresDocumentos() async {
+    if (_mejoresDocumentosLoaded) return;
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _documentos = await _apiService.getMejoresDocumentos();
+      _mejoresDocumentosLoaded = true;
+    } catch (e) {
+      print('Error loading best documents: $e');
+      _errorMessage = 'Error al cargar los documentos. Por favor intenta de nuevo.';
+      _documentos = [];
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  /// Fuerza la recarga de los mejores documentos (ignora el flag de carga única)
+  Future<void> reloadMejoresDocumentos() async {
+    _mejoresDocumentosLoaded = false;
+    await loadMejoresDocumentos();
   }
 
   Future<void> searchDocumentos(String query) async {

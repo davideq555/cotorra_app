@@ -134,8 +134,19 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Documento.fromJson(json)).toList();
+      final dynamic data = jsonDecode(response.body);
+      
+      // La API devuelve un objeto paginado con clave 'items' o un array directo
+      List<dynamic> items;
+      if (data is List) {
+        items = data;
+      } else if (data is Map<String, dynamic> && data.containsKey('items')) {
+        items = data['items'] as List<dynamic>;
+      } else {
+        throw Exception('Unexpected response format for documents');
+      }
+      
+      return items.map((json) => Documento.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load documents: ${response.body}');
     }
