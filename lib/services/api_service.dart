@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:cotorra_app/config/env.dart';
+import 'package:cotorra_app/models/carrera.dart';
 import 'package:cotorra_app/models/documento.dart';
+import 'package:cotorra_app/models/facultad.dart';
 import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/token.dart';
 import 'package:cotorra_app/models/usuario.dart';
@@ -377,6 +379,57 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to toggle favorite: ${response.body}');
+    }
+  }
+
+  // ==================== FACULTADES ====================
+
+  /// Obtiene lista de facultades
+  Future<List<Facultad>> getFacultades() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/facultades/'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Facultad.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load facultades: ${response.body}');
+    }
+  }
+
+  // ==================== CARRERAS ====================
+
+  /// Obtiene lista de carreras por facultad
+  Future<List<Carrera>> getCarrerasPorFacultad(int facultadId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/carreras/facultad/$facultadId'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Carrera.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load carreras: ${response.body}');
+    }
+  }
+
+  // ==================== MATERIAS ====================
+
+  /// Obtiene lista de materias por carrera
+  Future<List<Materia>> getMateriasPorCarrera(int carreraId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/materias/carrera/$carreraId'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Materia.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load materias: ${response.body}');
     }
   }
 }
