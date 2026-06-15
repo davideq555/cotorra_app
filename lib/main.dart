@@ -7,6 +7,7 @@ import 'providers/document_cache_provider.dart';
 import 'providers/favorites_cache_provider.dart';
 import 'providers/search_provider.dart';
 import 'providers/user_cache_provider.dart';
+import 'providers/user_documents_cache_provider.dart';
 import 'screens/auth_screen.dart';
 import 'screens/main_screen.dart';
 
@@ -32,6 +33,7 @@ class CotorraApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DocumentCacheProvider()),
         ChangeNotifierProvider(create: (_) => UserCacheProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesCacheProvider()),
+        ChangeNotifierProvider(create: (_) => UserDocumentsCacheProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {

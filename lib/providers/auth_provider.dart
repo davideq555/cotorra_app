@@ -12,6 +12,10 @@ class AuthProvider with ChangeNotifier {
 
   String? get token => _token;
   bool get isAuthenticated => _token != null;
+  int? get userId => _user?.id;
+  String? get userName => _user?.nombre;
+  String? get userEmail => _user?.email;
+  String? get userRol => _user?.rol.toString().split('.').last;
 
   Future<bool> login(String username, String password) async {
     try {

@@ -1,42 +1,61 @@
-import 'package:cotorra_app/models/models.dart';
-import 'package:cotorra_app/screens/auth/profile_settings_screen.dart';
+import 'package:cotorra_app/providers/auth_provider.dart';
+import 'package:cotorra_app/providers/user_documents_cache_provider.dart';
 import 'package:cotorra_app/widgets/common/document_card.dart';
-import 'package:cotorra_app/widgets/common/status_chip.dart';
+import 'package:cotorra_app/widgets/common/refreshable_list.dart';
 import 'package:cotorra_app/widgets/profile/profile_info.dart';
 import 'package:cotorra_app/widgets/profile/stats_row.dart';
 import 'package:cotorra_app/widgets/profile/settings_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class PerfilScreen extends StatelessWidget {
+class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
 
   @override
+  State<PerfilScreen> createState() => _PerfilScreenState();
+}
+
+class _PerfilScreenState extends State<PerfilScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDocuments();
+    });
+  }
+
+  void _loadDocuments() {
+    final auth = context.read<AuthProvider>();
+    if (auth.isAuthenticated) {
+      context.read<UserDocumentsCacheProvider>().load(auth.token!, auth.userId!);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final docsProvider = context.watch<UserDocumentsCacheProvider>();
+
     return ListView(
       padding: const EdgeInsets.all(20.0),
       children: [
-        const ProfileInfo(
-          nombre: 'María González',
-          email: 'maria.gonzalez@universidad.edu',
-          rol: 'ALUMNO',
-          inicial: 'M',
+        ProfileInfo(
+          nombre: auth.userName ?? 'Usuario',
+          email: auth.userEmail ?? '',
+          rol: auth.userRol ?? 'ALUMNO',
+          inicial: (auth.userName ?? 'U')[0].toUpperCase(),
         ),
         const SizedBox(height: 32),
-        const StatsRow(
-          favoritosCount: 12,
-          documentosCount: 3,
+        StatsRow(
+          favoritosCount: 0,
+          documentosCount: docsProvider.documentos.length,
         ),
         const SizedBox(height: 24),
         SettingsTile(
           title: 'Configuración de Perfil',
           icon: Icons.settings_outlined,
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ProfileSettingsScreen(),
-              ),
-            );
+            Navigator.pushNamed(context, '/profile-settings');
           },
         ),
         const SizedBox(height: 32),
@@ -48,21 +67,20 @@ class PerfilScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        DocumentCard(
-          doc: Documento(
-            id: 101,
-            titulo: 'Resumen Álgebra II - Matrices',
-            archivoUrl: '',
-            autor: 'María González',
-            tipo: 1,
-            fechaSubida: '2026-05-28',
-            aprobado: true,
-            descargas: 14,
-            usuarioId: 1,
-            eliminado: false,
-            materia: Materia(id: 1, nombre: 'Matemáticas'),
-          ),
-          trailing: const StatusChip(label: 'Aprobado', color: Colors.green),
+        RefreshableList(
+          items: docsProvider.documentos,
+          isLoading: docsProvider.isLoading,
+          errorMessage: docsProvider.errorMessage,
+          emptyMessage: 'No has subido documentos aún',
+          itemSpacing: 12,
+          onRefresh: () async {
+            if (auth.isAuthenticated) {
+              await docsProvider.reload(auth.token!, auth.userId!);
+            }
+          },
+          itemBuilder: (context, doc, index) {
+            return DocumentCard(doc: doc);
+          },
         ),
       ],
     );
