@@ -63,7 +63,7 @@ class AuthProvider with ChangeNotifier {
     if (!prefs.containsKey('token')) return;
     
     _token = prefs.getString('token');
-    // Restaurar datos del usuario
+    // user_data se guarda en cada login
     final userDataJson = prefs.getString('user_data');
     if (userDataJson != null) {
       _user = Usuario.fromJson(jsonDecode(userDataJson));

@@ -93,20 +93,23 @@ class _PerfilScreenState extends State<PerfilScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        RefreshableList(
-          items: docsProvider.documentos,
-          isLoading: docsProvider.isLoading,
-          errorMessage: docsProvider.errorMessage,
-          emptyMessage: 'No has subido documentos aún',
-          itemSpacing: 12,
-          onRefresh: () async {
-            if (auth.isAuthenticated) {
-              await docsProvider.reload(auth.token!, auth.userId!);
-            }
-          },
-          itemBuilder: (context, doc, index) {
-            return DocumentCard(doc: doc);
-          },
+        SizedBox(
+          height: 400,
+          child: RefreshableList(
+            items: docsProvider.documentos,
+            isLoading: docsProvider.isLoading,
+            errorMessage: docsProvider.errorMessage,
+            emptyMessage: 'No has subido documentos aún',
+            itemSpacing: 12,
+            onRefresh: () async {
+              if (auth.isAuthenticated) {
+                await docsProvider.reload(auth.token!, auth.userId!);
+              }
+            },
+            itemBuilder: (context, doc, index) {
+              return DocumentCard(doc: doc);
+            },
+          ),
         ),
       ],
     );

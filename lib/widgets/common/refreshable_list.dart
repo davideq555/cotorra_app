@@ -52,6 +52,9 @@ class RefreshableList<T> extends StatelessWidget {
   /// Separación entre items. Por defecto 8.
   final double itemSpacing;
 
+  /// Altura fija del ListView interno. Si es null, usa expanded (para scroll propio).
+  final double? height;
+
   const RefreshableList({
     super.key,
     required this.items,
@@ -64,48 +67,74 @@ class RefreshableList<T> extends StatelessWidget {
     this.onRetry,
     this.horizontalPadding = 0,
     this.itemSpacing = 8,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: SizedBox(
+          height: height ?? 200,
+          child: const Center(child: CircularProgressIndicator()),
+        ),
+      );
     }
 
     if (errorMessage != null) {
-      return _ErrorState(
-        message: errorMessage!,
-        onRetry: onRetry ?? onRefresh,
+      return SizedBox(
+        height: height ?? 200,
+        child: _ErrorState(
+          message: errorMessage!,
+          onRetry: onRetry ?? onRefresh,
+        ),
       );
     }
 
     if (items.isEmpty) {
-      return Center(
-        child: Text(
-          emptyMessage,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+      return SizedBox(
+        height: height ?? 200,
+        child: Center(
+          child: Text(
+            emptyMessage,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    Widget listView = NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (onLoadMore != null &&
+            notification is ScrollEndNotification &&
+            notification.metrics.extentAfter < 100) {
+          onLoadMore!();
+        }
+        return false;
+      },
+      child: ListView.separated(
+        shrinkWrap: height == null,
+        physics: height == null ? const AlwaysScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+        itemCount: items.length,
+        separatorBuilder: (_, index) => SizedBox(height: itemSpacing),
+        itemBuilder: (context, index) => itemBuilder(context, items[index], index),
+      ),
+    );
+
+    if (height != null) {
+      return SizedBox(
+        height: height,
+        child: RefreshIndicator(
+          onRefresh: onRefresh,
+          child: listView,
         ),
       );
     }
 
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (onLoadMore != null &&
-              notification is ScrollEndNotification &&
-              notification.metrics.extentAfter < 100) {
-            onLoadMore!();
-          }
-          return false;
-        },
-        child: ListView.separated(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
-          itemCount: items.length,
-          separatorBuilder: (_, index) => SizedBox(height: itemSpacing),
-          itemBuilder: (context, index) => itemBuilder(context, items[index], index),
-        ),
-      ),
+      child: listView,
     );
   }
 }
