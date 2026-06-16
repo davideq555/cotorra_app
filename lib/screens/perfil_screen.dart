@@ -35,6 +35,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final docsProvider = context.watch<UserDocumentsCacheProvider>();
+    final carreras = auth.userCarreras;
 
     return ListView(
       padding: const EdgeInsets.all(20.0),
@@ -50,6 +51,31 @@ class _PerfilScreenState extends State<PerfilScreen> {
           favoritosCount: 0,
           documentosCount: docsProvider.documentos.length,
         ),
+        if (carreras.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          const Text(
+            'Mis Carreras',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...carreras.map((carrera) => Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: const Icon(Icons.school_outlined),
+              title: Text(carrera.nombre),
+              subtitle: carrera.descripcion != null
+                  ? Text(
+                      carrera.descripcion!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : null,
+            ),
+          )),
+        ],
         const SizedBox(height: 24),
         SettingsTile(
           title: 'Configuración de Perfil',

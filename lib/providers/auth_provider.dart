@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:cotorra_app/models/carrera.dart';
 import 'package:cotorra_app/models/usuario.dart';
 import 'package:cotorra_app/models/usuarioCreate.dart';
 import 'package:flutter/foundation.dart';
@@ -16,14 +18,18 @@ class AuthProvider with ChangeNotifier {
   String? get userName => _user?.nombre;
   String? get userEmail => _user?.email;
   String? get userRol => _user?.rol.toString().split('.').last;
+  List<Carrera> get userCarreras => _user?.carreras ?? [];
 
   Future<bool> login(String username, String password) async {
     try {
       final tokenResponse = await _apiService.login(username, password);
       _token = tokenResponse.accessToken;
+      _user = tokenResponse.toUsuario();
       
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', _token!);
+      // Guardar datos del usuario para auto-login
+      await prefs.setString('user_data', jsonEncode(tokenResponse.toJson()));
       
       notifyListeners();
       return true;
@@ -48,6 +54,7 @@ class AuthProvider with ChangeNotifier {
     _user = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+    await prefs.remove('user_data');
     notifyListeners();
   }
 
@@ -56,6 +63,11 @@ class AuthProvider with ChangeNotifier {
     if (!prefs.containsKey('token')) return;
     
     _token = prefs.getString('token');
+    // Restaurar datos del usuario
+    final userDataJson = prefs.getString('user_data');
+    if (userDataJson != null) {
+      _user = Usuario.fromJson(jsonDecode(userDataJson));
+    }
     notifyListeners();
   }
 }
