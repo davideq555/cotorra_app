@@ -70,10 +70,7 @@ class FavoritesCacheProvider with ChangeNotifier {
 
   Future<void> _refresh(String token, int userId) async {
     try {
-      // Obtener documentos del usuario y filtrar favoritos
-      // O usar endpoint dedicado si existe
-      final docs = await _apiService.getDocumentosUsuario(token, userId);
-      _favorites = docs; // Ajustar cuando el backend tenga endpoint de favoritos
+      _favorites = await _apiService.getFavoritos(token);
       _errorMessage = null;
       _fromCache = false;
 

@@ -364,6 +364,24 @@ class ApiService {
 
   // ==================== FAVORITOS ====================
 
+  /// Obtiene todos los documentos favoritos del usuario autenticado
+  Future<List<Documento>> getFavoritos(String token, {int skip = 0, int limit = 100}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/favoritos/?skip=$skip&limit=$limit'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Documento.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load favorites: ${response.body}');
+    }
+  }
+
   /// Alterna el estado de favorito de un documento (agregar/quitar)
   /// Retorna {message, success, is_favorite}
   Future<Map<String, dynamic>> toggleFavorito(String token, int documentoId) async {
