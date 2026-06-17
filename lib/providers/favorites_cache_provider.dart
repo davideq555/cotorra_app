@@ -1,6 +1,7 @@
 import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/services/api_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/cache_utils.dart';
 
 /// Proveedor de caché para favoritos del usuario.
@@ -9,6 +10,7 @@ class FavoritesCacheProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
 
   static const String _cacheKey = 'cache_favorites';
+  static const String _countKey = 'favorites_count';
   static const Duration _ttl = Duration(minutes: 15);
 
   List<Documento> _favorites = [];
@@ -74,12 +76,13 @@ class FavoritesCacheProvider with ChangeNotifier {
       _errorMessage = null;
       _fromCache = false;
 
-      // Guardar en caché
+      // Guardar en caché y persistir count
       await CacheUtils.setList<Documento>(
         key: _cacheKey,
         data: _favorites,
         toJson: (doc) => doc.toJson(),
       );
+      await _persistCount(_favorites.length);
     } catch (e) {
       print('Error refreshing favorites: $e');
       if (_favorites.isEmpty) {
@@ -87,6 +90,11 @@ class FavoritesCacheProvider with ChangeNotifier {
       }
     }
     notifyListeners();
+  }
+
+  Future<void> _persistCount(int count) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_countKey, count);
   }
 
   /// Alterna favorito y actualiza caché localmente.
@@ -131,5 +139,11 @@ class FavoritesCacheProvider with ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Obtiene el count de favoritos persistido (sin hacer request).
+  static Future<int> getPersistedCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_countKey) ?? 0;
   }
 }

@@ -9,8 +9,11 @@ import '../services/api_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
+  static const String _favoritesCountKey = 'favorites_count';
+
   String? _token;
   Usuario? _user;
+  int _favoritesCount = 0;
 
   String? get token => _token;
   bool get isAuthenticated => _token != null;
@@ -19,6 +22,7 @@ class AuthProvider with ChangeNotifier {
   String? get userEmail => _user?.email;
   String? get userRol => _user?.rol.toString().split('.').last;
   List<Carrera> get userCarreras => _user?.carreras ?? [];
+  int get favoritesCount => _favoritesCount;
 
   Future<bool> login(String username, String password) async {
     try {
@@ -68,6 +72,17 @@ class AuthProvider with ChangeNotifier {
     if (userDataJson != null) {
       _user = Usuario.fromJson(jsonDecode(userDataJson));
     }
+    // Cargar count de favoritos persistido
+    _favoritesCount = prefs.getInt(_favoritesCountKey) ?? 0;
+    notifyListeners();
+  }
+
+  /// Actualiza el count de favoritos.
+  void updateFavoritesCount(int count) {
+    _favoritesCount = count;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setInt(_favoritesCountKey, count);
+    });
     notifyListeners();
   }
 }

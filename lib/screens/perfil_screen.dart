@@ -1,4 +1,5 @@
 import 'package:cotorra_app/providers/auth_provider.dart';
+import 'package:cotorra_app/providers/favorites_cache_provider.dart';
 import 'package:cotorra_app/providers/user_documents_cache_provider.dart';
 import 'package:cotorra_app/widgets/common/document_card.dart';
 import 'package:cotorra_app/widgets/common/refreshable_list.dart';
@@ -28,6 +29,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final auth = context.read<AuthProvider>();
     if (auth.isAuthenticated) {
       context.read<UserDocumentsCacheProvider>().load(auth.token!, auth.userId!);
+      context.read<FavoritesCacheProvider>().load(auth.token!, auth.userId!);
+      auth.updateFavoritesCount(
+        (context.read<FavoritesCacheProvider>().favorites.length),
+      );
     }
   }
 
@@ -35,6 +40,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final docsProvider = context.watch<UserDocumentsCacheProvider>();
+    final favProvider = context.watch<FavoritesCacheProvider>();
     final carreras = auth.userCarreras;
 
     return ListView(
@@ -48,7 +54,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ),
         const SizedBox(height: 32),
         StatsRow(
-          favoritosCount: 0,
+          favoritosCount: favProvider.favorites.length,
           documentosCount: docsProvider.documentos.length,
         ),
         if (carreras.isNotEmpty) ...[
