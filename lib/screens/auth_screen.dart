@@ -109,7 +109,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Kotorra',
+                'Cotorra',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
