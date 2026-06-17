@@ -8,13 +8,8 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-  bool _notificationsEnabled = true;
-  bool _darkModeEnabled = false;
-
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF7CB342);
-
     return Scaffold(
       // backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
@@ -160,7 +155,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     required VoidCallback onTap,
   }) {
     const primaryGreen = Color(0xFF7CB342);
-    
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),

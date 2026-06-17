@@ -14,6 +14,13 @@ class AuthProvider with ChangeNotifier {
   String? _token;
   Usuario? _user;
   int _favoritesCount = 0;
+  String? _errorMessage;
+
+  String? get errorMessage => _errorMessage;
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
 
   String? get token => _token;
   bool get isAuthenticated => _token != null;
@@ -29,6 +36,7 @@ class AuthProvider with ChangeNotifier {
       final tokenResponse = await _apiService.login(username, password);
       _token = tokenResponse.accessToken;
       _user = tokenResponse.toUsuario();
+      _errorMessage = null;
       
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', _token!);
@@ -38,7 +46,9 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      print('Login error: $e');
+      _errorMessage = _parseErrorMessage(e);
+      print('Login error: $_errorMessage');
+      notifyListeners();
       return false;
     }
   }
@@ -46,11 +56,46 @@ class AuthProvider with ChangeNotifier {
   Future<bool> register(UsuarioCreate userCreate) async {
     try {
       await _apiService.register(userCreate);
+      // Registro exitoso, ahora hacer login
       return await login(userCreate.email, userCreate.contrasena);
     } catch (e) {
-      print('Register error: $e');
+      _errorMessage = _parseErrorMessage(e);
+      print('Register error: $_errorMessage');
+      notifyListeners();
       return false;
     }
+  }
+
+  /// Extrae el mensaje de error del backend desde una Exception
+  String _parseErrorMessage(dynamic error) {
+    final errorStr = error.toString();
+    // Intentar extraer el JSON del mensaje de error
+    // Formato: "Exception: Failed to login: {\"detail\": \"...\"}"
+    final jsonMatch = RegExp(r'\{.*\}').firstMatch(errorStr);
+    if (jsonMatch != null) {
+      try {
+        final json = jsonDecode(jsonMatch.group(0)!);
+        if (json is Map && json.containsKey('detail')) {
+          final detail = json['detail'].toString();
+          // Traducir mensajes comunes del backend
+          if (detail.toLowerCase().contains('incorrect') || 
+              detail.toLowerCase().contains('invalid')) {
+            return 'Email o contraseña incorrectos';
+          }
+          return detail;
+        }
+        if (json is Map && json.containsKey('message')) {
+          return json['message'].toString();
+        }
+      } catch (_) {
+        // Si no se puede parsear, usar el mensaje original
+      }
+    }
+    // Mensaje por defecto si no se puede extraer
+    if (errorStr.contains('SocketException') || errorStr.contains('Connection')) {
+      return 'No se pudo conectar al servidor. Verificá tu conexión a internet.';
+    }
+    return 'Ocurrió un error. Por favor intentá de nuevo.';
   }
 
   Future<void> logout() async {

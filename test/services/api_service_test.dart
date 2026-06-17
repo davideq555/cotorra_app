@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/token.dart';
-import 'package:cotorra_app/services/api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
@@ -10,7 +9,6 @@ import 'package:mocktail/mocktail.dart';
 class MockHttpClient extends Mock implements http.Client {}
 
 void main() {
-  late ApiService apiService;
   late MockHttpClient mockClient;
 
   setUpAll(() {
@@ -19,8 +17,6 @@ void main() {
 
   setUp(() {
     mockClient = MockHttpClient();
-    apiService = ApiService();
-    // Por ahora usamos el cliente real, luego podemos inyectar mock si se refactoriza
   });
 
   group('ApiService - login', () {
@@ -55,10 +51,6 @@ void main() {
 
   group('ApiService - getMaterias', () {
     test('getMaterias retorna lista de Materia', () async {
-      final materiasJson = jsonEncode([
-        {'id': 1, 'nombre': 'Matemática I', 'descripcion': 'Básica', 'codigo': 'MAT1'},
-        {'id': 2, 'nombre': 'Física', 'descripcion': null, 'codigo': 'FIS1'},
-      ]);
 
       final materia = Materia.fromJson({'id': 1, 'nombre': 'Matemática I'});
       expect(materia.id, 1);
