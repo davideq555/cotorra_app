@@ -1,8 +1,12 @@
+import 'package:cotorra_app/models/carrera.dart';
+import 'package:cotorra_app/models/facultad.dart';
 import 'package:cotorra_app/models/usuarioCreate.dart';
 import 'package:cotorra_app/models/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/common/facultad_dropdown.dart';
+import '../widgets/common/carrera_dropdown.dart';
 
 
 class AuthScreen extends StatefulWidget {
@@ -19,11 +23,27 @@ class _AuthScreenState extends State<AuthScreen> {
   final _nombreController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+  final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   bool _isLoading = false;
+  Facultad? _selectedFacultad;
+  Carrera? _selectedCarrera;
+  final GlobalKey<CarreraDropdownState> _carreraDropdownKey =
+      GlobalKey<CarreraDropdownState>();
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    if (!_isLogin && _selectedCarrera == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor seleccioná tu carrera'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
     
     setState(() => _isLoading = true);
     
@@ -36,14 +56,12 @@ class _AuthScreenState extends State<AuthScreen> {
         _passwordController.text,
       );
     } else {
-      // Basic registration placeholder for demonstration
-      // Using generic career IDs and role
       final userCreate = UsuarioCreate(
         nombre: _nombreController.text.trim(),
         email: _emailController.text.trim(),
         rol: RolEnum.ALUMNO,
         contrasena: _passwordController.text,
-        carreraIds: [1], // placeholder
+        carreraIds: [_selectedCarrera!.id],
       );
       success = await authProvider.register(userCreate);
     }
@@ -51,9 +69,12 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() => _isLoading = false);
 
     if (!success && mounted) {
+      final errorMsg = authProvider.errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isLogin ? 'Error al iniciar sesión' : 'Error al registrarse'),
+          content: Text(
+            errorMsg ?? (_isLogin ? 'Error al iniciar sesión' : 'Error al registrarse'),
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -62,22 +83,19 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF7CB342); // Matching the exact UI green
+    const primaryGreen = Color(0xFF7CB342);
     
     return Scaffold(
-      // backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Logo Kotorra
               Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  // color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -87,13 +105,11 @@ class _AuthScreenState extends State<AuthScreen> {
                     )
                   ],
                 ),
-                child: (
-                  const Image(image: AssetImage('assets/images/logotipo.png'))
-                ),
+                child: const Image(image: AssetImage('assets/images/logotipo.png')),
               ),
               const SizedBox(height: 16),
               const Text(
-                'Kotorra',
+                'Cotorra',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
@@ -112,11 +128,9 @@ class _AuthScreenState extends State<AuthScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 36),
-              // Card con formulario
               Container(
                 padding: const EdgeInsets.all(28.0),
                 decoration: BoxDecoration(
-                  // color: Colors.white,
                   color: Colors.white10,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
@@ -137,7 +151,6 @@ class _AuthScreenState extends State<AuthScreen> {
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          // color: Colors.black87,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -148,7 +161,6 @@ class _AuthScreenState extends State<AuthScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            // color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -156,7 +168,6 @@ class _AuthScreenState extends State<AuthScreen> {
                           controller: _nombreController,
                           decoration: InputDecoration(
                             hintText: 'Tu nombre',
-                            // fillColor: const Color(0xFFF5F5F5),
                             filled: true,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -167,13 +178,53 @@ class _AuthScreenState extends State<AuthScreen> {
                               value!.isEmpty ? 'Por favor ingresa tu nombre' : null,
                         ),
                         const SizedBox(height: 16),
+                        const Text(
+                          'Facultad',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        FacultadDropdown(
+                          value: _selectedFacultad,
+                          onChanged: (facultad) {
+                            setState(() {
+                              _selectedFacultad = facultad;
+                              _selectedCarrera = null;
+                            });
+                            if (facultad != null) {
+                              _carreraDropdownKey.currentState
+                                  ?.resetAndLoad(facultad.id);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Carrera',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        CarreraDropdown(
+                          key: _carreraDropdownKey,
+                          value: _selectedCarrera,
+                          enabled: _selectedFacultad != null,
+                          onChanged: (carrera) {
+                            setState(() {
+                              _selectedCarrera = carrera;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
                       ],
                       const Text(
-                        'Email universitario',
+                        'Email',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          // color: Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -181,7 +232,6 @@ class _AuthScreenState extends State<AuthScreen> {
                         controller: _emailController,
                         decoration: InputDecoration(
                           hintText: 'tu.email@universidad.edu',
-                          // fillColor: const Color(0xFFF5F5F5),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -189,8 +239,19 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) =>
-                            value!.isEmpty ? 'Por favor ingresa tu email' : null,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingresa tu email';
+                          }
+                          final emailRegex = RegExp(
+                            r'^[\w.-]+@[\w.-]+\.\w{2,}$',
+                            caseSensitive: false,
+                          );
+                          if (!emailRegex.hasMatch(value)) {
+                            return 'Ingresá un email válido';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -198,26 +259,97 @@ class _AuthScreenState extends State<AuthScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          // color: Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _passwordController,
                         decoration: InputDecoration(
-                          hintText: 'contraseña',
-                          // fillColor: const Color(0xFFF5F5F5),
+                          hintText: 'Mínimo 8 caracteres, letras y números',
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                         ),
-                        obscureText: true,
-                        validator: (value) =>
-                            value!.isEmpty ? 'Por favor ingresa tu contraseña' : null,
+                        obscureText: _obscurePassword,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingresa tu contraseña';
+                          }
+                          if (value.length < 8) {
+                            return 'La contraseña debe tener al menos 8 caracteres';
+                          }
+                          final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(value);
+                          final hasNumber = RegExp(r'[0-9]').hasMatch(value);
+                          if (!hasLetter || !hasNumber) {
+                            return 'Debe contener letras y números';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
+                      if (!_isLogin) ...[
+                        const Text(
+                          'Confirmar Contraseña',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          decoration: InputDecoration(
+                            hintText: 'Repetí tu contraseña',
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscureConfirmPassword = !_obscureConfirmPassword;
+                                });
+                              },
+                            ),
+                          ),
+                          obscureText: _obscureConfirmPassword,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor confirmá tu contraseña';
+                            }
+                            if (value != _passwordController.text) {
+                              return 'Las contraseñas no coinciden';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      const SizedBox(height: 8),
                       _isLoading
                           ? const Center(child: CircularProgressIndicator(color: primaryGreen))
                           : ElevatedButton(
@@ -265,5 +397,13 @@ class _AuthScreenState extends State<AuthScreen> {
       ),
     );
   }
-}
 
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+}

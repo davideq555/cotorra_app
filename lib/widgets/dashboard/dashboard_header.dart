@@ -49,7 +49,7 @@ class DashboardHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Kotorra',
+                      'Cotorra',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,

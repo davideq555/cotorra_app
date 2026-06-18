@@ -1,3 +1,4 @@
+import 'carrera.dart';
 import 'enums.dart';
 
 class Usuario {
@@ -7,6 +8,7 @@ class Usuario {
   final RolEnum rol;
   final String? fechaCreacion;
   final bool verificado;
+  final List<Carrera> carreras;
 
   Usuario({
     required this.id,
@@ -15,6 +17,7 @@ class Usuario {
     required this.rol,
     this.fechaCreacion,
     this.verificado = false,
+    this.carreras = const [],
   });
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
@@ -28,6 +31,10 @@ class Usuario {
       ),
       fechaCreacion: json['fecha_creacion'],
       verificado: json['verificado'] ?? false,
+      carreras: (json['carreras'] as List<dynamic>?)
+              ?.map((c) => Carrera.fromJson(c))
+              .toList() ??
+          [],
     );
   }
 
@@ -39,6 +46,7 @@ class Usuario {
       'rol': rol.toString().split('.').last,
       'fecha_creacion': fechaCreacion,
       'verificado': verificado,
+      'carreras': carreras.map((c) => c.toJson()).toList(),
     };
   }
 }

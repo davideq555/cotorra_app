@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cotorra_app/config/env.dart';
 import 'package:cotorra_app/services/api_service.dart';
 import 'package:flutter_test/flutter_test.dart';

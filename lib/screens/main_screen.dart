@@ -1,5 +1,5 @@
 import 'package:cotorra_app/screens/dashboard_screen.dart';
-import 'package:cotorra_app/screens/my_favorities.dart';
+import 'package:cotorra_app/screens/my_favorities_screen.dart';
 import 'package:cotorra_app/screens/search_screen.dart';
 import 'package:cotorra_app/screens/perfil_screen.dart';
 

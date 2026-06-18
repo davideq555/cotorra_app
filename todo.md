@@ -1,18 +1,6 @@
 Cambios Propuestos
 1. UI / Pantallas
 
-    AuthScreen (login y registro) – Revisar y posiblemente refactorizar para separar los widgets de login y registro; añadir cualquier campo faltante (ej., rol, selección de carrera) si es necesario.
-
-    DashboardScreen – Implementar la UI principal del panel de control que coincida con la segunda imagen de diseño. Los componentes pueden incluir:
-
-        Cabecera con título de la aplicación y avatar del usuario.
-
-        Cajón de navegación o barra de navegación inferior.
-
-        Tarjetas de resumen (total de documentos, favoritos, contador de cargas).
-
-        Lista/cuadrícula desplazable de tarjetas de documentos.
-
     UploadDocumentScreen – Formulario con:
 
         Entrada de texto para el nombre del documento.
@@ -35,7 +23,6 @@ Cambios Propuestos
 
         Proporcionar acciones para compartir/descargar.
 
-    SearchScreen – Añadir un botón/interruptor para abrir el visor de documentos desde cada elemento de la lista; asegurar un diseño de tarjeta consistente con otras pantallas.
 
 2. Gestión de Estado / Providers
 
@@ -51,21 +38,11 @@ Cambios Propuestos
 
         Cargar un documento (POST /documents).
 
-        Obtener documentos del usuario (GET /users/{id}/documents).
-
         Actualizar perfil de usuario (PUT /users/{id}).
 
         Marcar favoritos (POST /documents/{id}/favorite).
 
     Implementar manejo adecuado de errores, indicadores de carga y lógica de reintento.
-
-4. Assets y Temas
-
-    Colocar los PNG del logo en assets/images/ y referenciarlos en pubspec.yaml.
-
-    Definir un tema premium con el verde primario (#7CB342) y neutros complementarios, usando ThemeData con esquinas redondeadas, sombras sutiles y efectos de vidrio esmerilado (glassmorphism) donde sea apropiado.
-
-    Añadir fuentes personalizadas (ej., Inter) a través de pubspec.yaml y aplicarlas globalmente.
 
 5. Misceláneos
 
