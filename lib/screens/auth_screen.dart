@@ -265,7 +265,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       TextFormField(
                         controller: _passwordController,
                         decoration: InputDecoration(
-                          hintText: 'Mínimo 8 caracteres, letras y números',
+                          hintText: 'Tu contraseña',
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
