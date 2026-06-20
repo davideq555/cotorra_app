@@ -1,4 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:cotorra_app/providers/auth_provider.dart';
+import 'package:cotorra_app/models/materia.dart';
+import 'package:cotorra_app/services/api_service.dart';
+import 'package:cotorra_app/widgets/common/materia_dropdown.dart';
+
+enum UploadType { archivo, enlace }
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
@@ -11,13 +20,55 @@ class _UploadScreenState extends State<UploadScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _tagController = TextEditingController();
-  
-  String? _selectedMateria = 'Matemáticas';
-  final List<String> _materias = ['Matemáticas', 'Sistemas', 'Física', 'Química', 'Programación'];
+  final _autorController = TextEditingController();
+  final _descripcionController = TextEditingController();
+  final _urlController = TextEditingController();
+  final GlobalKey<MateriaDropdownState> _materiaDropdownKey = GlobalKey<MateriaDropdownState>();
+
+  final ApiService _apiService = ApiService();
+
+  UploadType _uploadType = UploadType.archivo;
+  int? _selectedTipoDocumentoId;
+  int? _selectedCarreraId;
+  Materia? _selectedMateria;
+  String? _selectedAnoAcademico;
   final List<String> _tags = [];
-  
   String? _fileName;
+  String? _fileBase64;
   bool _isUploading = false;
+
+  static const List<Map<String, dynamic>> _tiposDocumento = [
+    {"nombre": "APUNTE", "id": 1},
+    {"nombre": "TP", "id": 2},
+    {"nombre": "MANUAL", "id": 3},
+    {"nombre": "TESIS", "id": 4},
+    {"nombre": "EXAMEN", "id": 5},
+    {"nombre": "PRESENTACION", "id": 6},
+    {"nombre": "MODELO", "id": 7},
+    {"nombre": "OTRO", "id": 8},
+  ];
+
+  static const List<String> _anosAcademicos = [
+    '2026', '2025', '2024', '2023', '2022', '2021', '2020'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initCarrera();
+    });
+  }
+
+  void _initCarrera() {
+    final auth = context.read<AuthProvider>();
+    if (auth.userCarreras.isNotEmpty) {
+      setState(() {
+        _selectedCarreraId = auth.userCarreras.first.id;
+      });
+      _materiaDropdownKey.currentState?.resetAndLoad(_selectedCarreraId!);
+    }
+  }
 
   void _addTag() {
     final text = _tagController.text.trim();
@@ -35,32 +86,128 @@ class _UploadScreenState extends State<UploadScreen> {
     });
   }
 
-  void _selectFile() {
-    // Simulating file picking
-    setState(() {
-      _fileName = 'Apuntes_Clase_Oficial.pdf';
-    });
-  }
+  Future<void> _selectFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'docx', 'doc', 'txt'],
+        withData: true,
+      );
 
-  void _submit() {
-    if (!_formKey.currentState!.validate() || _fileName == null) {
-      if (_fileName == null) {
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        setState(() {
+          _fileName = file.name;
+          if (file.bytes != null) {
+            _fileBase64 = base64Encode(file.bytes!);
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Por favor selecciona un archivo PDF o documento'),
+          SnackBar(
+            content: Text('Error al seleccionar archivo: $e'),
             backgroundColor: Colors.redAccent,
           ),
         );
       }
+    }
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_uploadType == UploadType.archivo && _fileBase64 == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor selecciona un archivo'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    if (_uploadType == UploadType.enlace && _urlController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor ingresa una URL'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedMateria == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor selecciona una materia'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
       return;
     }
 
     setState(() => _isUploading = true);
 
-    // Simulating upload progress
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      final auth = context.read<AuthProvider>();
+      final token = auth.token;
+
+      print('=== UPLOAD SUBMIT ===');
+      print('titulo: ${_titleController.text.trim()}');
+      print('tipo: $_selectedTipoDocumentoId');
+      print('carreraId: $_selectedCarreraId');
+      print('materiaId: ${_selectedMateria?.id}');
+      print('anoAcademico: $_selectedAnoAcademico');
+      print('autor: ${_autorController.text.trim()}');
+      print('descripcion: ${_descripcionController.text.trim()}');
+      print('uploadType: $_uploadType');
+      if (_uploadType == UploadType.archivo) {
+        print('fileName: $_fileName');
+        print('fileBase64 length: ${_fileBase64?.length}');
+      } else {
+        print('url: ${_urlController.text.trim()}');
+      }
+      print('======================');
+
+      if (token == null) {
+        throw Exception('No hay sesión activa');
+      }
+
+      if (_uploadType == UploadType.archivo) {
+        await _apiService.uploadDocumento(
+          token,
+          titulo: _titleController.text.trim(),
+          archivoBase64: _fileBase64!,
+          tipo: _selectedTipoDocumentoId!,
+          descripcion: _descripcionController.text.trim().isNotEmpty
+              ? _descripcionController.text.trim()
+              : null,
+          autor: _autorController.text.trim().isNotEmpty
+              ? _autorController.text.trim()
+              : null,
+          materiaId: _selectedMateria?.id,
+          anoAcademico: _selectedAnoAcademico,
+        );
+      } else {
+        await _apiService.createDocumentoLink(
+          token,
+          titulo: _titleController.text.trim(),
+          urlExterna: _urlController.text.trim(),
+          tipo: _selectedTipoDocumentoId!,
+          descripcion: _descripcionController.text.trim().isNotEmpty
+              ? _descripcionController.text.trim()
+              : null,
+          autor: _autorController.text.trim().isNotEmpty
+              ? _autorController.text.trim()
+              : null,
+          materiaId: _selectedMateria?.id,
+          anoAcademico: _selectedAnoAcademico,
+        );
+      }
+
       if (mounted) {
-        setState(() => _isUploading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('¡Documento subido con éxito! Pendiente de aprobación.'),
@@ -69,7 +216,30 @@ class _UploadScreenState extends State<UploadScreen> {
         );
         Navigator.pop(context);
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al subir: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _tagController.dispose();
+    _autorController.dispose();
+    _descripcionController.dispose();
+    _urlController.dispose();
+    super.dispose();
   }
 
   @override
@@ -77,7 +247,6 @@ class _UploadScreenState extends State<UploadScreen> {
     const primaryGreen = Color(0xFF7CB342);
 
     return Scaffold(
-      // backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Compartir Material',
@@ -95,112 +264,207 @@ class _UploadScreenState extends State<UploadScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // File Picker Section
-              GestureDetector(
-                onTap: _selectFile,
-                child: Container(
-                  height: 160,
-                  decoration: BoxDecoration(
-                    // color: const Color(0xFFF1F8E9),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: primaryGreen.withOpacity(0.4),
-                      style: BorderStyle.solid,
-                      width: 2,
+              SegmentedButton<UploadType>(
+                segments: const [
+                  ButtonSegment(
+                    value: UploadType.archivo,
+                    label: Text('Archivo'),
+                    icon: Icon(Icons.attach_file),
+                  ),
+                  ButtonSegment(
+                    value: UploadType.enlace,
+                    label: Text('Enlace'),
+                    icon: Icon(Icons.link),
+                  ),
+                ],
+                selected: {_uploadType},
+                onSelectionChanged: (Set<UploadType> selection) {
+                  setState(() {
+                    _uploadType = selection.first;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+              if (_uploadType == UploadType.archivo) ...[
+                GestureDetector(
+                  onTap: _selectFile,
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: primaryGreen.withOpacity(0.4),
+                        width: 2,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _fileName != null ? Icons.picture_as_pdf : Icons.cloud_upload_outlined,
+                          size: 40,
+                          color: primaryGreen,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _fileName ?? 'Toca para seleccionar archivo',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _fileName != null ? Colors.black87 : Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (_fileName == null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'PDF, DOCX, TXT hasta 20MB',
+                            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _fileName != null ? Icons.picture_as_pdf : Icons.cloud_upload_outlined,
-                        size: 48,
-                        color: primaryGreen,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _fileName ?? 'Toca para seleccionar tu archivo',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: _fileName != null ? Colors.black87 : Colors.grey.shade600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (_fileName == null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'Soporta PDF, DOCX, TXT hasta 20MB',
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                        ),
-                      ],
-                    ],
+                ),
+              ] else ...[
+                TextFormField(
+                  controller: _urlController,
+                  decoration: InputDecoration(
+                    labelText: 'URL externa',
+                    hintText: 'https://...',
+                    prefixIcon: const Icon(Icons.link),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
+                  keyboardType: TextInputType.url,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingresa una URL';
+                    }
+                    if (!Uri.tryParse(value)!.hasAbsolutePath) {
+                      return 'URL inválida';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-              const SizedBox(height: 32),
-              // Document Name Input
-              const Text(
-                'Nombre del documento',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
+              ],
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
+                  labelText: 'Nombre del documento',
                   hintText: 'Ej. Apuntes Análisis Matemático I - Límites',
-                  // fillColor: const Color(0xFFF5F5F5),
-                  filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
                   ),
                 ),
                 validator: (value) =>
-                    value!.isEmpty ? 'Por favor ingresa un nombre para el documento' : null,
+                    value!.isEmpty ? 'Por favor ingresa un nombre' : null,
               ),
-              const SizedBox(height: 24),
-              // Subject Selection (Materia)
-              const Text(
-                'Materia / Categoría',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(
+                value: _selectedTipoDocumentoId,
+                decoration: InputDecoration(
+                  labelText: 'Tipo de documento',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
+                items: _tiposDocumento.map((tipo) {
+                  return DropdownMenuItem<int>(
+                    value: tipo['id'] as int,
+                    child: Text(tipo['nombre'] as String),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() => _selectedTipoDocumentoId = value);
+                },
+                validator: (value) =>
+                    value == null ? 'Selecciona un tipo' : null,
               ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  // color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(
+                value: _selectedCarreraId,
+                decoration: InputDecoration(
+                  labelText: 'Carrera',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedMateria,
-                    isExpanded: true,
-                    icon: const Icon(Icons.keyboard_arrow_down),
-                    items: _materias.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        _selectedMateria = newValue;
-                      });
-                    },
+                isExpanded: true,
+                items: context.watch<AuthProvider>().userCarreras.map((carrera) {
+                  return DropdownMenuItem<int>(
+                    value: carrera.id,
+                    child: Text(carrera.nombre, overflow: TextOverflow.ellipsis),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCarreraId = value;
+                    _selectedMateria = null;
+                  });
+                  if (value != null) {
+                    _materiaDropdownKey.currentState?.resetAndLoad(value);
+                  }
+                },
+                validator: (value) =>
+                    value == null ? 'Selecciona una carrera' : null,
+              ),
+              const SizedBox(height: 16),
+              MateriaDropdown(
+                key: _materiaDropdownKey,
+                value: _selectedMateria,
+                enabled: _selectedCarreraId != null,
+                onChanged: (materia) {
+                  setState(() {
+                    _selectedMateria = materia;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedAnoAcademico,
+                decoration: InputDecoration(
+                  labelText: 'Año académico',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                items: _anosAcademicos.map((ano) {
+                  return DropdownMenuItem<String>(
+                    value: ano,
+                    child: Text(ano),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() => _selectedAnoAcademico = value);
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _autorController,
+                decoration: InputDecoration(
+                  labelText: 'Autor (opcional)',
+                  hintText: 'Nombre del autor del material',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descripcionController,
+                decoration: InputDecoration(
+                  labelText: 'Descripción (opcional)',
+                  hintText: 'Breve descripción del material',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                maxLines: 3,
+              ),
               const SizedBox(height: 24),
-              // Tags Input Section
               const Text(
                 'Añadir tags',
                 style: TextStyle(
@@ -217,11 +481,8 @@ class _UploadScreenState extends State<UploadScreen> {
                       controller: _tagController,
                       decoration: InputDecoration(
                         hintText: 'Ej. derivadas, finales, apuntes',
-                        // fillColor: const Color(0xFFF5F5F5),
-                        filled: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
                         ),
                       ),
                       onSubmitted: (_) => _addTag(),
@@ -242,7 +503,6 @@ class _UploadScreenState extends State<UploadScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              // Tags Visual Chips
               if (_tags.isNotEmpty)
                 Wrap(
                   spacing: 8,
@@ -257,18 +517,15 @@ class _UploadScreenState extends State<UploadScreen> {
                           fontSize: 12,
                         ),
                       ),
-                      // backgroundColor: const Color(0xFFF1F8E9),
                       deleteIcon: const Icon(Icons.close, size: 14, color: primaryGreen),
                       onDeleted: () => _removeTag(tag),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                        side: BorderSide.none,
                       ),
                     );
                   }).toList(),
                 ),
-              const SizedBox(height: 48),
-              // Submit Button
+              const SizedBox(height: 32),
               _isUploading
                   ? const Center(child: CircularProgressIndicator(color: primaryGreen))
                   : ElevatedButton(

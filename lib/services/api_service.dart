@@ -256,8 +256,13 @@ class ApiService {
     );
 
     request.headers['Authorization'] = 'Bearer $token';
+    print('API uploadDocumento token: $token');
     request.fields['titulo'] = titulo;
-    request.fields['archivo'] = archivoBase64;
+    request.files.add(http.MultipartFile.fromBytes(
+      'archivo',
+      base64Decode(archivoBase64),
+      filename: 'documento.pdf',
+    ));
     request.fields['tipo'] = tipo.toString();
     if (descripcion != null) request.fields['descripcion'] = descripcion;
     if (autor != null) request.fields['autor'] = autor;
@@ -266,6 +271,9 @@ class ApiService {
 
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
+
+    print('API uploadDocumento response status: ${response.statusCode}');
+    print('API uploadDocumento response body: ${response.body}');
 
     if (response.statusCode == 201) {
       return Documento.fromJson(jsonDecode(response.body));
@@ -302,6 +310,9 @@ class ApiService {
         if (anoAcademico != null) 'año_academico': anoAcademico,
       }),
     );
+
+    print('API createDocumentoLink response status: ${response.statusCode}');
+    print('API createDocumentoLink response body: ${response.body}');
 
     if (response.statusCode == 201) {
       return Documento.fromJson(jsonDecode(response.body));
