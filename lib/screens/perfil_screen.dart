@@ -72,13 +72,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
             child: ListTile(
               leading: const Icon(Icons.school_outlined),
               title: Text(carrera.nombre),
-              subtitle: carrera.descripcion != null
-                  ? Text(
-                      carrera.descripcion!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  : null,
             ),
           )),
         ],
