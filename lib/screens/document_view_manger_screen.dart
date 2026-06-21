@@ -2,6 +2,7 @@ import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/screens/visualizer/ImageVisualizerScreen.dart';
 import 'package:cotorra_app/screens/visualizer/link_visualizer_screen.dart';
 import 'package:cotorra_app/screens/visualizer/pdfVisualizerScreen.dart';
+import 'package:cotorra_app/services/api_service.dart';
 import 'package:flutter/material.dart';
 
 class DocumentViewScreen extends StatefulWidget {
@@ -14,82 +15,82 @@ class DocumentViewScreen extends StatefulWidget {
 }
 
 class _DocumentViewScreenState extends State<DocumentViewScreen> {
-  // Widget ImageVisualizer() {
-    // const primaryGreen = Color(0xFF7CB342);
-    //
-    // return Container(
-    //   // color: Colors.black,
-    //   child: Column(
-    //     children: [
-    //       Expanded(
-    //         child: Center(
-    //           child: Image.asset(
-    //             'assets/images/placeholder_doc.png',
-    //             fit: BoxFit.contain,
-    //             errorBuilder: (context, error, stackTrace) => Container(
-    //               width: 280,
-    //               height: 380,
-    //               decoration: BoxDecoration(
-    //                 // color: Colors.white,
-    //                 borderRadius: BorderRadius.circular(16),
-    //                 boxShadow: [
-    //                   BoxShadow(color: Colors.white24, blurRadius: 3),
-    //                 ],
-    //               ),
-    //               child: Column(
-    //                 mainAxisAlignment: MainAxisAlignment.center,
-    //                 children: [
-    //                   const Icon(Icons.image, size: 80, color: primaryGreen),
-    //                   const SizedBox(height: 20),
-    //                   Text(
-    //                     widget.documento.titulo,
-    //                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-    //                     textAlign: TextAlign.center,
-    //                   ),
-    //                   const SizedBox(height: 8),
-    //                   const Text(
-    //                     '[ Simulación de Visualización de Imagen ]',
-    //                     style: TextStyle(color: Colors.grey, fontSize: 12),
-    //                   ),
-    //                 ],
-    //               ),
-    //             ),
-    //           ),
-    //         ),
-    //       ),
-    //       Container(
-    //         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-    //         // color: Colors.white,
-    //         child: Row(
-    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //           children: [
-    //             const Text(
-    //               'Tipo: Imagen (PNG/JPG)',
-    //               style: TextStyle(fontWeight: FontWeight.w600),
-    //             ),
-    //             ElevatedButton.icon(
-    //               style: ElevatedButton.styleFrom(backgroundColor: primaryGreen),
-    //               onPressed: () {},
-    //               icon: const Icon(Icons.download, size: 18, color: Colors.white),
-    //               label: const Text('Descargar', style: TextStyle(color: Colors.white)),
-    //             ),
-    //           ],
-    //         ),
-    //       )
-    //     ],
-    //   ),
-    // );
-  // }
+  final ApiService _apiService = ApiService();
+  Documento? _documento;
+  bool _isLoading = true;
+  String? _errorMessage;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadDocumento();
+  }
+
+  Future<void> _loadDocumento() async {
+    print('[DocumentViewScreen] Cargando documento ID: ${widget.documento.id}');
+    try {
+      final doc = await _apiService.getDocumento(widget.documento.id);
+      print('[DocumentViewScreen] Documento cargado: ${doc.titulo}');
+      print('[DocumentViewScreen] Formato: ${doc.formato?.nombre} (id: ${doc.formatoId})');
+      print('[DocumentViewScreen] URL: ${doc.archivoUrl}');
+      if (mounted) {
+        setState(() {
+          _documento = doc;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('[DocumentViewScreen] Error al cargar documento: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Error al cargar el documento: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  static const _unsupportedFormats = ['DOCUMENTO', 'PRESENTACION', 'HOJA_CALCULO', 'ZIP'];
+
+  Widget _buildVisualizer() {
+    final documento = _documento ?? widget.documento;
+    final formatoNombre = documento.formato?.nombre.toUpperCase();
+
+    print('[DocumentViewScreen] _buildVisualizer - formatoNombre: $formatoNombre, titulo: ${documento.titulo}');
+
+    if (formatoNombre == null) {
+      final isImage = documento.titulo.toLowerCase().contains('laboratorio') || documento.titulo.toLowerCase().contains('imagen');
+      final isLink = documento.archivoUrl.startsWith('http');
+      print('[DocumentViewScreen] Formato null, fallback heuristica - isImage: $isImage, isLink: $isLink');
+
+      if (isImage) return ImageVisualizerScreen(documento: documento);
+      if (isLink) return LinkVisualizerScreen(documento: documento);
+      return PdfVisualizerScreen(documento: documento);
+    }
+
+    switch (formatoNombre) {
+      case 'PDF':
+        print('[DocumentViewScreen] Selecionando PdfVisualizerScreen');
+        return PdfVisualizerScreen(documento: documento);
+      case 'IMAGEN':
+        print('[DocumentViewScreen] Selecionando ImageVisualizerScreen');
+        return ImageVisualizerScreen(documento: documento);
+      case 'ENLACE':
+        print('[DocumentViewScreen] Selecionando LinkVisualizerScreen');
+        return LinkVisualizerScreen(documento: documento);
+      default:
+        if (_unsupportedFormats.contains(formatoNombre)) {
+          print('[DocumentViewScreen] Formato no soportado: $formatoNombre');
+          return _UnsupportedFormatView(formato: formatoNombre);
+        }
+        print('[DocumentViewScreen] Formato desconocido, usando PdfVisualizerScreen por defecto');
+        return PdfVisualizerScreen(documento: documento);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Determine visualizer type based on mock rules
-    final isImage = widget.documento.titulo.contains('Laboratorio') || widget.documento.titulo.contains('Imagen');
-    final isLink = widget.documento.titulo.contains('Tesis') || widget.documento.titulo.contains('Final') || widget.documento.archivoUrl.startsWith('http');
-    
     return Scaffold(
-      // backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           widget.documento.titulo,
@@ -102,16 +103,70 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: isImage 
-          ? ImageVisualizerScreen(documento: widget.documento)
-          : isLink 
-              ?  LinkVisualizerScreen()//LinkVisualizer()
-              : PdfVisualizerScreen(documento: widget.documento) //PdfVisualizer(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      Text(_errorMessage!, style: const TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _isLoading = true;
+                            _errorMessage = null;
+                          });
+                          _loadDocumento();
+                        },
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
+                  ),
+                )
+              : _buildVisualizer(),
     );
   }
 }
 
-// Inline constant substitution to bypass missing color definition
-extension ColorsExtension on Colors {
-  static const Color blackDE = Color(0xDE000000);
+class _UnsupportedFormatView extends StatelessWidget {
+  final String formato;
+
+  const _UnsupportedFormatView({required this.formato});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.insert_drive_file, size: 64, color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Formato no soportado',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'El formato $formato no puede ser visualizado en la app.',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import 'formato.dart';
 import 'materia.dart';
 import 'tag.dart';
 import 'tipoDocumento.dart';
@@ -10,6 +11,8 @@ class Documento {
   final String? autor;
   final String? descripcion;
   final int tipo;
+  final int? formatoId;
+  final Formato? formato;
   final int? materiaId;
   final String? anoAcademico;
   final String? fechaSubida;
@@ -32,6 +35,8 @@ class Documento {
     this.autor,
     this.descripcion,
     required this.tipo,
+    this.formatoId,
+    this.formato,
     this.materiaId,
     this.anoAcademico,
     this.fechaSubida,
@@ -55,6 +60,8 @@ class Documento {
       autor: json['autor'],
       descripcion: json['descripcion'],
       tipo: json['tipo'] ?? 0,
+      formatoId: json['formato_id'],
+      formato: json['formato'] != null ? Formato.fromJson(json['formato']) : null,
       materiaId: json['materia_id'],
       anoAcademico: json['año_academico'],
       fechaSubida: json['fecha_subida'],
@@ -79,6 +86,8 @@ class Documento {
       'autor': autor,
       'descripcion': descripcion,
       'tipo': tipo,
+      'formato_id': formatoId,
+      'formato': formato?.toJson(),
       'materia_id': materiaId,
       'año_academico': anoAcademico,
       'fecha_subida': fechaSubida,
