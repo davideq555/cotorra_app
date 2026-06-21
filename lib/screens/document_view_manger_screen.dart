@@ -1,7 +1,7 @@
 import 'package:cotorra_app/models/documento.dart';
-import 'package:cotorra_app/screens/visualizer/ImageVisualizerScreen.dart';
+import 'package:cotorra_app/screens/visualizer/image_visualizer_screen.dart';
 import 'package:cotorra_app/screens/visualizer/link_visualizer_screen.dart';
-import 'package:cotorra_app/screens/visualizer/pdfVisualizerScreen.dart';
+import 'package:cotorra_app/screens/visualizer/pdf_visualizer_screen.dart';
 import 'package:cotorra_app/services/api_service.dart';
 import 'package:flutter/material.dart';
 
