@@ -12,18 +12,68 @@ class DocumentCard extends StatelessWidget {
     this.trailing,
   });
 
+  IconData _getIcon() {
+    final nombre = doc.formato?.nombre.toLowerCase() ?? '';
+    final ext = doc.formato?.extensiones?.toLowerCase() ?? '';
+
+    if (doc.formato?.esEnlace == true) {
+      if (nombre.contains('youtube')) {
+        return Icons.play_circle_fill;
+      } else if (nombre.contains('drive')) {
+        return Icons.cloud;
+      } else {
+        return Icons.link;
+      }
+    } else if (ext.contains('pdf')) {
+      return Icons.picture_as_pdf;
+    } else if (ext.contains('doc') || ext.contains('docx')) {
+      return Icons.article;
+    } else if (ext.contains('xls') || ext.contains('xlsx')) {
+      return Icons.table_chart;
+    } else if (ext.contains('ppt') || ext.contains('pptx')) {
+      return Icons.slideshow;
+    } else if (ext.contains('zip') || ext.contains('rar')) {
+      return Icons.folder_zip;
+    } else if (ext.contains('jpg') || ext.contains('png') || ext.contains('jpeg') || ext.contains('gif')) {
+      return Icons.image;
+    }
+    return Icons.description;
+  }
+
+  String _getTimeAgo() {
+    if (doc.fechaSubida == null || doc.fechaSubida!.isEmpty) {
+      return 'Fecha desconocida';
+    }
+
+    try {
+      final fecha = DateTime.parse(doc.fechaSubida!);
+      final ahora = DateTime.now().toUtc();
+      final diferencia = ahora.difference(fecha);
+
+      if (diferencia.inMinutes < 1) {
+        return 'Hace un momento';
+      } else if (diferencia.inMinutes < 60) {
+        return 'Hace ${diferencia.inMinutes} min';
+      } else if (diferencia.inHours < 24) {
+        return 'Hace ${diferencia.inHours} h';
+      } else if (diferencia.inDays < 30) {
+        return 'Hace ${diferencia.inDays} días';
+      } else if (diferencia.inDays < 365) {
+        final meses = (diferencia.inDays / 30).floor();
+        return 'Hace $meses mes${meses > 1 ? "es" : ""}';
+      } else {
+        final anios = (diferencia.inDays / 365).floor();
+        return 'Hace $anios anio${anios > 1 ? "s" : ""}';
+      }
+    } catch (e) {
+      return 'Fecha desconocida';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final primaryGreen = Theme.of(context).colorScheme.primary;
-    
-    // Logic for icons
-    IconData icon = Icons.description;
-    final titulo = doc.titulo.toLowerCase();
-    if (titulo.contains('física') || titulo.contains('libro') || titulo.contains('análisis')) {
-      icon = Icons.menu_book;
-    } else if (titulo.contains('tesis') || titulo.contains('proyecto') || titulo.contains('final')) {
-      icon = Icons.school;
-    }
+    final icon = _getIcon();
 
     return Card(
       elevation: 0,
@@ -108,17 +158,33 @@ class DocumentCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            doc.tipoDocumento?.nombre ?? '',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber.shade800,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         const Icon(Icons.access_time, size: 12, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text(
-                          'Hace 2 días',
+                          _getTimeAgo(),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey.shade500,
                           ),
                         ),
-                        const SizedBox(width: 14),
-                        const Icon(Icons.thumb_up, size: 12, color: Colors.amber),
+                        const Spacer(),
+                        const Icon(Icons.download, size: 12, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text(
                           '${doc.descargas}',
