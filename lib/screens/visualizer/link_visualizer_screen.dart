@@ -11,7 +11,8 @@ class LinkVisualizerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primaryGreen = Color(0xFF7CB342);
-    final urlType = UrlLauncherUtil.getUrlType(documento.archivoUrl);
+    final url = documento.archivoUrlPublica ?? documento.archivoUrl;
+    final urlType = UrlLauncherUtil.getUrlType(url);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -135,7 +136,7 @@ class LinkVisualizerScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        documento.archivoUrl,
+                        url,
                         style: const TextStyle(
                           color: primaryGreen,
                           fontWeight: FontWeight.w500,
@@ -256,7 +257,8 @@ class LinkVisualizerScreen extends StatelessWidget {
   }
 
   Future<void> _openLink(BuildContext context) async {
-    final success = await UrlLauncherUtil.openUrl(documento.archivoUrl);
+    final url = documento.archivoUrlPublica ?? documento.archivoUrl;
+    final success = await UrlLauncherUtil.openUrl(url);
     if (!success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No se pudo abrir el enlace')),
@@ -265,7 +267,8 @@ class LinkVisualizerScreen extends StatelessWidget {
   }
 
   Future<void> _copyToClipboard(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: documento.archivoUrl));
+    final url = documento.archivoUrlPublica ?? documento.archivoUrl;
+    await Clipboard.setData(ClipboardData(text: url));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

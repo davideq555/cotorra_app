@@ -8,6 +8,7 @@ class Documento {
   final int id;
   final String titulo;
   final String archivoUrl;
+  final String? archivoUrlPublica;
   final String? autor;
   final String? descripcion;
   final int tipo;
@@ -32,6 +33,7 @@ class Documento {
     required this.id,
     required this.titulo,
     required this.archivoUrl,
+    this.archivoUrlPublica,
     this.autor,
     this.descripcion,
     required this.tipo,
@@ -57,6 +59,7 @@ class Documento {
       id: json['id'] ?? 0,
       titulo: json['titulo'] ?? '',
       archivoUrl: json['archivo_url'] ?? '',
+      archivoUrlPublica: json['archivo_url_publica'],
       autor: json['autor'],
       descripcion: json['descripcion'],
       tipo: json['tipo'] ?? 0,
@@ -83,6 +86,7 @@ class Documento {
       'id': id,
       'titulo': titulo,
       'archivo_url': archivoUrl,
+      'archivo_url_publica': archivoUrlPublica,
       'autor': autor,
       'descripcion': descripcion,
       'tipo': tipo,
