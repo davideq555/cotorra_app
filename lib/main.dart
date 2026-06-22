@@ -28,7 +28,8 @@ class CotorraApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()..tryAutoLogin()),
         ChangeNotifierProxyProvider<AuthProvider, SearchProvider>(
           create: (ctx) => SearchProvider(ctx.read<AuthProvider>()),
-          update: (ctx, auth, previous) => SearchProvider(auth),
+          // update: (ctx, auth, previous) => SearchProvider(auth),
+          update: (ctx, auth, previous) => previous ?? SearchProvider(auth),
         ),
         ChangeNotifierProvider(create: (_) => DocumentCacheProvider()),
         ChangeNotifierProvider(create: (_) => UserCacheProvider()),

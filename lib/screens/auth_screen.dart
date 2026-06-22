@@ -253,6 +253,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           return null;
                         },
                       ),
+
                       const SizedBox(height: 16),
                       const Text(
                         'Contraseña',

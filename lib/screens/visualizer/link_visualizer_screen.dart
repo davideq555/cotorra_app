@@ -103,7 +103,7 @@ class LinkVisualizerScreen extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: primaryGreen.withValues(alpha: 0.1),
+                    color: primaryGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
