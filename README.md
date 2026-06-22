@@ -1,10 +1,10 @@
-# Kotorra app
+# Cotorra app
 
-Aplicación móvil oficial de Kotorra desarrollada en Flutter.
+Aplicación móvil oficial de Cotorra desarrollada en Flutter.
 
 ## Descripción
 
-Kotorra es una plataforma colaborativa para estudiantes universitarios que permite compartir, descubrir y organizar recursos académicos como:
+Cotorra es una plataforma colaborativa para estudiantes universitarios que permite compartir, descubrir y organizar recursos académicos como:
 
 * Apuntes
 * Guías de estudio
@@ -13,7 +13,7 @@ Kotorra es una plataforma colaborativa para estudiantes universitarios que permi
 * Tesis
 * Material multimedia
 
-Esta aplicación móvil consume la API desarrollada en FastAPI y busca ofrecer una experiencia rápida, moderna y accesible desde dispositivos Android e iOS.
+Esta aplicación móvil consume la API desarrollada en FastAPI y busca ofrecer una experiencia rápida, moderna y accesible desde dispositivos Android.
 
 ---
 
@@ -23,20 +23,20 @@ Esta aplicación móvil consume la API desarrollada en FastAPI y busca ofrecer u
 
 * Registro de usuarios
 * Inicio de sesión
-* Recuperación de contraseña
+* Recuperación de contraseña (Proximamente)
 * Gestión segura de tokens JWT
 
 ### Gestión académica
 
 * Exploración de documentos
 * Búsqueda avanzada
-* Descarga de archivos
+* Descarga de archivos (Proximamente)
 
 ### Comunidad
 
 * Perfil de usuario
-* Valoraciones
-* Comentarios
+* Valoraciones (Proximamente)
+* Comentarios (Proximamente)
 
 ### Experiencia móvil
 
@@ -88,7 +88,7 @@ flutter pub get
 
 ## Variables de entorno
 
-Crear el archivo:
+Crear el archivo a partir de .env.example:
 
 ```text
 .env
@@ -167,20 +167,16 @@ flutter build apk
 * Registro e inicio de sesión
 * Perfil de usuario
 * Navegación de documentos
-* Descarga de recursos
-* Búsqueda básica
+* Favoritos de recursos
+* Búsqueda avanzada
+* Lectura integrada de PDFs, imagenes
 
 ### Versión 1.0
 
 * Comentarios
 * Valoraciones
-* Favoritos
+* Editar perfil y documentos
 * Historial de actividad
-* Notificaciones push
-
-### Futuro
-
-* Lectura integrada de PDFs
 * Sincronización offline
 
 ---
@@ -189,5 +185,5 @@ flutter build apk
 
 Proyecto desarrollado como parte del trabajo final de la carrera de Programador Universitario.
 
-© Kotorra
+© Cotorra
 
