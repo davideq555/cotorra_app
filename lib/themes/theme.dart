@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class AppTheme {
@@ -10,7 +8,6 @@ class AppTheme {
       secondary: const Color(0xFF81C784),
       brightness: Brightness.light,
       seedColor: Colors.blue,
-      surfaceContainer: Colors.red,
     ),
     useMaterial3: true,
     fontFamily: 'Roboto',

@@ -79,7 +79,7 @@ class _FacultadDropdownState extends State<FacultadDropdown> {
       value: widget.value?.id,
       decoration: InputDecoration(
         filled: true,
-        fillColor: widget.enabled ? Colors.white : Colors.grey.shade200,
+        // fillColor: widget.enabled ? Colors.white : Colors.grey.shade200,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

@@ -1,6 +1,7 @@
 import 'package:cotorra_app/providers/auth_provider.dart';
 import 'package:cotorra_app/providers/favorites_cache_provider.dart';
 import 'package:cotorra_app/providers/user_documents_cache_provider.dart';
+import 'package:cotorra_app/screens/profile/change_password_screen.dart';
 import 'package:cotorra_app/widgets/common/document_card.dart';
 import 'package:cotorra_app/widgets/common/refreshable_list.dart';
 import 'package:cotorra_app/widgets/profile/profile_info.dart';
@@ -50,7 +51,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
           nombre: auth.userName ?? 'Usuario',
           email: auth.userEmail ?? '',
           rol: auth.userRol ?? 'ALUMNO',
-          inicial: (auth.userName ?? 'U')[0].toUpperCase(),
+          inicial: (auth.userName != null && auth.userName!.isNotEmpty) 
+              ? auth.userName![0].toUpperCase() 
+              : 'U',
         ),
         const SizedBox(height: 32),
         StatsRow(
@@ -77,10 +80,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ],
         const SizedBox(height: 24),
         SettingsTile(
-          title: 'Configuración de Perfil',
+          title: 'Cambiar Contraseña',
           icon: Icons.settings_outlined,
           onTap: () {
-            Navigator.pushNamed(context, '/profile-settings');
+            // Navigator.pushNamed(context, '/profile-settings');
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (BuildContext context ) => ChangePasswordScreen())
+            );
           },
         ),
         const SizedBox(height: 32),
