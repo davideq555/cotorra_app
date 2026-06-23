@@ -38,7 +38,7 @@ class UserDocumentsCacheProvider with ChangeNotifier {
       notifyListeners();
 
       // 2. Refrescar en background
-      _refresh(token, userId);
+      await _refresh(token, userId);
       return;
     }
 
@@ -59,6 +59,7 @@ class UserDocumentsCacheProvider with ChangeNotifier {
     try {
       _documentos = await _apiService.getDocumentosUsuario(token, userId);
       _errorMessage = null;
+      _isLoading = false;
 
       await CacheUtils.setList<Documento>(
         key: _cacheKey,
@@ -67,6 +68,7 @@ class UserDocumentsCacheProvider with ChangeNotifier {
       );
     } catch (e) {
       print('Error refreshing user documents: $e');
+      _isLoading = false;
       if (_documentos.isEmpty) {
         _errorMessage = 'Error al cargar los documentos.';
       }
