@@ -65,11 +65,13 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildResultsAndChips(SearchProvider searchProvider, Color primaryColor) {
+  Widget _buildResultsAndChips(
+      SearchProvider searchProvider, Color primaryColor) {
     return Column(
       children: [
         // Active filters chips (when filters are active and results exist)
-        if ((searchProvider.hasActiveFilters || searchProvider.hasCascadeFilters) &&
+        if ((searchProvider.hasActiveFilters ||
+                searchProvider.hasCascadeFilters) &&
             searchProvider.documentos.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 16),

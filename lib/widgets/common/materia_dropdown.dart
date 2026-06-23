@@ -73,9 +73,9 @@ class MateriaDropdownState extends State<MateriaDropdown> {
       value: widget.value?.id,
       decoration: InputDecoration(
         filled: true,
-        fillColor: widget.enabled && _materias.isNotEmpty
-            ? Colors.white
-            : Colors.grey.shade200,
+        // fillColor: widget.enabled && _materias.isNotEmpty
+        //     ? Colors.white
+        //     : Colors.grey.shade200,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

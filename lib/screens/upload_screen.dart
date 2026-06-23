@@ -23,7 +23,8 @@ class _UploadScreenState extends State<UploadScreen> {
   final _autorController = TextEditingController();
   final _descripcionController = TextEditingController();
   final _urlController = TextEditingController();
-  final GlobalKey<MateriaDropdownState> _materiaDropdownKey = GlobalKey<MateriaDropdownState>();
+  final GlobalKey<MateriaDropdownState> _materiaDropdownKey =
+      GlobalKey<MateriaDropdownState>();
 
   final ApiService _apiService = ApiService();
 
@@ -49,7 +50,13 @@ class _UploadScreenState extends State<UploadScreen> {
   ];
 
   static const List<String> _anosAcademicos = [
-    '2026', '2025', '2024', '2023', '2022', '2021', '2020'
+    '2026',
+    '2025',
+    '2024',
+    '2023',
+    '2022',
+    '2021',
+    '2020'
   ];
 
   @override
@@ -210,7 +217,8 @@ class _UploadScreenState extends State<UploadScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('¡Documento subido con éxito! Pendiente de aprobación.'),
+            content:
+                Text('¡Documento subido con éxito! Pendiente de aprobación.'),
             backgroundColor: Color(0xFF7CB342),
           ),
         );
@@ -259,294 +267,306 @@ class _UploadScreenState extends State<UploadScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SegmentedButton<UploadType>(
-                segments: const [
-                  ButtonSegment(
-                    value: UploadType.archivo,
-                    label: Text('Archivo'),
-                    icon: Icon(Icons.attach_file),
-                  ),
-                  ButtonSegment(
-                    value: UploadType.enlace,
-                    label: Text('Enlace'),
-                    icon: Icon(Icons.link),
-                  ),
-                ],
-                selected: {_uploadType},
-                onSelectionChanged: (Set<UploadType> selection) {
-                  setState(() {
-                    _uploadType = selection.first;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-              if (_uploadType == UploadType.archivo) ...[
-                GestureDetector(
-                  onTap: _selectFile,
-                  child: Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: primaryGreen.withOpacity(0.4),
-                        width: 2,
+        child: Center(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SegmentedButton<UploadType>(
+                  segments: const [
+                    ButtonSegment(
+                      value: UploadType.archivo,
+                      label: Text('Archivo'),
+                      icon: Icon(Icons.attach_file),
+                    ),
+                    ButtonSegment(
+                      value: UploadType.enlace,
+                      label: Text('Enlace'),
+                      icon: Icon(Icons.link),
+                    ),
+                  ],
+                  selected: {_uploadType},
+                  onSelectionChanged: (Set<UploadType> selection) {
+                    setState(() {
+                      _uploadType = selection.first;
+                    });
+                  },
+                ),
+                const SizedBox(height: 24),
+                if (_uploadType == UploadType.archivo) ...[
+                  GestureDetector(
+                    onTap: _selectFile,
+                    child: Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: primaryGreen.withOpacity(0.4),
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _fileName != null
+                                ? Icons.picture_as_pdf
+                                : Icons.cloud_upload_outlined,
+                            size: 40,
+                            color: primaryGreen,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _fileName ?? 'Toca para seleccionar archivo',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _fileName != null
+                                  ? Colors.black87
+                                  : Colors.grey.shade600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (_fileName == null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'PDF, DOCX, TXT hasta 20MB',
+                              style: TextStyle(
+                                  fontSize: 11, color: Colors.grey.shade500),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _fileName != null ? Icons.picture_as_pdf : Icons.cloud_upload_outlined,
-                          size: 40,
-                          color: primaryGreen,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _fileName ?? 'Toca para seleccionar archivo',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _fileName != null ? Colors.black87 : Colors.grey.shade600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        if (_fileName == null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'PDF, DOCX, TXT hasta 20MB',
-                            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                          ),
-                        ],
-                      ],
-                    ),
                   ),
-                ),
-              ] else ...[
+                ] else ...[
+                  TextFormField(
+                    controller: _urlController,
+                    decoration: InputDecoration(
+                      labelText: 'URL externa',
+                      hintText: 'https://...',
+                      prefixIcon: const Icon(Icons.link),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    keyboardType: TextInputType.url,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingresa una URL';
+                      }
+                      if (!Uri.tryParse(value)!.hasAbsolutePath) {
+                        return 'URL inválida';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+                const SizedBox(height: 24),
                 TextFormField(
-                  controller: _urlController,
+                  controller: _titleController,
                   decoration: InputDecoration(
-                    labelText: 'URL externa',
-                    hintText: 'https://...',
-                    prefixIcon: const Icon(Icons.link),
+                    labelText: 'Nombre del documento',
+                    hintText: 'Ej. Apuntes Análisis Matemático I - Límites',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  keyboardType: TextInputType.url,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingresa una URL';
-                    }
-                    if (!Uri.tryParse(value)!.hasAbsolutePath) {
-                      return 'URL inválida';
-                    }
-                    return null;
-                  },
+                  validator: (value) =>
+                      value!.isEmpty ? 'Por favor ingresa un nombre' : null,
                 ),
-              ],
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  labelText: 'Nombre del documento',
-                  hintText: 'Ej. Apuntes Análisis Matemático I - Límites',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Por favor ingresa un nombre' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                value: _selectedTipoDocumentoId,
-                decoration: InputDecoration(
-                  labelText: 'Tipo de documento',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items: _tiposDocumento.map((tipo) {
-                  return DropdownMenuItem<int>(
-                    value: tipo['id'] as int,
-                    child: Text(tipo['nombre'] as String),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() => _selectedTipoDocumentoId = value);
-                },
-                validator: (value) =>
-                    value == null ? 'Selecciona un tipo' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                value: _selectedCarreraId,
-                decoration: InputDecoration(
-                  labelText: 'Carrera',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                isExpanded: true,
-                items: context.watch<AuthProvider>().userCarreras.map((carrera) {
-                  return DropdownMenuItem<int>(
-                    value: carrera.id,
-                    child: Text(carrera.nombre, overflow: TextOverflow.ellipsis),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCarreraId = value;
-                    _selectedMateria = null;
-                  });
-                  if (value != null) {
-                    _materiaDropdownKey.currentState?.resetAndLoad(value);
-                  }
-                },
-                validator: (value) =>
-                    value == null ? 'Selecciona una carrera' : null,
-              ),
-              const SizedBox(height: 16),
-              MateriaDropdown(
-                key: _materiaDropdownKey,
-                value: _selectedMateria,
-                enabled: _selectedCarreraId != null,
-                onChanged: (materia) {
-                  setState(() {
-                    _selectedMateria = materia;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedAnoAcademico,
-                decoration: InputDecoration(
-                  labelText: 'Año académico',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items: _anosAcademicos.map((ano) {
-                  return DropdownMenuItem<String>(
-                    value: ano,
-                    child: Text(ano),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() => _selectedAnoAcademico = value);
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _autorController,
-                decoration: InputDecoration(
-                  labelText: 'Autor (opcional)',
-                  hintText: 'Nombre del autor del material',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descripcionController,
-                decoration: InputDecoration(
-                  labelText: 'Descripción (opcional)',
-                  hintText: 'Breve descripción del material',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Añadir tags',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _tagController,
-                      decoration: InputDecoration(
-                        hintText: 'Ej. derivadas, finales, apuntes',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onSubmitted: (_) => _addTag(),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: primaryGreen,
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  value: _selectedTipoDocumentoId,
+                  decoration: InputDecoration(
+                    labelText: 'Tipo de documento',
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.add, color: Colors.white),
-                      onPressed: _addTag,
-                    ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (_tags.isNotEmpty)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _tags.map((tag) {
-                    return Chip(
-                      label: Text(
-                        tag,
-                        style: const TextStyle(
-                          color: primaryGreen,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                      deleteIcon: const Icon(Icons.close, size: 14, color: primaryGreen),
-                      onDeleted: () => _removeTag(tag),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                  items: _tiposDocumento.map((tipo) {
+                    return DropdownMenuItem<int>(
+                      value: tipo['id'] as int,
+                      child: Text(tipo['nombre'] as String),
                     );
                   }).toList(),
+                  onChanged: (value) {
+                    setState(() => _selectedTipoDocumentoId = value);
+                  },
+                  validator: (value) =>
+                      value == null ? 'Selecciona un tipo' : null,
                 ),
-              const SizedBox(height: 32),
-              _isUploading
-                  ? const Center(child: CircularProgressIndicator(color: primaryGreen))
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryGreen,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: _submit,
-                      child: const Text(
-                        'Subir Material',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  value: _selectedCarreraId,
+                  decoration: InputDecoration(
+                    labelText: 'Carrera',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-            ],
+                  ),
+                  isExpanded: true,
+                  items:
+                      context.watch<AuthProvider>().userCarreras.map((carrera) {
+                    return DropdownMenuItem<int>(
+                      value: carrera.id,
+                      child:
+                          Text(carrera.nombre, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCarreraId = value;
+                      _selectedMateria = null;
+                    });
+                    if (value != null) {
+                      _materiaDropdownKey.currentState?.resetAndLoad(value);
+                    }
+                  },
+                  validator: (value) =>
+                      value == null ? 'Selecciona una carrera' : null,
+                ),
+                const SizedBox(height: 16),
+                MateriaDropdown(
+                  key: _materiaDropdownKey,
+                  value: _selectedMateria,
+                  enabled: _selectedCarreraId != null,
+                  onChanged: (materia) {
+                    setState(() {
+                      _selectedMateria = materia;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _selectedAnoAcademico,
+                  decoration: InputDecoration(
+                    labelText: 'Año académico',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  items: _anosAcademicos.map((ano) {
+                    return DropdownMenuItem<String>(
+                      value: ano,
+                      child: Text(ano),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() => _selectedAnoAcademico = value);
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _autorController,
+                  decoration: InputDecoration(
+                    labelText: 'Autor (opcional)',
+                    hintText: 'Nombre del autor del material',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descripcionController,
+                  decoration: InputDecoration(
+                    labelText: 'Descripción (opcional)',
+                    hintText: 'Breve descripción del material',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  maxLines: 3,
+                ),
+                // const SizedBox(height: 24),
+                // const Text(
+                //   'Añadir tags',
+                //   style: TextStyle(
+                //     fontSize: 14,
+                //     fontWeight: FontWeight.w700,
+                //     color: Colors.black87,
+                //   ),
+                // ),
+                // const SizedBox(height: 8),
+                // Row(
+                //   children: [
+
+                // Expanded(
+                //   child: TextField(
+                //     controller: _tagController,
+                //     decoration: InputDecoration(
+                //       hintText: 'Ej. derivadas, finales, apuntes',
+                //       border: OutlineInputBorder(
+                //         borderRadius: BorderRadius.circular(12),
+                //       ),
+                //     ),
+                //     onSubmitted: (_) => _addTag(),
+                //   ),
+                // ),
+                // const SizedBox(width: 12),
+                //     Container(
+                //       height: 52,
+                //       decoration: BoxDecoration(
+                //         color: primaryGreen,
+                //         borderRadius: BorderRadius.circular(12),
+                //       ),
+                //       child: IconButton(
+                //         icon: const Icon(Icons.add, color: Colors.white),
+                //         onPressed: _addTag,
+                //       ),
+                //     ),
+                //   ],
+                // ),
+                // const SizedBox(height: 16),
+                if (_tags.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _tags.map((tag) {
+                      return Chip(
+                        label: Text(
+                          tag,
+                          style: const TextStyle(
+                            color: primaryGreen,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                        deleteIcon: const Icon(Icons.close,
+                            size: 14, color: primaryGreen),
+                        onDeleted: () => _removeTag(tag),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                const SizedBox(height: 32),
+                _isUploading
+                    ? const Center(
+                        child: CircularProgressIndicator(color: primaryGreen))
+                    : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryGreen,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: _submit,
+                        child: const Text(
+                          'Subir Material',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+              ],
+            ),
           ),
         ),
       ),
