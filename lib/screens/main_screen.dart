@@ -76,6 +76,10 @@ class _MainScreenState extends State<MainScreen> {
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: (index) {
+            if (_selectedIndex == 1) {
+              Provider.of<SearchProvider>(context, listen: false).clearCascadeFilters();
+              Provider.of<SearchProvider>(context, listen: false).clearFilters();
+            }
             setState(() {
               _selectedIndex = index;
             });

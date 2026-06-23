@@ -22,10 +22,15 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _performSearch() {
     final provider = Provider.of<SearchProvider>(context, listen: false);
-    // Collapse filters after searching
     if (provider.filtersExpanded) {
       provider.toggleFiltersExpanded();
     }
+    provider.searchDocumentos(_searchController.text.trim());
+  }
+
+  void _performAdvancedSearch(String? _) {
+    final provider = Provider.of<SearchProvider>(context, listen: false);
+    provider.toggleFiltersExpanded();
     provider.searchDocumentos(_searchController.text.trim());
   }
 
@@ -49,7 +54,13 @@ class _SearchScreenState extends State<SearchScreen> {
           // Advanced filters toggle button
           _FiltersToggle(
             isExpanded: searchProvider.filtersExpanded,
-            onToggle: searchProvider.toggleFiltersExpanded,
+            onToggle: () {
+              final provider = Provider.of<SearchProvider>(context, listen: false);
+              if (!provider.filtersExpanded) {
+                provider.initUserFilters();
+              }
+              provider.toggleFiltersExpanded();
+            },
             primaryColor: primaryGreen,
           ),
           const SizedBox(height: 8),
@@ -57,7 +68,7 @@ class _SearchScreenState extends State<SearchScreen> {
           // Content: either filters or results
           Expanded(
             child: searchProvider.filtersExpanded
-                ? const AdvancedFilters()
+                ? AdvancedFilters(onSearch: _performAdvancedSearch)
                 : _buildResultsAndChips(searchProvider, primaryGreen),
           ),
         ],
@@ -235,11 +246,6 @@ class _ActiveFiltersChips extends StatelessWidget {
       spacing: 6,
       runSpacing: 6,
       children: [
-        if (searchProvider.selectedFacultad != null)
-          _FilterChip(
-            label: searchProvider.selectedFacultad!.nombre,
-            color: primaryColor,
-          ),
         if (searchProvider.selectedCarrera != null)
           _FilterChip(
             label: searchProvider.selectedCarrera!.nombre,
