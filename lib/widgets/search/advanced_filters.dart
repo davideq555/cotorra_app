@@ -46,7 +46,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
           ? Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                // color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -57,7 +57,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                     'Filtrar por Carrera',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
+                      // color: Colors.grey.shade700,
                       fontSize: 14,
                     ),
                   ),
@@ -75,10 +75,10 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                           value: searchProvider.selectedFacultad?.id,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: Colors.white,
+                            // fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide: BorderSide(color: Colors.grey.shade300),  ////
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -123,10 +123,10 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                           value: searchProvider.selectedCarrera?.id,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: isCarreraEnabled ? Colors.white : Colors.grey.shade200,
+                            // fillColor: isCarreraEnabled ? Colors.white : Colors.grey.shade200,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              // borderSide: BorderSide(color: Colors.grey.shade300),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -136,7 +136,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                           hint: Text(
                             'Seleccionar Carrera',
                             style: TextStyle(
-                              color: isCarreraEnabled ? Colors.grey.shade600 : Colors.grey.shade400,
+                              // color: isCarreraEnabled ? Colors.grey.shade600 : Colors.grey.shade400,
                             ),
                           ),
                           isExpanded: true,
@@ -186,10 +186,10 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                           value: searchProvider.selectedMateria?.id,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: isMateriaEnabled ? Colors.white : Colors.grey.shade200,
+                            // fillColor: isMateriaEnabled ? Colors.white : Colors.grey.shade200,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              // borderSide: BorderSide(color: Colors.grey.shade300),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -199,7 +199,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                           hint: Text(
                             'Seleccionar Materia',
                             style: TextStyle(
-                              color: isMateriaEnabled ? Colors.grey.shade600 : Colors.grey.shade400,
+                              // color: isMateriaEnabled ? Colors.grey.shade600 : Colors.grey.shade400,
                             ),
                           ),
                           isExpanded: true,
@@ -245,7 +245,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                     'Año Académico',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
+                      // color: Colors.grey.shade700,
                       fontSize: 14,
                     ),
                   ),
@@ -254,10 +254,10 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                     initialValue: searchProvider.selectedYear,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
+                      // fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
+                        // borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -297,8 +297,9 @@ class _AdvancedFiltersState extends State<AdvancedFilters> {
                           icon: const Icon(Icons.clear, size: 16),
                           label: const Text('Limpiar'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.grey.shade700,
-                            side: BorderSide(color: Colors.grey.shade400),
+                            // foregroundColor: Colors.grey.shade700,
+                            // side: BorderSide(color: Colors.grey.shade400),
+                            side: BorderSide(color: Theme.of(context).colorScheme.primary),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
                         ),
