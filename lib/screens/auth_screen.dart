@@ -3,6 +3,7 @@ import 'package:cotorra_app/models/facultad.dart';
 import 'package:cotorra_app/models/usuarioCreate.dart';
 import 'package:cotorra_app/models/enums.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/common/facultad_dropdown.dart';
@@ -265,6 +266,11 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _passwordController,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[a-zA-Z0-9]'),
+                          ),
+                        ],
                         decoration: InputDecoration(
                           hintText: 'Tu contraseña',
                           filled: true,
@@ -315,6 +321,11 @@ class _AuthScreenState extends State<AuthScreen> {
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _confirmPasswordController,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9]'),
+                            ),
+                          ],
                           decoration: InputDecoration(
                             hintText: 'Repetí tu contraseña',
                             filled: true,
