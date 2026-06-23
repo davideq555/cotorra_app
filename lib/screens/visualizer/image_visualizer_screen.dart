@@ -33,7 +33,7 @@ class _ImageVisualizerScreenState extends State<ImageVisualizerScreen> {
   void initState() {
     super.initState();
     _checkCacheAndLoad();
-  }
+  } 
 
   Future<void> _checkCacheAndLoad() async {
     final isCached = await _imageCacheService.isImageCached(widget.documento.id);

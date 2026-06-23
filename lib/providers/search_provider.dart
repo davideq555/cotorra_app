@@ -62,7 +62,7 @@ class SearchProvider with ChangeNotifier {
   bool get facultadesLoading => _facultadesLoading;
   bool get carrerasLoading => _carrerasLoading;
   bool get carreraMateriasLoading => _carreraMateriasLoading;
-  bool get hasCascadeFilters => _selectedFacultad != null || _selectedCarrera != null || _selectedMateria != null;
+  bool get hasCascadeFilters => _selectedCarrera != null || _selectedMateria != null;
 
   void setCategory(String category) {
     _selectedCategory = category;
@@ -159,16 +159,26 @@ class SearchProvider with ChangeNotifier {
     _carreraMateriasLoading = true;
     _selectedMateria = null;
     notifyListeners();
-    
+
     try {
       _carreraMaterias = await _apiService.getMateriasPorCarrera(carreraId);
     } catch (e) {
       print('Error loading materias: $e');
       _carreraMaterias = [];
     }
-    
+
     _carreraMateriasLoading = false;
     notifyListeners();
+  }
+
+  /// Initializes filters with user's first carrera
+  Future<void> initUserFilters() async {
+    if (_selectedCarrera != null) return;
+    if (authProvider.userCarreras.isEmpty) return;
+
+    _selectedCarrera = authProvider.userCarreras.first;
+    notifyListeners();
+    await loadMateriasPorCarrera(_selectedCarrera!.id);
   }
 
   /// Sets selected facultad and resets downstream selections
@@ -201,10 +211,8 @@ class SearchProvider with ChangeNotifier {
 
   /// Clears all cascade filters
   void clearCascadeFilters() {
-    _selectedFacultad = null;
     _selectedCarrera = null;
     _selectedMateria = null;
-    _carreras = [];
     _carreraMaterias = [];
     notifyListeners();
   }

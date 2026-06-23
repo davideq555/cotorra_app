@@ -103,11 +103,11 @@ class CarreraDropdownState extends State<CarreraDropdown> {
       ),
       hint: Text(
         hintText,
-        style: TextStyle(
-          color: widget.enabled && _carreras.isNotEmpty
-              ? Colors.grey.shade600
-              : Colors.grey.shade400,
-        ),
+        // style: TextStyle(
+        //   color: widget.enabled && _carreras.isNotEmpty
+        //       ? Colors.grey.shade600
+        //       : Colors.grey.shade400,
+        // ),
       ),
       isExpanded: true,
       items: _carreras.map((carrera) {

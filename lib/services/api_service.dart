@@ -38,7 +38,7 @@ class ApiService {
   /// Envía datos del nuevo usuario y retorna el Usuario creado
   Future<Usuario> register(UsuarioCreate usuarioCreate) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/usuarios/registro/'),
+      Uri.parse('$baseUrl/usuarios/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(usuarioCreate.toJson()),
     );
