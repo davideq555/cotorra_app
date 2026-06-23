@@ -1,5 +1,4 @@
 import 'package:cotorra_app/providers/search_provider.dart';
-import 'package:cotorra_app/services/mockData.dart';
 import 'package:cotorra_app/widgets/common/document_card.dart';
 import 'package:cotorra_app/widgets/search/advanced_filters.dart';
 import 'package:flutter/material.dart';
@@ -93,26 +92,37 @@ class _SearchScreenState extends State<SearchScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final displayDocs = searchProvider.documentos.isNotEmpty
-        ? searchProvider.documentos
-        : mockDocuments();
+    final displayDocs = searchProvider.documentos;
 
     if (displayDocs.isEmpty) {
+      final hasSearched = _searchController.text.isNotEmpty ||
+          searchProvider.hasActiveFilters ||
+          searchProvider.hasCascadeFilters;
+
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, size: 64, color: Colors.grey.shade400),
+            Icon(
+              hasSearched ? Icons.search_off : Icons.search,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
             const SizedBox(height: 16),
             Text(
-              'No se encontraron documentos',
+              hasSearched
+                  ? 'Ups, no hay documentos que coincidan con tu búsqueda'
+                  : 'No se encontraron documentos',
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Intenta con otros términos o filtros',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-            ),
+            if (hasSearched) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Intenta con otros términos o filtros',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              ),
+            ],
           ],
         ),
       );
