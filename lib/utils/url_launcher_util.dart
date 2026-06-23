@@ -40,30 +40,42 @@ class UrlLauncherUtil {
     return UrlType.other;
   }
 
+  static String normalizeGoogleDriveUrl(String url) {
+    final fileIdMatch = RegExp(r'/file/d/([a-zA-Z0-9_-]+)').firstMatch(url);
+    if (fileIdMatch != null) {
+      return 'https://drive.google.com/file/d/${fileIdMatch.group(1)}/preview';
+    }
+
+    final openIdMatch = RegExp(r'[?&]id=([a-zA-Z0-9_-]+)').firstMatch(url);
+    if (openIdMatch != null) {
+      return 'https://drive.google.com/file/d/${openIdMatch.group(1)}/preview';
+    }
+
+    final ucMatch = RegExp(r'/uc\?.*id=([a-zA-Z0-9_-]+)').firstMatch(url);
+    if (ucMatch != null) {
+      return 'https://drive.google.com/file/d/${ucMatch.group(1)}/preview';
+    }
+
+    return url;
+  }
+
   static Future<bool> openUrl(String urlString) async {
-    String normalizedUrl = urlString;
+    String urlToOpen = urlString;
 
     if (isYouTube(urlString)) {
-      normalizedUrl = normalizeYouTubeUrl(urlString);
+      urlToOpen = normalizeYouTubeUrl(urlString);
+    } else if (isGoogleDrive(urlString)) {
+      urlToOpen = normalizeGoogleDriveUrl(urlString);
     }
 
-    final url = Uri.parse(normalizedUrl);
+    final uri = Uri.parse(urlToOpen);
 
-    if (await canLaunchUrl(url)) {
-      return await launchUrl(url, mode: LaunchMode.externalApplication);
+    try {
+      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      print('Error opening URL: $e');
+      return false;
     }
-
-    if (isYouTube(urlString)) {
-      final videoId = extractYouTubeId(urlString);
-      if (videoId != null) {
-        final youtubeAppUrl = Uri.parse('vnd.youtube:$videoId');
-        if (await canLaunchUrl(youtubeAppUrl)) {
-          return await launchUrl(youtubeAppUrl);
-        }
-      }
-    }
-
-    return false;
   }
 }
 
