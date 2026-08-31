@@ -1,14 +1,17 @@
 import 'dart:convert';
+import 'package:cotorra_app/models/auth_models.dart';
 import 'package:cotorra_app/models/carrera.dart';
 import 'package:cotorra_app/models/usuario.dart';
 import 'package:cotorra_app/models/usuarioCreate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/api_service.dart';
+import '../services/api_client.dart';
+import '../services/api/auth_service.dart';
 
 
 class AuthProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiClient _client = ApiClient();
+  late final AuthService _authService = AuthService(_client);
   static const String _favoritesCountKey = 'favorites_count';
 
   String? _token;
@@ -33,21 +36,26 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> login(String username, String password) async {
     try {
-      final tokenResponse = await _apiService.login(username, password);
+      final tokenResponse = await _authService.loginForm(
+        username: username,
+        password: password,
+      );
       _token = tokenResponse.accessToken;
+      _client.setToken(_token!);
       _user = tokenResponse.toUsuario();
       _errorMessage = null;
       
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', _token!);
-      // Guardar datos del usuario para auto-login
-      await prefs.setString('user_data', jsonEncode(tokenResponse.toJson()));
+      await prefs.setString('refresh_token', tokenResponse.refreshToken);
+      // Guardamos la forma canónica (Usuario.toJson) para que
+      // tryAutoLogin() -> Usuario.fromJson() round-trée sin divergencias.
+      await prefs.setString('user_data', jsonEncode(_user!.toJson()));
       
       notifyListeners();
       return true;
     } catch (e) {
       _errorMessage = _parseErrorMessage(e);
-      print('Login error: $_errorMessage');
       notifyListeners();
       return false;
     }
@@ -55,12 +63,17 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> register(UsuarioCreate userCreate) async {
     try {
-      await _apiService.register(userCreate);
-      // Registro exitoso, ahora hacer login
+      await _authService.register(
+        RegisterRequest(
+          nombre: userCreate.nombre,
+          email: userCreate.email,
+          contrasena: userCreate.contrasena,
+          carreraIds: userCreate.carreraIds,
+        ),
+      );
       return await login(userCreate.email, userCreate.contrasena);
     } catch (e) {
       _errorMessage = _parseErrorMessage(e);
-      print('Register error: $_errorMessage');
       notifyListeners();
       return false;
     }
@@ -99,10 +112,15 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
+    try {
+      await _authService.logout();
+    } catch (_) {}
     _token = null;
     _user = null;
+    _client.clearToken();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+    await prefs.remove('refresh_token');
     await prefs.remove('user_data');
     notifyListeners();
   }
@@ -112,6 +130,7 @@ class AuthProvider with ChangeNotifier {
     if (!prefs.containsKey('token')) return;
     
     _token = prefs.getString('token');
+    if (_token != null) _client.setToken(_token!);
     // user_data se guarda en cada login
     final userDataJson = prefs.getString('user_data');
     if (userDataJson != null) {

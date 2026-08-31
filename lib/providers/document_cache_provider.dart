@@ -1,12 +1,14 @@
 import 'package:cotorra_app/models/documento.dart';
-import 'package:cotorra_app/services/api_service.dart';
+import 'package:cotorra_app/services/api_client.dart';
+import 'package:cotorra_app/services/api/documents_service.dart';
 import 'package:flutter/foundation.dart';
 import '../utils/cache_utils.dart';
 
 /// Proveedor de caché para los mejores documentos.
 /// TTL: 5 minutos — datos relativamente estáticos.
 class DocumentCacheProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiClient _client = ApiClient();
+  late final DocumentsService _docsService = DocumentsService(_client);
 
   static const String _cacheKey = 'cache_mejores_documentos';
   static const Duration _ttl = Duration(minutes: 5);
@@ -76,7 +78,7 @@ class DocumentCacheProvider with ChangeNotifier {
 
   Future<void> _refresh() async {
     try {
-      final docs = await _apiService.getMejoresDocumentos();
+      final docs = await _docsService.getMejoresDocumentos();
       _documentos = docs;
       _errorMessage = null;
       _fromCache = false;
