@@ -24,6 +24,9 @@ class _ImageVisualizerScreenState extends State<ImageVisualizerScreen> {
   bool _isLoading = true;
   bool _isImageLoading = true;
   bool _isProcessingFavorite = false;
+  // Reserva de estado offline (cache/download/delete); pendiente de
+  // consumo por el indicador offline en la barra superior.
+  // ignore: unused_field
   bool _isCached = false;
   bool _isFavorite = false;
   String? _localPath;

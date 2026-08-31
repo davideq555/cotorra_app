@@ -77,6 +77,9 @@ class _UploadScreenState extends State<UploadScreen> {
     }
   }
 
+  // Usado por la UI de tags (bloque comentado temporalmente ~línea 500);
+  // _tags y _removeTag siguen activos para los chips existentes.
+  // ignore: unused_element
   void _addTag() {
     final text = _tagController.text.trim();
     if (text.isNotEmpty && !_tags.contains(text)) {

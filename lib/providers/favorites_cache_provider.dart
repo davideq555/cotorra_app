@@ -1,5 +1,6 @@
 import 'package:cotorra_app/models/documento.dart';
-import 'package:cotorra_app/services/api_service.dart';
+import 'package:cotorra_app/services/api_client.dart';
+import 'package:cotorra_app/services/api/favorites_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/cache_utils.dart';
@@ -7,7 +8,8 @@ import '../utils/cache_utils.dart';
 /// Proveedor de caché para favoritos del usuario.
 /// TTL: 15 minutos — favoritos cambian solo con acción del usuario.
 class FavoritesCacheProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiClient _client = ApiClient();
+  late final FavoritesService _favService = FavoritesService(_client);
 
   static const String _cacheKey = 'cache_favorites';
   static const String _countKey = 'favorites_count';
@@ -30,6 +32,7 @@ class FavoritesCacheProvider with ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     _fromCache = false;
+    _client.setToken(token);
     notifyListeners();
 
     // 1. Intentar mostrar caché primero
@@ -72,7 +75,7 @@ class FavoritesCacheProvider with ChangeNotifier {
 
   Future<void> _refresh(String token, int userId) async {
     try {
-      _favorites = await _apiService.getFavoritos(token);
+      _favorites = await _favService.getFavoritos();
       _errorMessage = null;
       _fromCache = false;
 
@@ -100,7 +103,8 @@ class FavoritesCacheProvider with ChangeNotifier {
   /// Alterna favorito y actualiza caché localmente.
   Future<void> toggleFavorite(String token, int documentoId) async {
     try {
-      final result = await _apiService.toggleFavorito(token, documentoId);
+      _client.setToken(token);
+      final result = await _favService.toggleFavorito(documentoId);
       final isFavorite = result['is_favorite'] as bool;
 
       if (isFavorite) {

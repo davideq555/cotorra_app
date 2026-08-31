@@ -1,1 +1,1 @@
-enum RolEnum { ALUMNO, DOCENTE, ADMIN }
+enum RolEnum { ALUMNO, DOCENTE, COLABORADOR, ADMIN }

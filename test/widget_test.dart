@@ -23,6 +23,6 @@ void main() {
     );
 
     // Verify that the login screen title or branding exists
-    expect(find.text('BiblioCotorra'), findsOneWidget);
+    expect(find.text('Cotorra'), findsOneWidget);
   });
 }

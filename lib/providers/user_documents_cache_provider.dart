@@ -1,12 +1,14 @@
 import 'package:cotorra_app/models/documento.dart';
-import 'package:cotorra_app/services/api_service.dart';
+import 'package:cotorra_app/services/api_client.dart';
+import 'package:cotorra_app/services/api/documents_service.dart';
 import 'package:flutter/foundation.dart';
 import '../utils/cache_utils.dart';
 
 /// Proveedor de caché para los documentos subidos por el usuario.
 /// TTL: 15 minutos — datos del perfil cambian solo con acción del usuario.
 class UserDocumentsCacheProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiClient _client = ApiClient();
+  late final DocumentsService _docsService = DocumentsService(_client);
 
   static const String _cacheKey = 'cache_user_documents';
   static const Duration _ttl = Duration(minutes: 15);
@@ -57,7 +59,8 @@ class UserDocumentsCacheProvider with ChangeNotifier {
 
   Future<void> _refresh(String token, int userId) async {
     try {
-      _documentos = await _apiService.getDocumentosUsuario(token, userId);
+      _client.setToken(token);
+      _documentos = await _docsService.getDocumentosUsuario(userId);
       _errorMessage = null;
       _isLoading = false;
 

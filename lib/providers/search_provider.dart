@@ -3,11 +3,15 @@ import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/models/facultad.dart';
 import 'package:cotorra_app/models/materia.dart';
 import 'package:flutter/foundation.dart';
-import '../services/api_service.dart';
+import '../services/api_client.dart';
+import '../services/api/documents_service.dart';
+import '../services/api/catalogs_service.dart';
 import 'auth_provider.dart';
 
 class SearchProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiClient _client = ApiClient();
+  late final DocumentsService _docsService = DocumentsService(_client);
+  late final CatalogsService _catalogs = CatalogsService(_client);
   final AuthProvider authProvider;
   
   List<Documento> _documentos = [];
@@ -107,7 +111,7 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
     
     try {
-      _materias = await _apiService.getMaterias();
+      _materias = await _catalogs.getMaterias();
     } catch (e) {
       print('Error loading materias: $e');
       _materias = [];
@@ -125,7 +129,7 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
     
     try {
-      _facultades = await _apiService.getFacultades();
+      _facultades = await _catalogs.getFacultades();
     } catch (e) {
       print('Error loading facultades: $e');
       _facultades = [];
@@ -144,7 +148,7 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
     
     try {
-      _carreras = await _apiService.getCarrerasPorFacultad(facultadId);
+      _carreras = await _catalogs.getCarrerasByFacultadId(facultadId);
     } catch (e) {
       print('Error loading carreras: $e');
       _carreras = [];
@@ -161,7 +165,7 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _carreraMaterias = await _apiService.getMateriasPorCarrera(carreraId);
+      _carreraMaterias = await _catalogs.getMateriasByCarreraId(carreraId);
     } catch (e) {
       print('Error loading materias: $e');
       _carreraMaterias = [];
@@ -227,7 +231,7 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _documentos = await _apiService.getMejoresDocumentos();
+      _documentos = await _docsService.getMejoresDocumentos();
       _mejoresDocumentosLoaded = true;
     } catch (e) {
       print('Error loading best documents: $e');
@@ -263,8 +267,10 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _documentos = await _apiService.getDocumentos(
-        authProvider.token!,
+      if (authProvider.token != null) {
+        _client.setToken(authProvider.token!);
+      }
+      _documentos = await _docsService.getDocumentos(
         query: _searchQuery.isNotEmpty ? _searchQuery : null,
         materiaId: _selectedMateria?.id,
         anoAcademico: _selectedYear,
