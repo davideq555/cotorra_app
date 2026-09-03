@@ -19,6 +19,24 @@ class AuthProvider with ChangeNotifier {
   int _favoritesCount = 0;
   String? _errorMessage;
 
+  AuthProvider() {
+    // Pieza 1: refresh-on-401 — ApiClient llama esto cuando recibe 401.
+    _client.tokenRefresher = _refreshAccessToken;
+    // Cuando el refresh falla, forzamos logout + redirect a login.
+    _client.onSessionExpired = _handleSessionExpired;
+  }
+
+  /// Callback para ApiClient: refresca el access_token usando el refresh_token.
+  Future<String> _refreshAccessToken(String refreshToken) async {
+    final result = await _authService.refreshToken(refreshToken);
+    return result.accessToken;
+  }
+
+  /// Callback para ApiClient: sesión realmente expirada → logout.
+  void _handleSessionExpired() {
+    logout(); // async fire-and-forget; limpia estado y notifica
+  }
+
   String? get errorMessage => _errorMessage;
   void clearError() {
     _errorMessage = null;
@@ -115,28 +133,55 @@ class AuthProvider with ChangeNotifier {
     try {
       await _authService.logout();
     } catch (_) {}
-    _token = null;
-    _user = null;
-    _client.clearToken();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('refresh_token');
-    await prefs.remove('user_data');
+    await _clearSession(prefs);
     notifyListeners();
   }
 
+  /// Limpia token, usuario y prefs sin notificar (usado por logout y tryAutoLogin).
+  Future<void> _clearSession(SharedPreferences prefs) async {
+    _token = null;
+    _user = null;
+    _client.clearToken();
+    await prefs.remove('token');
+    await prefs.remove('refresh_token');
+    await prefs.remove('user_data');
+  }
+
+  /// Restaura la sesión al reiniciar la app.
+  /// Pieza 3: valida expiración del JWT. Si está vencido, intenta refresh.
+  /// Si el refresh también falla, limpia la sesión (el usuario debe reloguear).
   Future<void> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey('token')) return;
-    
+
     _token = prefs.getString('token');
-    if (_token != null) _client.setToken(_token!);
-    // user_data se guarda en cada login
+    if (_token == null) return;
+
+    // Si el JWT está vencido, intentar refresh ANTES de restaurar la sesión.
+    if (ApiClient.isTokenExpired(_token!)) {
+      final refreshToken = prefs.getString('refresh_token');
+      if (refreshToken == null || refreshToken.isEmpty) {
+        await _clearSession(prefs);
+        return;
+      }
+      try {
+        final result = await _authService.refreshToken(refreshToken);
+        _token = result.accessToken;
+        await prefs.setString('token', _token!);
+        // El refresh_token existente sigue válido (el backend no rota).
+      } catch (_) {
+        // Refresh falló → sesión muerta, limpiar todo.
+        await _clearSession(prefs);
+        return;
+      }
+    }
+
+    _client.setToken(_token!);
     final userDataJson = prefs.getString('user_data');
     if (userDataJson != null) {
       _user = Usuario.fromJson(jsonDecode(userDataJson));
     }
-    // Cargar count de favoritos persistido
     _favoritesCount = prefs.getInt(_favoritesCountKey) ?? 0;
     notifyListeners();
   }

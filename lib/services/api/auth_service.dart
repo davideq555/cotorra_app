@@ -113,6 +113,7 @@ class AuthService {
       '/auth/refresh',
       body: RefreshTokenRequest(refreshToken: refreshToken).toJson(),
       requireAuth: false,
+      skipRefresh: true, // évitamos loop: refresh no puede trigger refresh
     );
     return RefreshTokenResponse.fromJson(_client.decodeResponse(response));
   }
@@ -134,7 +135,7 @@ class AuthService {
   // ─── 11. Logout ──────────────────────────────────────────────────
   /// POST /auth/logout — Cierra sesión en este dispositivo.
   Future<void> logout() async {
-    await _client.post('/auth/logout');
+    await _client.post('/auth/logout', skipRefresh: true);
   }
 
   // ─── 12. Logout All ──────────────────────────────────────────────

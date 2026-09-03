@@ -1,14 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cotorra_app/config/env.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Cliente HTTP base para toda la app.
-/// Centraliza: baseUrl, headers Authorization, parsing de errores, y multipart.
+/// Centraliza: baseUrl, headers Authorization, parsing de errores, multipart,
+/// y refresh-on-401 transparente (single-flight retry).
 ///
 /// Uso:
 /// ```dart
 /// final client = ApiClient();
 /// client.setToken('mi-jwt');
+/// client.tokenRefresher = (refreshToken) async => ...; // inyectado por AuthProvider
+/// client.onSessionExpired = () { /* redirect a login */ };
 /// final response = await client.get('/auth/me');
 /// ```
 class ApiClient {
@@ -17,9 +21,17 @@ class ApiClient {
   final String? _baseUrlOverride;
   String? _token;
 
+  /// Función async para refrescar el access_token usando el refresh_token.
+  /// Inyectada por AuthProvider tras login.
+  Future<String> Function(String refreshToken)? tokenRefresher;
+
+  /// Callback llamado cuando el refresh falla (sesión realmente expirada).
+  void Function()? onSessionExpired;
+
+  bool _refreshInProgress = false;
+
   /// Base URL usada por este cliente (incluye /api/v1).
-  /// Resuelta perezosamente para no depender de que dotenv esté cargado
-  /// en el momento de la construcción (mismos tiempos que el viejo ApiService).
+  /// Resuelta perezosamente para no depender de dotenv en construcción.
   String get baseUrl => _baseUrlOverride ?? Env.baseUrl;
 
   // ─── Token management ──────────────────────────────────────────────
@@ -40,6 +52,49 @@ class ApiClient {
         if (includeAuth && _token != null) 'Authorization': 'Bearer $_token',
       };
 
+  // ─── Token refresh on 401 ─────────────────────────────────────────
+
+  /// Intenta refrescar el access_token usando el refresh_token almacenado.
+  /// Retorna el nuevo access_token si tuvo éxito, null si falló.
+  Future<String?> _tryRefreshToken() async {
+    if (_refreshInProgress || tokenRefresher == null) return null;
+    _refreshInProgress = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final refreshToken = prefs.getString('refresh_token');
+      if (refreshToken == null || refreshToken.isEmpty) return null;
+
+      final newAccessToken = await tokenRefresher!(refreshToken);
+      _token = newAccessToken;
+      await prefs.setString('token', newAccessToken);
+      return newAccessToken;
+    } catch (_) {
+      return null;
+    } finally {
+      _refreshInProgress = false;
+    }
+  }
+
+  /// Ejecuta una petición HTTP. Si devuelve 401, intenta un refresh
+  /// y reintenta UNA sola vez. Si el refresh falla, llama onSessionExpired.
+  /// Usar [skip] en endpoints que no deben disparar refresh
+  /// (login, refresh, logout).
+  Future<http.Response> _retryOn401(
+    Future<http.Response> Function() doRequest, {
+    bool skip = false,
+  }) async {
+    var response = await doRequest();
+    if (response.statusCode == 401 && !skip && _token != null) {
+      final newToken = await _tryRefreshToken();
+      if (newToken != null) {
+        response = await doRequest(); // reintento único con token nuevo
+      } else {
+        onSessionExpired?.call();
+      }
+    }
+    return response;
+  }
+
   // ─── HTTP methods ─────────────────────────────────────────────────
 
   /// GET request. Returns the raw [http.Response].
@@ -47,11 +102,17 @@ class ApiClient {
     String path, {
     Map<String, String>? queryParams,
     bool requireAuth = true,
+    bool skipRefresh = false,
   }) async {
-    final uri = Uri.parse('$baseUrl$path').replace(
-      queryParameters: queryParams,
+    return _retryOn401(
+      () {
+        final uri = Uri.parse('$baseUrl$path').replace(
+          queryParameters: queryParams,
+        );
+        return http.get(uri, headers: _jsonHeaders(includeAuth: requireAuth));
+      },
+      skip: skipRefresh,
     );
-    return http.get(uri, headers: _jsonHeaders(includeAuth: requireAuth));
   }
 
   /// POST request with JSON body.
@@ -59,11 +120,17 @@ class ApiClient {
     String path, {
     Object? body,
     bool requireAuth = true,
+    bool skipRefresh = false,
   }) async {
-    return http.post(
-      Uri.parse('$baseUrl$path'),
-      headers: _jsonHeaders(includeAuth: requireAuth),
-      body: body != null ? jsonEncode(body) : null,
+    return _retryOn401(
+      () {
+        return http.post(
+          Uri.parse('$baseUrl$path'),
+          headers: _jsonHeaders(includeAuth: requireAuth),
+          body: body != null ? jsonEncode(body) : null,
+        );
+      },
+      skip: skipRefresh,
     );
   }
 
@@ -72,11 +139,17 @@ class ApiClient {
     String path, {
     Object? body,
     bool requireAuth = true,
+    bool skipRefresh = false,
   }) async {
-    return http.put(
-      Uri.parse('$baseUrl$path'),
-      headers: _jsonHeaders(includeAuth: requireAuth),
-      body: body != null ? jsonEncode(body) : null,
+    return _retryOn401(
+      () {
+        return http.put(
+          Uri.parse('$baseUrl$path'),
+          headers: _jsonHeaders(includeAuth: requireAuth),
+          body: body != null ? jsonEncode(body) : null,
+        );
+      },
+      skip: skipRefresh,
     );
   }
 
@@ -84,10 +157,16 @@ class ApiClient {
   Future<http.Response> delete(
     String path, {
     bool requireAuth = true,
+    bool skipRefresh = false,
   }) async {
-    return http.delete(
-      Uri.parse('$baseUrl$path'),
-      headers: _jsonHeaders(includeAuth: requireAuth),
+    return _retryOn401(
+      () {
+        return http.delete(
+          Uri.parse('$baseUrl$path'),
+          headers: _jsonHeaders(includeAuth: requireAuth),
+        );
+      },
+      skip: skipRefresh,
     );
   }
 
@@ -96,14 +175,20 @@ class ApiClient {
     String path, {
     required Map<String, String> body,
     bool requireAuth = true,
+    bool skipRefresh = false,
   }) async {
-    return http.post(
-      Uri.parse('$baseUrl$path'),
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        if (requireAuth && _token != null) 'Authorization': 'Bearer $_token',
+    return _retryOn401(
+      () {
+        return http.post(
+          Uri.parse('$baseUrl$path'),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            if (requireAuth && _token != null) 'Authorization': 'Bearer $_token',
+          },
+          body: body,
+        );
       },
-      body: body,
+      skip: skipRefresh,
     );
   }
 
@@ -113,20 +198,26 @@ class ApiClient {
     required Map<String, String> fields,
     required List<http.MultipartFile> files,
     bool requireAuth = true,
+    bool skipRefresh = false,
   }) async {
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl$path'),
+    return _retryOn401(
+      () async {
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse('$baseUrl$path'),
+        );
+
+        if (requireAuth && _token != null) {
+          request.headers['Authorization'] = 'Bearer $_token';
+        }
+        request.fields.addAll(fields);
+        request.files.addAll(files);
+
+        final streamedResponse = await request.send();
+        return http.Response.fromStream(streamedResponse);
+      },
+      skip: skipRefresh,
     );
-
-    if (requireAuth && _token != null) {
-      request.headers['Authorization'] = 'Bearer $_token';
-    }
-    request.fields.addAll(fields);
-    request.files.addAll(files);
-
-    final streamedResponse = await request.send();
-    return http.Response.fromStream(streamedResponse);
   }
 
   // ─── Error helpers ─────────────────────────────────────────────────
@@ -168,6 +259,32 @@ class ApiClient {
       statusCode: response.statusCode,
       message: message,
     );
+  }
+
+  /// Decodifica el payload de un JWT sin dependencias externas.
+  /// Retorna el Map de claims o null si no se puede parsear.
+  static Map<String, dynamic>? decodeJwtPayload(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(parts[1])),
+      );
+      if (payload is Map<String, dynamic>) return payload;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Retorna true si el JWT está vencido (exp < now) o no se puede parsear.
+  static bool isTokenExpired(String token) {
+    final payload = decodeJwtPayload(token);
+    if (payload == null) return true;
+    final exp = payload['exp'] as int?;
+    if (exp == null) return true;
+    final expiry = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
+    return DateTime.now().isAfter(expiry);
   }
 }
 
