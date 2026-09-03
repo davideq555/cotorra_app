@@ -70,28 +70,22 @@ class CatalogsService {
       requireAuth: false,
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((j) => Formato.fromJson(j))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((j) => Formato.fromJson(j)).toList() ??
         [];
   }
 
   /// POST /formatos-documento/ — Crea formato (admin).
   Future<Formato> createFormatoDocumento(Map<String, dynamic> data) async {
-    final response = await _client.post(
-      '/formatos-documento/',
-      body: data,
-    );
+    final response = await _client.post('/formatos-documento/', body: data);
     return Formato.fromJson(_client.decodeResponse(response));
   }
 
   /// PUT /formatos-documento/{id} — Actualiza formato (admin).
   Future<Formato> updateFormatoDocumento(
-      int id, Map<String, dynamic> data) async {
-    final response = await _client.put(
-      '/formatos-documento/$id',
-      body: data,
-    );
+    int id,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _client.put('/formatos-documento/$id', body: data);
     return Formato.fromJson(_client.decodeResponse(response));
   }
 
@@ -121,13 +115,19 @@ class CatalogsService {
 
   /// GET /universidades/{id} — Detalle de universidad.
   Future<Universidad> getUniversidadById(int id) async {
-    final response = await _client.get('/universidades/$id', requireAuth: false);
+    final response = await _client.get(
+      '/universidades/$id',
+      requireAuth: false,
+    );
     return Universidad.fromJson(_client.decodeResponse(response));
   }
 
   /// GET /universidades/{id}/facultades — Facultades de una universidad.
-  Future<List<Facultad>> getFacultadesByUniversidad(int universidadId,
-      {int skip = 0, int limit = 100}) async {
+  Future<List<Facultad>> getFacultadesByUniversidad(
+    int universidadId, {
+    int skip = 0,
+    int limit = 100,
+  }) async {
     final response = await _client.get(
       '/universidades/$universidadId/facultades',
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
@@ -163,8 +163,11 @@ class CatalogsService {
   }
 
   /// GET /facultades/universidad/{uid} — Facultades por universidad.
-  Future<List<Facultad>> getFacultadesByUniversidadId(int universidadId,
-      {int skip = 0, int limit = 100}) async {
+  Future<List<Facultad>> getFacultadesByUniversidadId(
+    int universidadId, {
+    int skip = 0,
+    int limit = 100,
+  }) async {
     final response = await _client.get(
       '/facultades/universidad/$universidadId',
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
@@ -178,17 +181,18 @@ class CatalogsService {
   }
 
   /// GET /facultades/{id}/carreras — Carreras de una facultad.
-  Future<List<Carrera>> getCarrerasByFacultad(int facultadId,
-      {int skip = 0, int limit = 100}) async {
+  Future<List<Carrera>> getCarrerasByFacultad(
+    int facultadId, {
+    int skip = 0,
+    int limit = 100,
+  }) async {
     final response = await _client.get(
       '/facultades/$facultadId/carreras',
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
       requireAuth: false,
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((j) => Carrera.fromJson(j))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((j) => Carrera.fromJson(j)).toList() ??
         [];
   }
 
@@ -202,9 +206,7 @@ class CatalogsService {
       requireAuth: false,
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((j) => Carrera.fromJson(j))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((j) => Carrera.fromJson(j)).toList() ??
         [];
   }
 
@@ -228,17 +230,18 @@ class CatalogsService {
   }
 
   /// GET /carreras/facultad/{fid} — Carreras por facultad.
-  Future<List<Carrera>> getCarrerasByFacultadId(int facultadId,
-      {int skip = 0, int limit = 100}) async {
+  Future<List<Carrera>> getCarrerasByFacultadId(
+    int facultadId, {
+    int skip = 0,
+    int limit = 100,
+  }) async {
     final response = await _client.get(
       '/carreras/facultad/$facultadId',
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
       requireAuth: false,
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((j) => Carrera.fromJson(j))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((j) => Carrera.fromJson(j)).toList() ??
         [];
   }
 
@@ -261,9 +264,7 @@ class CatalogsService {
       requireAuth: false,
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((j) => Materia.fromJson(j))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((j) => Materia.fromJson(j)).toList() ??
         [];
   }
 
@@ -281,9 +282,7 @@ class CatalogsService {
       requireAuth: false,
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((j) => Materia.fromJson(j))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((j) => Materia.fromJson(j)).toList() ??
         [];
   }
 
@@ -294,9 +293,7 @@ class CatalogsService {
       requireAuth: false,
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((j) => Materia.fromJson(j))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((j) => Materia.fromJson(j)).toList() ??
         [];
   }
 
@@ -323,10 +320,7 @@ class CatalogsService {
       requireAuth: false,
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((j) => Tag.fromJson(j))
-            .toList() ??
-        [];
+    return (data as List<dynamic>?)?.map((j) => Tag.fromJson(j)).toList() ?? [];
   }
 
   /// GET /tags/{id} — Detalle de tag.

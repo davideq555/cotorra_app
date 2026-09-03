@@ -50,17 +50,28 @@ class ApiService {
 
   Future<Map<String, dynamic>> register(UsuarioCreate usuarioCreate) async {
     return _client.decodeResponse(
-      await _client.post('/auth/register', body: usuarioCreate.toJson(), requireAuth: false),
+      await _client.post(
+        '/auth/register',
+        body: usuarioCreate.toJson(),
+        requireAuth: false,
+      ),
     );
   }
 
   // ─── USERS ─────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> cambiarContrasena(
-    String token, int usuarioId, String contrasenaActual, String contrasenaNueva,
+    String token,
+    int usuarioId,
+    String contrasenaActual,
+    String contrasenaNueva,
   ) async {
     _client.setToken(token);
-    final result = await _users.cambiarContrasena(usuarioId, contrasenaActual, contrasenaNueva);
+    final result = await _users.cambiarContrasena(
+      usuarioId,
+      contrasenaActual,
+      contrasenaNueva,
+    );
     return {'message': result.message, 'success': result.success};
   }
 
@@ -81,58 +92,107 @@ class ApiService {
 
   Future<List<Documento>> getDocumentos(
     String token, {
-    String? query, int? tipo, int? materiaId, String? anoAcademico,
-    String sortBy = 'fecha_subida', String sortOrder = 'desc',
-    int skip = 0, int limit = 20,
+    String? query,
+    int? tipo,
+    int? materiaId,
+    String? anoAcademico,
+    String sortBy = 'fecha_subida',
+    String sortOrder = 'desc',
+    int skip = 0,
+    int limit = 20,
   }) async {
     _client.setToken(token);
     return _docs.getDocumentos(
-      query: query, tipo: tipo, materiaId: materiaId, anoAcademico: anoAcademico,
-      sortBy: sortBy, sortOrder: sortOrder, skip: skip, limit: limit,
+      query: query,
+      tipo: tipo,
+      materiaId: materiaId,
+      anoAcademico: anoAcademico,
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+      skip: skip,
+      limit: limit,
     );
   }
 
-  Future<Documento> getDocumento(int documentoId) => _docs.getDocumento(documentoId);
+  Future<Documento> getDocumento(int documentoId) =>
+      _docs.getDocumento(documentoId);
 
-  Future<List<Documento>> getMejoresDocumentos() => _docs.getMejoresDocumentos();
+  Future<List<Documento>> getMejoresDocumentos() =>
+      _docs.getMejoresDocumentos();
 
   Future<List<Documento>> getDocumentosUsuario(
-    String token, int usuarioId, {int skip = 0, int limit = 20, bool includeDeleted = false,
+    String token,
+    int usuarioId, {
+    int skip = 0,
+    int limit = 20,
+    bool includeDeleted = false,
   }) async {
     _client.setToken(token);
-    return _docs.getDocumentosUsuario(usuarioId, skip: skip, limit: limit, includeDeleted: includeDeleted);
+    return _docs.getDocumentosUsuario(
+      usuarioId,
+      skip: skip,
+      limit: limit,
+      includeDeleted: includeDeleted,
+    );
   }
 
-  Future<Documento> createDocumento(String token, Map<String, dynamic> data) async {
+  Future<Documento> createDocumento(
+    String token,
+    Map<String, dynamic> data,
+  ) async {
     _client.setToken(token);
     return _docs.createDocumento(data);
   }
 
   Future<Documento> uploadDocumento(
     String token, {
-    required String titulo, required String archivoBase64, required int tipo,
-    String? descripcion, String? autor, int? materiaId, String? anoAcademico,
+    required String titulo,
+    required String archivoBase64,
+    required int tipo,
+    String? descripcion,
+    String? autor,
+    int? materiaId,
+    String? anoAcademico,
   }) async {
     _client.setToken(token);
     return _docs.uploadDocumento(
-      titulo: titulo, archivoBytes: base64Decode(archivoBase64), tipo: tipo,
-      descripcion: descripcion, autor: autor, materiaId: materiaId, anoAcademico: anoAcademico,
+      titulo: titulo,
+      archivoBytes: base64Decode(archivoBase64),
+      tipo: tipo,
+      descripcion: descripcion,
+      autor: autor,
+      materiaId: materiaId,
+      anoAcademico: anoAcademico,
     );
   }
 
   Future<Documento> createDocumentoLink(
     String token, {
-    required String titulo, required String urlExterna, required int tipo,
-    String? descripcion, String? autor, int? materiaId, String? anoAcademico,
+    required String titulo,
+    required String urlExterna,
+    required int tipo,
+    String? descripcion,
+    String? autor,
+    int? materiaId,
+    String? anoAcademico,
   }) async {
     _client.setToken(token);
     return _docs.createDocumentoLink(
-      titulo: titulo, urlExterna: urlExterna, tipo: tipo,
-      descripcion: descripcion, autor: autor, materiaId: materiaId, anoAcademico: anoAcademico,
+      titulo: titulo,
+      urlExterna: urlExterna,
+      tipo: tipo,
+      descripcion: descripcion,
+      autor: autor,
+      materiaId: materiaId,
+      anoAcademico: anoAcademico,
     );
   }
 
-  Future<Documento> updateDocumento(String token, int documentoId, Map<String, dynamic> data) async {
+  Future<Documento> updateDocumento(
+    String token,
+    int documentoId,
+    Map<String, dynamic> data,
+  ) async {
     _client.setToken(token);
     return _docs.updateDocumento(documentoId, data);
   }
@@ -149,12 +209,19 @@ class ApiService {
 
   // ─── FAVORITES ─────────────────────────────────────────────────────
 
-  Future<List<Documento>> getFavoritos(String token, {int skip = 0, int limit = 100}) async {
+  Future<List<Documento>> getFavoritos(
+    String token, {
+    int skip = 0,
+    int limit = 100,
+  }) async {
     _client.setToken(token);
     return _fav.getFavoritos(skip: skip, limit: limit);
   }
 
-  Future<Map<String, dynamic>> toggleFavorito(String token, int documentoId) async {
+  Future<Map<String, dynamic>> toggleFavorito(
+    String token,
+    int documentoId,
+  ) async {
     _client.setToken(token);
     return _fav.toggleFavorito(documentoId);
   }

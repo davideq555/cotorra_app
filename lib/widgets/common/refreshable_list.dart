@@ -97,7 +97,9 @@ class RefreshableList<T> extends StatelessWidget {
         child: Center(
           child: Text(
             emptyMessage,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
           ),
         ),
       );
@@ -114,28 +116,28 @@ class RefreshableList<T> extends StatelessWidget {
       },
       child: ListView.separated(
         shrinkWrap: height == null,
-        physics: height == null ? const AlwaysScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+        physics: height == null
+            ? const AlwaysScrollableScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: 8,
+        ),
         itemCount: items.length,
         separatorBuilder: (_, index) => SizedBox(height: itemSpacing),
-        itemBuilder: (context, index) => itemBuilder(context, items[index], index),
+        itemBuilder: (context, index) =>
+            itemBuilder(context, items[index], index),
       ),
     );
 
     if (height != null) {
       return SizedBox(
         height: height,
-        child: RefreshIndicator(
-          onRefresh: onRefresh,
-          child: listView,
-        ),
+        child: RefreshIndicator(onRefresh: onRefresh, child: listView),
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: listView,
-    );
+    return RefreshIndicator(onRefresh: onRefresh, child: listView);
   }
 }
 
@@ -156,7 +158,11 @@ class _ErrorState extends StatelessWidget {
           children: [
             Icon(Icons.error_outline, size: 48, color: Colors.red.shade300),
             const SizedBox(height: 16),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: onRetry,

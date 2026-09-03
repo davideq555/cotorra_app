@@ -159,7 +159,9 @@ class DocumentsService {
 
   /// PUT /documentos/{id} — Actualiza un documento.
   Future<Documento> updateDocumento(
-      int documentoId, Map<String, dynamic> data) async {
+    int documentoId,
+    Map<String, dynamic> data,
+  ) async {
     final response = await _client.put('/documentos/$documentoId', body: data);
     return Documento.fromJson(_client.decodeResponse(response));
   }

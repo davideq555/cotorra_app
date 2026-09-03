@@ -1,12 +1,10 @@
 import 'package:cotorra_app/providers/auth_provider.dart';
 import 'package:cotorra_app/providers/favorites_cache_provider.dart';
 import 'package:cotorra_app/providers/user_documents_cache_provider.dart';
-import 'package:cotorra_app/screens/profile/change_password_screen.dart';
 import 'package:cotorra_app/widgets/common/document_card.dart';
 import 'package:cotorra_app/widgets/common/refreshable_list.dart';
 import 'package:cotorra_app/widgets/profile/profile_info.dart';
 import 'package:cotorra_app/widgets/profile/stats_row.dart';
-import 'package:cotorra_app/widgets/profile/settings_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +27,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
   void _loadDocuments() {
     final auth = context.read<AuthProvider>();
     if (auth.isAuthenticated) {
-      context.read<UserDocumentsCacheProvider>().load(auth.token!, auth.userId!);
+      context.read<UserDocumentsCacheProvider>().load(
+        auth.token!,
+        auth.userId!,
+      );
       context.read<FavoritesCacheProvider>().load(auth.token!, auth.userId!);
       auth.updateFavoritesCount(
         (context.read<FavoritesCacheProvider>().favorites.length),
@@ -42,7 +43,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final auth = context.watch<AuthProvider>();
     final docsProvider = context.watch<UserDocumentsCacheProvider>();
     final favProvider = context.watch<FavoritesCacheProvider>();
-    final carreras = auth.userCarreras;
 
     return ListView(
       padding: const EdgeInsets.all(20.0),
@@ -51,8 +51,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
           nombre: auth.userName ?? 'Usuario',
           email: auth.userEmail ?? '',
           rol: auth.userRol ?? 'ALUMNO',
-          inicial: (auth.userName != null && auth.userName!.isNotEmpty) 
-              ? auth.userName![0].toUpperCase() 
+          inicial: (auth.userName != null && auth.userName!.isNotEmpty)
+              ? auth.userName![0].toUpperCase()
               : 'U',
         ),
         const SizedBox(height: 32),
@@ -60,43 +60,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
           favoritosCount: favProvider.favorites.length,
           documentosCount: docsProvider.documentos.length,
         ),
-        if (carreras.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          const Text(
-            'Mis Carreras',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...carreras.map((carrera) => Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              leading: const Icon(Icons.school_outlined),
-              title: Text(carrera.nombre),
-            ),
-          )),
-        ],
-        const SizedBox(height: 24),
-        SettingsTile(
-          title: 'Cambiar Contraseña',
-          icon: Icons.settings_outlined,
-          onTap: () {
-            // Navigator.pushNamed(context, '/profile-settings');
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (BuildContext context ) => ChangePasswordScreen())
-            );
-          },
-        ),
         const SizedBox(height: 32),
         const Text(
           'Mis Documentos Subidos',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         SizedBox(

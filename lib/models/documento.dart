@@ -64,7 +64,9 @@ class Documento {
       descripcion: json['descripcion'],
       tipo: json['tipo'] ?? 0,
       formatoId: json['formato_id'],
-      formato: json['formato'] != null ? Formato.fromJson(json['formato']) : null,
+      formato: json['formato'] != null
+          ? Formato.fromJson(json['formato'])
+          : null,
       materiaId: json['materia_id'],
       anoAcademico: json['año_academico'],
       fechaSubida: json['fecha_subida'],
@@ -74,9 +76,15 @@ class Documento {
       eliminado: json['eliminado'] ?? false,
       valoracionPromedio: (json['valoracion_promedio'] ?? 0.0).toDouble(),
       totalValoraciones: json['total_valoraciones'] ?? 0,
-      usuario: json['usuario'] != null ? Usuario.fromJson(json['usuario']) : null,
-      tipoDocumento: json['tipo_documento'] != null ? TipoDocumento.fromJson(json['tipo_documento']) : null,
-      materia: json['materia'] != null ? Materia.fromJson(json['materia']) : null,
+      usuario: json['usuario'] != null
+          ? Usuario.fromJson(json['usuario'])
+          : null,
+      tipoDocumento: json['tipo_documento'] != null
+          ? TipoDocumento.fromJson(json['tipo_documento'])
+          : null,
+      materia: json['materia'] != null
+          ? Materia.fromJson(json['materia'])
+          : null,
       tags: (json['tags'] as List?)?.map((t) => Tag.fromJson(t)).toList(),
     );
   }

@@ -23,11 +23,11 @@ class RegisterRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'nombre': nombre,
-        'email': email,
-        'contraseña': contrasena,
-        'carrera_ids': carreraIds,
-      };
+    'nombre': nombre,
+    'email': email,
+    'contraseña': contrasena,
+    'carrera_ids': carreraIds,
+  };
 }
 
 class RegisterResponse {
@@ -52,10 +52,7 @@ class LoginRequest {
 
   LoginRequest({required this.email, required this.password});
 
-  Map<String, dynamic> toJson() => {
-        'email': email,
-        'password': password,
-      };
+  Map<String, dynamic> toJson() => {'email': email, 'password': password};
 }
 
 /// LoginResponse del backend. Incluye refresh_token (requerido).
@@ -89,7 +86,8 @@ class LoginResponse {
       nombre: json['nombre'] ?? '',
       email: json['email'] ?? '',
       rol: json['rol'] ?? 'ALUMNO',
-      carreras: (json['carreras'] as List<dynamic>?)
+      carreras:
+          (json['carreras'] as List<dynamic>?)
               ?.map((c) => CarreraInfo.fromJson(c))
               .toList() ??
           [],
@@ -98,15 +96,15 @@ class LoginResponse {
 
   /// Construye el [Usuario] desde la respuesta de login.
   Usuario toUsuario() => Usuario(
-        id: userId,
-        nombre: nombre,
-        email: email,
-        rol: RolEnum.values.firstWhere(
-          (e) => e.toString().split('.').last == rol,
-          orElse: () => RolEnum.ALUMNO,
-        ),
-        carreras: carreras.map((c) => c.toCarrera()).toList(),
-      );
+    id: userId,
+    nombre: nombre,
+    email: email,
+    rol: RolEnum.values.firstWhere(
+      (e) => e.toString().split('.').last == rol,
+      orElse: () => RolEnum.ALUMNO,
+    ),
+    carreras: carreras.map((c) => c.toCarrera()).toList(),
+  );
 }
 
 /// Versión simplificada de Carrera para el login response.
@@ -115,11 +113,7 @@ class CarreraInfo {
   final String nombre;
   final String? descripcion;
 
-  CarreraInfo({
-    required this.id,
-    required this.nombre,
-    this.descripcion,
-  });
+  CarreraInfo({required this.id, required this.nombre, this.descripcion});
 
   factory CarreraInfo.fromJson(Map<String, dynamic> json) {
     return CarreraInfo(
@@ -130,12 +124,8 @@ class CarreraInfo {
   }
 
   /// Convierte a Carrera completa para compatibilidad con modelos existentes.
-  Carrera toCarrera() => Carrera(
-        id: id,
-        nombre: nombre,
-        descripcion: descripcion,
-        facultadId: 0,
-      );
+  Carrera toCarrera() =>
+      Carrera(id: id, nombre: nombre, descripcion: descripcion, facultadId: 0);
 }
 
 // ─── Login form (x-www-form-urlencoded) ──────────────────────────────
@@ -147,9 +137,9 @@ class LoginFormRequest {
   LoginFormRequest({required this.username, required this.password});
 
   Map<String, String> toFormBody() => {
-        'username': username,
-        'password': password,
-      };
+    'username': username,
+    'password': password,
+  };
 }
 
 // ─── Google Login ────────────────────────────────────────────────────
@@ -186,15 +176,12 @@ class ResetPasswordRequest {
   final String token;
   final String nuevaContrasena;
 
-  ResetPasswordRequest({
-    required this.token,
-    required this.nuevaContrasena,
-  });
+  ResetPasswordRequest({required this.token, required this.nuevaContrasena});
 
   Map<String, dynamic> toJson() => {
-        'token': token,
-        'nueva_contraseña': nuevaContrasena,
-      };
+    'token': token,
+    'nueva_contraseña': nuevaContrasena,
+  };
 }
 
 class ResetPasswordResponse {
@@ -321,7 +308,8 @@ class SessionsListResponse {
 
   factory SessionsListResponse.fromJson(Map<String, dynamic> json) {
     return SessionsListResponse(
-      sesiones: (json['sesiones'] as List<dynamic>?)
+      sesiones:
+          (json['sesiones'] as List<dynamic>?)
               ?.map((s) => SessionInfo.fromJson(s))
               .toList() ??
           [],
@@ -342,9 +330,9 @@ class CambiarContrasenaRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'contraseña_actual': contrasenaActual,
-        'contraseña_nueva': contrasenaNueva,
-      };
+    'contraseña_actual': contrasenaActual,
+    'contraseña_nueva': contrasenaNueva,
+  };
 }
 
 class CambiarContrasenaResponse {

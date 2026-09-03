@@ -48,10 +48,58 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _token != null;
   int? get userId => _user?.id;
   String? get userName => _user?.nombre;
+  String? get userUsername =>
+      (_user == null || _user!.username.isEmpty) ? null : _user!.username;
+  String? get userBio => _user?.bio;
   String? get userEmail => _user?.email;
   String? get userRol => _user?.rol.toString().split('.').last;
   List<Carrera> get userCarreras => _user?.carreras ?? [];
   int get favoritesCount => _favoritesCount;
+
+  /// Aplica el Usuario devuelto por PUT /usuarios/me/perfil.
+  /// Conserva las carreras si la respuesta no las trae.
+  Future<void> applyUpdatedUser(Usuario updated) async {
+    var usuario = updated;
+    if (updated.carreras.isEmpty &&
+        _user != null &&
+        _user!.carreras.isNotEmpty) {
+      usuario = Usuario(
+        id: updated.id,
+        nombre: updated.nombre,
+        username: updated.username,
+        email: updated.email,
+        bio: updated.bio,
+        rol: updated.rol,
+        fechaCreacion: updated.fechaCreacion,
+        verificado: updated.verificado,
+        carreras: _user!.carreras,
+      );
+    }
+    _user = usuario;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_data', jsonEncode(usuario.toJson()));
+    notifyListeners();
+  }
+
+  /// Reemplaza la lista de carreras del usuario (tras agregar/quitar)
+  /// y la persiste.
+  Future<void> applyCarreras(List<Carrera> carreras) async {
+    if (_user == null) return;
+    _user = Usuario(
+      id: _user!.id,
+      nombre: _user!.nombre,
+      username: _user!.username,
+      email: _user!.email,
+      bio: _user!.bio,
+      rol: _user!.rol,
+      fechaCreacion: _user!.fechaCreacion,
+      verificado: _user!.verificado,
+      carreras: carreras,
+    );
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_data', jsonEncode(_user!.toJson()));
+    notifyListeners();
+  }
 
   Future<bool> login(String username, String password) async {
     try {

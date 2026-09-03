@@ -24,8 +24,12 @@ class CarreraMateria {
       materiaId: json['materia_id'] ?? 0,
       anoAcademico: json['año_academico'],
       cuatrimestre: json['cuatrimestre'] ?? 0,
-      carrera: json['carrera'] != null ? Carrera.fromJson(json['carrera']) : null,
-      materia: json['materia'] != null ? Materia.fromJson(json['materia']) : null,
+      carrera: json['carrera'] != null
+          ? Carrera.fromJson(json['carrera'])
+          : null,
+      materia: json['materia'] != null
+          ? Materia.fromJson(json['materia'])
+          : null,
     );
   }
 

@@ -41,22 +41,13 @@ class ProfileInfo extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           nombre,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          email,
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
-        ),
+        Text(email, style: const TextStyle(fontSize: 14, color: Colors.grey)),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 4,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
             color: primaryGreen.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),

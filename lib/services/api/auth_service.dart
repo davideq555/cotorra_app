@@ -86,7 +86,9 @@ class AuthService {
 
   // ─── 6. Forgot Password ──────────────────────────────────────────
   /// POST /auth/forgot-password — Solicita link de reset por email.
-  Future<ForgotPasswordResponse> forgotPassword(ForgotPasswordRequest request) async {
+  Future<ForgotPasswordResponse> forgotPassword(
+    ForgotPasswordRequest request,
+  ) async {
     final response = await _client.post(
       '/auth/forgot-password',
       body: request.toJson(),
@@ -97,7 +99,9 @@ class AuthService {
 
   // ─── 7. Reset Password ───────────────────────────────────────────
   /// POST /auth/reset-password — Resetea contraseña con token válido.
-  Future<ResetPasswordResponse> resetPassword(ResetPasswordRequest request) async {
+  Future<ResetPasswordResponse> resetPassword(
+    ResetPasswordRequest request,
+  ) async {
     final response = await _client.post(
       '/auth/reset-password',
       body: request.toJson(),

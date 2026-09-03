@@ -6,11 +6,7 @@ class DocumentCard extends StatelessWidget {
   final Documento doc;
   final Widget? trailing;
 
-  const DocumentCard({
-    super.key,
-    required this.doc,
-    this.trailing,
-  });
+  const DocumentCard({super.key, required this.doc, this.trailing});
 
   IconData _getIcon() {
     final nombre = doc.formato?.nombre.toLowerCase() ?? '';
@@ -34,7 +30,10 @@ class DocumentCard extends StatelessWidget {
       return Icons.slideshow;
     } else if (ext.contains('zip') || ext.contains('rar')) {
       return Icons.folder_zip;
-    } else if (ext.contains('jpg') || ext.contains('png') || ext.contains('jpeg') || ext.contains('gif')) {
+    } else if (ext.contains('jpg') ||
+        ext.contains('png') ||
+        ext.contains('jpeg') ||
+        ext.contains('gif')) {
       return Icons.image;
     }
     return Icons.description;
@@ -124,7 +123,10 @@ class DocumentCard extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: primaryGreen.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
@@ -139,7 +141,11 @@ class DocumentCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.fiber_manual_record, size: 4, color: Colors.grey),
+                        const Icon(
+                          Icons.fiber_manual_record,
+                          size: 4,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -159,7 +165,10 @@ class DocumentCard extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.amber.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(4),
@@ -174,7 +183,11 @@ class DocumentCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.access_time, size: 12, color: Colors.grey),
+                        const Icon(
+                          Icons.access_time,
+                          size: 12,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           _getTimeAgo(),
@@ -184,7 +197,11 @@ class DocumentCard extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        const Icon(Icons.download, size: 12, color: Colors.grey),
+                        const Icon(
+                          Icons.download,
+                          size: 12,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${doc.descargas}',
@@ -198,10 +215,7 @@ class DocumentCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailing != null) ...[
-                const SizedBox(width: 8),
-                trailing!,
-              ]
+              if (trailing != null) ...[const SizedBox(width: 8), trailing!],
             ],
           ),
         ),

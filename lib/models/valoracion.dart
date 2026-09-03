@@ -9,7 +9,6 @@ class Valoracion {
   final Usuario? usuario;
   final Documento? documento;
 
-
   Valoracion({
     required this.id,
     required this.usuarioId,
@@ -25,8 +24,12 @@ class Valoracion {
       usuarioId: json['usuario_id'] ?? 0,
       documentoId: json['documento_id'] ?? 0,
       puntuacion: json['puntuacion'] ?? 0,
-      usuario: json['usuario'] != null ? Usuario.fromJson(json['usuario']) : null,
-      documento: json['documento'] != null ? Documento.fromJson(json['documento']) : null,
+      usuario: json['usuario'] != null
+          ? Usuario.fromJson(json['usuario'])
+          : null,
+      documento: json['documento'] != null
+          ? Documento.fromJson(json['documento'])
+          : null,
     );
   }
 

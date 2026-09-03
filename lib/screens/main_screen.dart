@@ -1,5 +1,6 @@
 import 'package:cotorra_app/screens/dashboard_screen.dart';
 import 'package:cotorra_app/screens/my_favorities_screen.dart';
+import 'package:cotorra_app/screens/profile/configuracion_screen.dart';
 import 'package:cotorra_app/screens/search_screen.dart';
 import 'package:cotorra_app/screens/perfil_screen.dart';
 
@@ -7,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/search_provider.dart';
-
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -50,6 +50,19 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               actions: [
+                if (_selectedIndex == 3)
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    tooltip: 'Configuración',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ConfiguracionScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 IconButton(
                   icon: const Icon(Icons.logout),
                   onPressed: () {
@@ -77,8 +90,14 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _selectedIndex,
           onTap: (index) {
             if (_selectedIndex == 1) {
-              Provider.of<SearchProvider>(context, listen: false).clearCascadeFilters();
-              Provider.of<SearchProvider>(context, listen: false).clearFilters();
+              Provider.of<SearchProvider>(
+                context,
+                listen: false,
+              ).clearCascadeFilters();
+              Provider.of<SearchProvider>(
+                context,
+                listen: false,
+              ).clearFilters();
             }
             setState(() {
               _selectedIndex = index;
@@ -99,10 +118,7 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icon(Icons.home_filled),
               label: 'Inicio',
             ),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.search),
-                label: 'Buscar',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite_border),
               label: 'Favoritos',

@@ -31,7 +31,8 @@ class Token {
       nombre: json['nombre'] ?? '',
       email: json['email'] ?? '',
       rol: json['rol'] ?? 'ALUMNO',
-      carreras: (json['carreras'] as List<dynamic>?)
+      carreras:
+          (json['carreras'] as List<dynamic>?)
               ?.map((c) => Carrera.fromJson(c))
               .toList() ??
           [],

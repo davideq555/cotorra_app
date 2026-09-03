@@ -48,9 +48,9 @@ class ApiClient {
   // ─── Headers ───────────────────────────────────────────────────────
 
   Map<String, String> _jsonHeaders({bool includeAuth = true}) => {
-        'Content-Type': 'application/json',
-        if (includeAuth && _token != null) 'Authorization': 'Bearer $_token',
-      };
+    'Content-Type': 'application/json',
+    if (includeAuth && _token != null) 'Authorization': 'Bearer $_token',
+  };
 
   // ─── Token refresh on 401 ─────────────────────────────────────────
 
@@ -104,15 +104,12 @@ class ApiClient {
     bool requireAuth = true,
     bool skipRefresh = false,
   }) async {
-    return _retryOn401(
-      () {
-        final uri = Uri.parse('$baseUrl$path').replace(
-          queryParameters: queryParams,
-        );
-        return http.get(uri, headers: _jsonHeaders(includeAuth: requireAuth));
-      },
-      skip: skipRefresh,
-    );
+    return _retryOn401(() {
+      final uri = Uri.parse(
+        '$baseUrl$path',
+      ).replace(queryParameters: queryParams);
+      return http.get(uri, headers: _jsonHeaders(includeAuth: requireAuth));
+    }, skip: skipRefresh);
   }
 
   /// POST request with JSON body.
@@ -122,16 +119,13 @@ class ApiClient {
     bool requireAuth = true,
     bool skipRefresh = false,
   }) async {
-    return _retryOn401(
-      () {
-        return http.post(
-          Uri.parse('$baseUrl$path'),
-          headers: _jsonHeaders(includeAuth: requireAuth),
-          body: body != null ? jsonEncode(body) : null,
-        );
-      },
-      skip: skipRefresh,
-    );
+    return _retryOn401(() {
+      return http.post(
+        Uri.parse('$baseUrl$path'),
+        headers: _jsonHeaders(includeAuth: requireAuth),
+        body: body != null ? jsonEncode(body) : null,
+      );
+    }, skip: skipRefresh);
   }
 
   /// PUT request with JSON body.
@@ -141,16 +135,13 @@ class ApiClient {
     bool requireAuth = true,
     bool skipRefresh = false,
   }) async {
-    return _retryOn401(
-      () {
-        return http.put(
-          Uri.parse('$baseUrl$path'),
-          headers: _jsonHeaders(includeAuth: requireAuth),
-          body: body != null ? jsonEncode(body) : null,
-        );
-      },
-      skip: skipRefresh,
-    );
+    return _retryOn401(() {
+      return http.put(
+        Uri.parse('$baseUrl$path'),
+        headers: _jsonHeaders(includeAuth: requireAuth),
+        body: body != null ? jsonEncode(body) : null,
+      );
+    }, skip: skipRefresh);
   }
 
   /// DELETE request.
@@ -159,15 +150,12 @@ class ApiClient {
     bool requireAuth = true,
     bool skipRefresh = false,
   }) async {
-    return _retryOn401(
-      () {
-        return http.delete(
-          Uri.parse('$baseUrl$path'),
-          headers: _jsonHeaders(includeAuth: requireAuth),
-        );
-      },
-      skip: skipRefresh,
-    );
+    return _retryOn401(() {
+      return http.delete(
+        Uri.parse('$baseUrl$path'),
+        headers: _jsonHeaders(includeAuth: requireAuth),
+      );
+    }, skip: skipRefresh);
   }
 
   /// POST with x-www-form-urlencoded body (para OAuth2 / login form).
@@ -177,19 +165,16 @@ class ApiClient {
     bool requireAuth = true,
     bool skipRefresh = false,
   }) async {
-    return _retryOn401(
-      () {
-        return http.post(
-          Uri.parse('$baseUrl$path'),
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            if (requireAuth && _token != null) 'Authorization': 'Bearer $_token',
-          },
-          body: body,
-        );
-      },
-      skip: skipRefresh,
-    );
+    return _retryOn401(() {
+      return http.post(
+        Uri.parse('$baseUrl$path'),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          if (requireAuth && _token != null) 'Authorization': 'Bearer $_token',
+        },
+        body: body,
+      );
+    }, skip: skipRefresh);
   }
 
   /// POST multipart request (para uploads).
@@ -200,24 +185,18 @@ class ApiClient {
     bool requireAuth = true,
     bool skipRefresh = false,
   }) async {
-    return _retryOn401(
-      () async {
-        final request = http.MultipartRequest(
-          'POST',
-          Uri.parse('$baseUrl$path'),
-        );
+    return _retryOn401(() async {
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$path'));
 
-        if (requireAuth && _token != null) {
-          request.headers['Authorization'] = 'Bearer $_token';
-        }
-        request.fields.addAll(fields);
-        request.files.addAll(files);
+      if (requireAuth && _token != null) {
+        request.headers['Authorization'] = 'Bearer $_token';
+      }
+      request.fields.addAll(fields);
+      request.files.addAll(files);
 
-        final streamedResponse = await request.send();
-        return http.Response.fromStream(streamedResponse);
-      },
-      skip: skipRefresh,
-    );
+      final streamedResponse = await request.send();
+      return http.Response.fromStream(streamedResponse);
+    }, skip: skipRefresh);
   }
 
   // ─── Error helpers ─────────────────────────────────────────────────
@@ -255,10 +234,7 @@ class ApiClient {
       message = response.body.isNotEmpty ? response.body : 'Error desconocido';
     }
 
-    throw ApiException(
-      statusCode: response.statusCode,
-      message: message,
-    );
+    throw ApiException(statusCode: response.statusCode, message: message);
   }
 
   /// Decodifica el payload de un JWT sin dependencias externas.
@@ -267,9 +243,7 @@ class ApiClient {
     try {
       final parts = token.split('.');
       if (parts.length != 3) return null;
-      final payload = jsonDecode(
-        utf8.decode(base64Url.decode(parts[1])),
-      );
+      final payload = jsonDecode(utf8.decode(base64Url.decode(parts[1])));
       if (payload is Map<String, dynamic>) return payload;
       return null;
     } catch (_) {

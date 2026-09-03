@@ -54,9 +54,7 @@ class UsersService {
   Future<List<Carrera>> getUsuarioCarreras(int usuarioId) async {
     final response = await _client.get('/usuarios/$usuarioId/carreras');
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((c) => Carrera.fromJson(c))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((c) => Carrera.fromJson(c)).toList() ??
         [];
   }
 
@@ -72,7 +70,10 @@ class UsersService {
 
   /// PUT /usuarios/{uid}/carreras/{cid}/status?activa= — Actualiza estado.
   Future<void> updateCarreraStatus(
-      int usuarioId, int carreraId, bool activa) async {
+    int usuarioId,
+    int carreraId,
+    bool activa,
+  ) async {
     await _client.put(
       '/usuarios/$usuarioId/carreras/$carreraId/status',
       body: {'activa': activa},
@@ -94,7 +95,6 @@ class UsersService {
         'contraseña_nueva': contrasenaNueva,
       },
     );
-    return CambiarContrasenaResponse.fromJson(
-        _client.decodeResponse(response));
+    return CambiarContrasenaResponse.fromJson(_client.decodeResponse(response));
   }
 }

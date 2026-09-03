@@ -27,7 +27,9 @@ class Carrera {
       duracion: json['duracion'],
       urlInformacion: json['url_informacion'],
       facultadId: json['facultad_id'] ?? 0,
-      facultad: json['facultad'] != null ? Facultad.fromJson(json['facultad']) : null,
+      facultad: json['facultad'] != null
+          ? Facultad.fromJson(json['facultad'])
+          : null,
     );
   }
 

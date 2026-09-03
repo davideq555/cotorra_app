@@ -52,7 +52,9 @@ class AdminService {
 
   /// PUT /admin/universidades/{id} — Actualiza una universidad.
   Future<Universidad> updateUniversidad(
-      int id, UniversidadUpdate request) async {
+    int id,
+    UniversidadUpdate request,
+  ) async {
     final response = await _client.put(
       '/admin/universidades/$id',
       body: request.toJson(),
@@ -148,7 +150,8 @@ class AdminService {
 
   /// POST /admin/carrera-materias — Asocia materia con carrera.
   Future<Map<String, dynamic>> createCarreraMateria(
-      CarreraMateriaCreate request) async {
+    CarreraMateriaCreate request,
+  ) async {
     final response = await _client.post(
       '/admin/carrera-materias',
       body: request.toJson(),
@@ -158,7 +161,10 @@ class AdminService {
 
   /// PUT /admin/carrera-materias/{cid}/{mid} — Actualiza asociación.
   Future<Map<String, dynamic>> updateCarreraMateria(
-      int carreraId, int materiaId, CarreraMateriaUpdate request) async {
+    int carreraId,
+    int materiaId,
+    CarreraMateriaUpdate request,
+  ) async {
     final response = await _client.put(
       '/admin/carrera-materias/$carreraId/$materiaId',
       body: request.toJson(),
@@ -168,7 +174,9 @@ class AdminService {
 
   /// DELETE /admin/carrera-materias/{cid}/{mid} — Elimina asociación.
   Future<MessageResponse> deleteCarreraMateria(
-      int carreraId, int materiaId) async {
+    int carreraId,
+    int materiaId,
+  ) async {
     final response = await _client.delete(
       '/admin/carrera-materias/$carreraId/$materiaId',
     );
@@ -179,27 +187,34 @@ class AdminService {
 
   /// POST /admin/materias/{mid}/asignar/{uid} — Asigna materia a docente.
   Future<MateriaSuscripcionResponse> asignarMateria(
-      int materiaId, int usuarioId) async {
+    int materiaId,
+    int usuarioId,
+  ) async {
     final response = await _client.post(
       '/admin/materias/$materiaId/asignar/$usuarioId',
     );
     return MateriaSuscripcionResponse.fromJson(
-        _client.decodeResponse(response));
+      _client.decodeResponse(response),
+    );
   }
 
   /// DELETE /admin/materias/{mid}/desasignar/{uid} — Desasigna materia.
   Future<MateriaSuscripcionResponse> desasignarMateria(
-      int materiaId, int usuarioId) async {
+    int materiaId,
+    int usuarioId,
+  ) async {
     final response = await _client.delete(
       '/admin/materias/$materiaId/desasignar/$usuarioId',
     );
     return MateriaSuscripcionResponse.fromJson(
-        _client.decodeResponse(response));
+      _client.decodeResponse(response),
+    );
   }
 
   /// GET /admin/materias/{uid}/disponibles — Materias disponibles para un docente.
   Future<List<MateriaGestionResponse>> getMateriasDisponibles(
-      int usuarioId) async {
+    int usuarioId,
+  ) async {
     final response = await _client.get(
       '/admin/materias/$usuarioId/disponibles',
     );
@@ -222,7 +237,8 @@ class AdminService {
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
     );
     return DocumentoPaginatedResponse.fromJson(
-        _client.decodeResponse(response));
+      _client.decodeResponse(response),
+    );
   }
 
   /// GET /admin/documentos/pendientes — Documentos pendientes de aprobación.
@@ -235,7 +251,8 @@ class AdminService {
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
     );
     return DocumentoPaginatedResponse.fromJson(
-        _client.decodeResponse(response));
+      _client.decodeResponse(response),
+    );
   }
 
   /// GET /admin/documentos/eliminados — Documentos eliminados lógicamente.
@@ -248,7 +265,8 @@ class AdminService {
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
     );
     return DocumentoPaginatedResponse.fromJson(
-        _client.decodeResponse(response));
+      _client.decodeResponse(response),
+    );
   }
 
   // ─── 23-24. Reportes ─────────────────────────────────────────────
@@ -260,15 +278,15 @@ class AdminService {
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((r) => Reporte.fromJson(r))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((r) => Reporte.fromJson(r)).toList() ??
         [];
   }
 
   /// PUT /admin/reportes/{id}/resolver — Resuelve un reporte.
   Future<Reporte> resolverReporte(
-      int reporteId, ResolverReporteRequest request) async {
+    int reporteId,
+    ResolverReporteRequest request,
+  ) async {
     final response = await _client.put(
       '/admin/reportes/$reporteId/resolver',
       body: request.toJson(),
@@ -288,15 +306,15 @@ class AdminService {
       queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
     );
     final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)
-            ?.map((r) => Reporte.fromJson(r))
-            .toList() ??
+    return (data as List<dynamic>?)?.map((r) => Reporte.fromJson(r)).toList() ??
         [];
   }
 
   /// PUT /admin/reportes-comentarios/{id}/resolver — Resuelve reporte de comentario.
   Future<Reporte> resolverReporteComentario(
-      int reporteId, ResolverReporteRequest request) async {
+    int reporteId,
+    ResolverReporteRequest request,
+  ) async {
     final response = await _client.put(
       '/admin/reportes-comentarios/$reporteId/resolver',
       body: request.toJson(),
@@ -333,7 +351,9 @@ class AdminService {
 
   /// PUT /admin/solicitudes-rol/{id}/resolver — Resuelve solicitud de rol.
   Future<SolicitudCambioRol> resolverSolicitudRol(
-      int solicitudId, ResolverSolicitudRequest request) async {
+    int solicitudId,
+    ResolverSolicitudRequest request,
+  ) async {
     final response = await _client.put(
       '/admin/solicitudes-rol/$solicitudId/resolver',
       body: request.toJson(),

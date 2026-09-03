@@ -28,11 +28,7 @@ class LinkVisualizerScreen extends StatelessWidget {
                   color: const Color(0xFFE8F5E9),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  _getIcon(urlType),
-                  size: 32,
-                  color: primaryGreen,
-                ),
+                child: Icon(_getIcon(urlType), size: 32, color: primaryGreen),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -60,7 +56,8 @@ class LinkVisualizerScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          if (documento.descripcion != null && documento.descripcion!.isNotEmpty) ...[
+          if (documento.descripcion != null &&
+              documento.descripcion!.isNotEmpty) ...[
             _buildInfoSection(
               'Descripción',
               documento.descripcion!,
@@ -72,10 +69,7 @@ class LinkVisualizerScreen extends StatelessWidget {
             children: [
               if (documento.autor != null && documento.autor!.isNotEmpty)
                 Expanded(
-                  child: _buildInfoChip(
-                    Icons.person_outline,
-                    documento.autor!,
-                  ),
+                  child: _buildInfoChip(Icons.person_outline, documento.autor!),
                 ),
               if (documento.anoAcademico != null) ...[
                 if (documento.autor != null) const SizedBox(width: 8),
@@ -101,7 +95,10 @@ class LinkVisualizerScreen extends StatelessWidget {
               runSpacing: 8,
               children: documento.tags!.map((tag) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: primaryGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -221,10 +218,7 @@ class LinkVisualizerScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 14),
-        ),
+        Text(value, style: const TextStyle(fontSize: 14)),
       ],
     );
   }
@@ -244,10 +238,7 @@ class LinkVisualizerScreen extends StatelessWidget {
           Flexible(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey.shade700,
-              ),
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
               overflow: TextOverflow.ellipsis,
             ),
           ),

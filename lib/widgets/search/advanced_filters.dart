@@ -6,10 +6,7 @@ import 'package:provider/provider.dart';
 class AdvancedFilters extends StatelessWidget {
   final Function(String?) onSearch;
 
-  const AdvancedFilters({
-    super.key,
-    required this.onSearch,
-  });
+  const AdvancedFilters({super.key, required this.onSearch});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +15,9 @@ class AdvancedFilters extends StatelessWidget {
     final authProvider = context.watch<AuthProvider>();
     final availableYears = searchProvider.getAvailableYears();
 
-    final isMateriaEnabled = searchProvider.selectedCarrera != null && !searchProvider.carreraMateriasLoading;
+    final isMateriaEnabled =
+        searchProvider.selectedCarrera != null &&
+        !searchProvider.carreraMateriasLoading;
     final userCarreras = authProvider.userCarreras;
 
     return AnimatedSize(
@@ -84,8 +83,9 @@ class AdvancedFilters extends StatelessWidget {
                         if (carreraId == null) {
                           searchProvider.setSelectedCarrera(null);
                         } else {
-                          final carrera = userCarreras
-                              .firstWhere((c) => c.id == carreraId);
+                          final carrera = userCarreras.firstWhere(
+                            (c) => c.id == carreraId,
+                          );
                           searchProvider.setSelectedCarrera(carrera);
                         }
                       },
@@ -127,7 +127,9 @@ class AdvancedFilters extends StatelessWidget {
                                     value: null,
                                     child: Text('Todas las materias'),
                                   ),
-                                  ...searchProvider.carreraMaterias.map((materia) {
+                                  ...searchProvider.carreraMaterias.map((
+                                    materia,
+                                  ) {
                                     return DropdownMenuItem<int>(
                                       value: materia.id,
                                       child: Text(materia.nombre),
@@ -145,7 +147,8 @@ class AdvancedFilters extends StatelessWidget {
                                   if (materiaId == null) {
                                     searchProvider.setSelectedMateria(null);
                                   } else {
-                                    final materia = searchProvider.carreraMaterias
+                                    final materia = searchProvider
+                                        .carreraMaterias
                                         .firstWhere((m) => m.id == materiaId);
                                     searchProvider.setSelectedMateria(materia);
                                   }
@@ -213,7 +216,9 @@ class AdvancedFilters extends StatelessWidget {
                           style: OutlinedButton.styleFrom(
                             // foregroundColor: Colors.grey.shade700,
                             // side: BorderSide(color: Colors.grey.shade400),
-                            side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
                         ),

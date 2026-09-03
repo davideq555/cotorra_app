@@ -70,7 +70,8 @@ class UsuarioAdminListItem {
       bio: json['bio'],
       fechaCreacion: json['fecha_creacion'],
       verificado: json['verificado'] ?? false,
-      carreras: (json['carreras'] as List<dynamic>?)
+      carreras:
+          (json['carreras'] as List<dynamic>?)
               ?.map((c) => Carrera.fromJson(c))
               .toList() ??
           [],
@@ -86,7 +87,8 @@ class UsuarioPaginatedResponse {
 
   factory UsuarioPaginatedResponse.fromJson(Map<String, dynamic> json) {
     return UsuarioPaginatedResponse(
-      items: (json['items'] as List<dynamic>?)
+      items:
+          (json['items'] as List<dynamic>?)
               ?.map((i) => UsuarioAdminListItem.fromJson(i))
               .toList() ??
           [],
@@ -103,10 +105,10 @@ class UsuarioPerfilUpdate {
   UsuarioPerfilUpdate({this.nombre, this.username, this.bio});
 
   Map<String, dynamic> toJson() => {
-        if (nombre != null) 'nombre': nombre,
-        if (username != null) 'username': username,
-        if (bio != null) 'bio': bio,
-      };
+    if (nombre != null) 'nombre': nombre,
+    if (username != null) 'username': username,
+    if (bio != null) 'bio': bio,
+  };
 }
 
 class UsuarioUpdateAdmin {
@@ -125,12 +127,12 @@ class UsuarioUpdateAdmin {
   });
 
   Map<String, dynamic> toJson() => {
-        if (nombre != null) 'nombre': nombre,
-        if (username != null) 'username': username,
-        if (email != null) 'email': email,
-        if (verificado != null) 'verificado': verificado,
-        if (bio != null) 'bio': bio,
-      };
+    if (nombre != null) 'nombre': nombre,
+    if (username != null) 'username': username,
+    if (email != null) 'email': email,
+    if (verificado != null) 'verificado': verificado,
+    if (bio != null) 'bio': bio,
+  };
 }
 
 class CambiarRolRequest {
@@ -138,9 +140,7 @@ class CambiarRolRequest {
 
   CambiarRolRequest({required this.rol});
 
-  Map<String, dynamic> toJson() => {
-        'rol': rol.toString().split('.').last,
-      };
+  Map<String, dynamic> toJson() => {'rol': rol.toString().split('.').last};
 }
 
 class UsuarioWithAcademicInfo {
@@ -179,7 +179,8 @@ class UsuarioWithAcademicInfo {
       bio: json['bio'],
       fechaCreacion: json['fecha_creacion'],
       verificado: json['verificado'] ?? false,
-      carreras: (json['carreras'] as List<dynamic>?)
+      carreras:
+          (json['carreras'] as List<dynamic>?)
               ?.map((c) => CarreraWithUniversidad.fromJson(c))
               .toList() ??
           [],
@@ -251,12 +252,12 @@ class CarreraCreate {
   });
 
   Map<String, dynamic> toJson() => {
-        'nombre': nombre,
-        if (descripcion != null) 'descripcion': descripcion,
-        if (duracion != null) 'duracion': duracion,
-        if (urlInformacion != null) 'url_informacion': urlInformacion,
-        'facultad_id': facultadId,
-      };
+    'nombre': nombre,
+    if (descripcion != null) 'descripcion': descripcion,
+    if (duracion != null) 'duracion': duracion,
+    if (urlInformacion != null) 'url_informacion': urlInformacion,
+    'facultad_id': facultadId,
+  };
 }
 
 class CarreraUpdate {
@@ -275,12 +276,12 @@ class CarreraUpdate {
   });
 
   Map<String, dynamic> toJson() => {
-        if (nombre != null) 'nombre': nombre,
-        if (descripcion != null) 'descripcion': descripcion,
-        if (duracion != null) 'duracion': duracion,
-        if (urlInformacion != null) 'url_informacion': urlInformacion,
-        if (facultadId != null) 'facultad_id': facultadId,
-      };
+    if (nombre != null) 'nombre': nombre,
+    if (descripcion != null) 'descripcion': descripcion,
+    if (duracion != null) 'duracion': duracion,
+    if (urlInformacion != null) 'url_informacion': urlInformacion,
+    if (facultadId != null) 'facultad_id': facultadId,
+  };
 }
 
 class MateriaCreate {
@@ -291,10 +292,10 @@ class MateriaCreate {
   MateriaCreate({required this.nombre, this.descripcion, this.codigo});
 
   Map<String, dynamic> toJson() => {
-        'nombre': nombre,
-        if (descripcion != null) 'descripcion': descripcion,
-        if (codigo != null) 'codigo': codigo,
-      };
+    'nombre': nombre,
+    if (descripcion != null) 'descripcion': descripcion,
+    if (codigo != null) 'codigo': codigo,
+  };
 }
 
 class MateriaUpdate {
@@ -305,10 +306,10 @@ class MateriaUpdate {
   MateriaUpdate({this.nombre, this.descripcion, this.codigo});
 
   Map<String, dynamic> toJson() => {
-        if (nombre != null) 'nombre': nombre,
-        if (descripcion != null) 'descripcion': descripcion,
-        if (codigo != null) 'codigo': codigo,
-      };
+    if (nombre != null) 'nombre': nombre,
+    if (descripcion != null) 'descripcion': descripcion,
+    if (codigo != null) 'codigo': codigo,
+  };
 }
 
 class CarreraMateriaCreate {
@@ -325,11 +326,11 @@ class CarreraMateriaCreate {
   });
 
   Map<String, dynamic> toJson() => {
-        'carrera_id': carreraId,
-        'materia_id': materiaId,
-        if (anioAcademico != null) 'año_academico': anioAcademico,
-        if (cuatrimestre != null) 'cuatrimestre': cuatrimestre,
-      };
+    'carrera_id': carreraId,
+    'materia_id': materiaId,
+    if (anioAcademico != null) 'año_academico': anioAcademico,
+    if (cuatrimestre != null) 'cuatrimestre': cuatrimestre,
+  };
 }
 
 class CarreraMateriaUpdate {
@@ -339,9 +340,9 @@ class CarreraMateriaUpdate {
   CarreraMateriaUpdate({this.anioAcademico, this.cuatrimestre});
 
   Map<String, dynamic> toJson() => {
-        if (anioAcademico != null) 'año_academico': anioAcademico,
-        if (cuatrimestre != null) 'cuatrimestre': cuatrimestre,
-      };
+    if (anioAcademico != null) 'año_academico': anioAcademico,
+    if (cuatrimestre != null) 'cuatrimestre': cuatrimestre,
+  };
 }
 
 class UniversidadCreate {
@@ -358,11 +359,11 @@ class UniversidadCreate {
   });
 
   Map<String, dynamic> toJson() => {
-        'nombre': nombre,
-        if (descripcion != null) 'descripcion': descripcion,
-        if (pais != null) 'pais': pais,
-        if (ciudad != null) 'ciudad': ciudad,
-      };
+    'nombre': nombre,
+    if (descripcion != null) 'descripcion': descripcion,
+    if (pais != null) 'pais': pais,
+    if (ciudad != null) 'ciudad': ciudad,
+  };
 }
 
 class UniversidadUpdate {
@@ -374,11 +375,11 @@ class UniversidadUpdate {
   UniversidadUpdate({this.nombre, this.descripcion, this.pais, this.ciudad});
 
   Map<String, dynamic> toJson() => {
-        if (nombre != null) 'nombre': nombre,
-        if (descripcion != null) 'descripcion': descripcion,
-        if (pais != null) 'pais': pais,
-        if (ciudad != null) 'ciudad': ciudad,
-      };
+    if (nombre != null) 'nombre': nombre,
+    if (descripcion != null) 'descripcion': descripcion,
+    if (pais != null) 'pais': pais,
+    if (ciudad != null) 'ciudad': ciudad,
+  };
 }
 
 class FacultadCreate {
@@ -393,10 +394,10 @@ class FacultadCreate {
   });
 
   Map<String, dynamic> toJson() => {
-        'nombre': nombre,
-        if (descripcion != null) 'descripcion': descripcion,
-        'universidad_id': universidadId,
-      };
+    'nombre': nombre,
+    if (descripcion != null) 'descripcion': descripcion,
+    'universidad_id': universidadId,
+  };
 }
 
 class FacultadUpdate {
@@ -407,10 +408,10 @@ class FacultadUpdate {
   FacultadUpdate({this.nombre, this.descripcion, this.universidadId});
 
   Map<String, dynamic> toJson() => {
-        if (nombre != null) 'nombre': nombre,
-        if (descripcion != null) 'descripcion': descripcion,
-        if (universidadId != null) 'universidad_id': universidadId,
-      };
+    if (nombre != null) 'nombre': nombre,
+    if (descripcion != null) 'descripcion': descripcion,
+    if (universidadId != null) 'universidad_id': universidadId,
+  };
 }
 
 // ─── Gestión de Materias ─────────────────────────────────────────────
@@ -458,7 +459,8 @@ class MateriaGestionResponse {
 // ─── Documentos Admin (paginated) ────────────────────────────────────
 
 class DocumentoPaginatedResponse {
-  final List<dynamic> items; // Documento[] — se importa desde documento.dart donde se use
+  final List<dynamic>
+  items; // Documento[] — se importa desde documento.dart donde se use
   final PaginationMeta meta;
 
   DocumentoPaginatedResponse({required this.items, required this.meta});
@@ -531,11 +533,11 @@ class ReporteCreate {
   });
 
   Map<String, dynamic> toJson() => {
-        if (documentoId != null) 'documento_id': documentoId,
-        if (comentarioId != null) 'comentario_id': comentarioId,
-        'motivo': motivo,
-        if (descripcion != null) 'descripcion': descripcion,
-      };
+    if (documentoId != null) 'documento_id': documentoId,
+    if (comentarioId != null) 'comentario_id': comentarioId,
+    'motivo': motivo,
+    if (descripcion != null) 'descripcion': descripcion,
+  };
 }
 
 class ReporteResponse {
@@ -565,9 +567,9 @@ class ResolverReporteRequest {
   ResolverReporteRequest({required this.accion, this.nota});
 
   Map<String, dynamic> toJson() => {
-        'accion': accion,
-        if (nota != null) 'nota': nota,
-      };
+    'accion': accion,
+    if (nota != null) 'nota': nota,
+  };
 }
 
 // ─── Solicitudes de Rol ──────────────────────────────────────────────
@@ -634,9 +636,9 @@ class ResolverSolicitudRequest {
   ResolverSolicitudRequest({required this.accion, this.nota});
 
   Map<String, dynamic> toJson() => {
-        'accion': accion,
-        if (nota != null) 'nota': nota,
-      };
+    'accion': accion,
+    if (nota != null) 'nota': nota,
+  };
 }
 
 class BodySolicitudesRolCreate {
@@ -644,13 +646,10 @@ class BodySolicitudesRolCreate {
   final String motivo;
   // documento: multipart file, se maneja en el servicio
 
-  BodySolicitudesRolCreate({
-    required this.rolSolicitado,
-    required this.motivo,
-  });
+  BodySolicitudesRolCreate({required this.rolSolicitado, required this.motivo});
 
   Map<String, String> toFormFields() => {
-        'rol_solicitado': rolSolicitado,
-        'motivo': motivo,
-      };
+    'rol_solicitado': rolSolicitado,
+    'motivo': motivo,
+  };
 }

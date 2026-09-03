@@ -27,8 +27,12 @@ class Comentario {
       usuarioId: json['usuario_id'] ?? 0,
       documentoId: json['documento_id'] ?? 0,
       fecha: json['fecha'] != null ? DateTime.parse(json['fecha']) : null,
-      usuario: json['usuario'] != null ? Usuario.fromJson(json['usuario']) : null,
-      documento: json['documento'] != null ? Documento.fromJson(json['documento']) : null,
+      usuario: json['usuario'] != null
+          ? Usuario.fromJson(json['usuario'])
+          : null,
+      documento: json['documento'] != null
+          ? Documento.fromJson(json['documento'])
+          : null,
     );
   }
 
