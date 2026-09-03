@@ -3,6 +3,7 @@ import 'package:cotorra_app/screens/visualizer/image_visualizer_screen.dart';
 import 'package:cotorra_app/screens/visualizer/link_visualizer_screen.dart';
 import 'package:cotorra_app/screens/visualizer/pdf_visualizer_screen.dart';
 import 'package:cotorra_app/services/api_service.dart';
+import 'package:cotorra_app/widgets/common/document_report_sheet.dart';
 import 'package:flutter/material.dart';
 
 class DocumentViewScreen extends StatefulWidget {
@@ -31,7 +32,9 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
     try {
       final doc = await _apiService.getDocumento(widget.documento.id);
       print('[DocumentViewScreen] Documento cargado: ${doc.titulo}');
-      print('[DocumentViewScreen] Formato: ${doc.formato?.nombre} (id: ${doc.formatoId})');
+      print(
+        '[DocumentViewScreen] Formato: ${doc.formato?.nombre} (id: ${doc.formatoId})',
+      );
       print('[DocumentViewScreen] URL: ${doc.archivoUrl}');
       if (mounted) {
         setState(() {
@@ -50,18 +53,40 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
     }
   }
 
-  static const _unsupportedFormats = ['DOCUMENTO', 'PRESENTACION', 'HOJA_CALCULO', 'ZIP'];
+  static const _unsupportedFormats = [
+    'DOCUMENTO',
+    'PRESENTACION',
+    'HOJA_CALCULO',
+    'ZIP',
+  ];
+
+  /// Abre el bottom sheet de reporte.
+  /// El sheet muestra la confirmación (éxito/error) y se cierra solo.
+  Future<void> _reportDocument() async {
+    final documento = _documento ?? widget.documento;
+    await DocumentReportSheet.show(
+      context,
+      documentoId: documento.id,
+      documentoTitulo: documento.titulo,
+    );
+  }
 
   Widget _buildVisualizer() {
     final documento = _documento ?? widget.documento;
     final formatoNombre = documento.formato?.nombre.toUpperCase();
 
-    print('[DocumentViewScreen] _buildVisualizer - formatoNombre: $formatoNombre, titulo: ${documento.titulo}');
+    print(
+      '[DocumentViewScreen] _buildVisualizer - formatoNombre: $formatoNombre, titulo: ${documento.titulo}',
+    );
 
     if (formatoNombre == null) {
-      final isImage = documento.titulo.toLowerCase().contains('laboratorio') || documento.titulo.toLowerCase().contains('imagen');
+      final isImage =
+          documento.titulo.toLowerCase().contains('laboratorio') ||
+          documento.titulo.toLowerCase().contains('imagen');
       final isLink = documento.archivoUrl.startsWith('http');
-      print('[DocumentViewScreen] Formato null, fallback heuristica - isImage: $isImage, isLink: $isLink');
+      print(
+        '[DocumentViewScreen] Formato null, fallback heuristica - isImage: $isImage, isLink: $isLink',
+      );
 
       if (isImage) return ImageVisualizerScreen(documento: documento);
       if (isLink) return LinkVisualizerScreen(documento: documento);
@@ -83,7 +108,9 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
           print('[DocumentViewScreen] Formato no soportado: $formatoNombre');
           return _UnsupportedFormatView(formato: formatoNombre);
         }
-        print('[DocumentViewScreen] Formato desconocido, usando PdfVisualizerScreen por defecto');
+        print(
+          '[DocumentViewScreen] Formato desconocido, usando PdfVisualizerScreen por defecto',
+        );
         return PdfVisualizerScreen(documento: documento);
     }
   }
@@ -102,32 +129,42 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
           icon: const Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.flag_outlined),
+            tooltip: 'Reportar documento',
+            onPressed: _reportDocument,
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 48, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      Text(_errorMessage!, style: const TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _isLoading = true;
-                            _errorMessage = null;
-                          });
-                          _loadDocumento();
-                        },
-                        child: const Text('Reintentar'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.grey),
                   ),
-                )
-              : _buildVisualizer(),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLoading = true;
+                        _errorMessage = null;
+                      });
+                      _loadDocumento();
+                    },
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            )
+          : _buildVisualizer(),
     );
   }
 }
@@ -151,7 +188,11 @@ class _UnsupportedFormatView extends StatelessWidget {
                 color: Colors.grey.shade200,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.insert_drive_file, size: 64, color: Colors.grey),
+              child: const Icon(
+                Icons.insert_drive_file,
+                size: 64,
+                color: Colors.grey,
+              ),
             ),
             const SizedBox(height: 24),
             const Text(
