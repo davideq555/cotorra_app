@@ -24,6 +24,16 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
+    
+    signingConfigs {
+        create("release") {
+            // En Kotlin DSL usamos comillas dobles y asignación explícita con "="
+            storeFile = file(System.getProperty("user.home") + "/mi-llave-produccion.jks")
+            storePassword = "contra55"
+            keyAlias = "deqa"
+            keyPassword = "contra55"
+        }
+    }
 
     buildTypes {
         release {

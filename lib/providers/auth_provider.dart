@@ -7,11 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_client.dart';
 import '../services/api/auth_service.dart';
-
+import '../services/google_auth_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final ApiClient _client = ApiClient();
   late final AuthService _authService = AuthService(_client);
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
   static const String _favoritesCountKey = 'favorites_count';
 
   String? _token;
@@ -62,14 +63,14 @@ class AuthProvider with ChangeNotifier {
       _client.setToken(_token!);
       _user = tokenResponse.toUsuario();
       _errorMessage = null;
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', _token!);
       await prefs.setString('refresh_token', tokenResponse.refreshToken);
       // Guardamos la forma canónica (Usuario.toJson) para que
       // tryAutoLogin() -> Usuario.fromJson() round-trée sin divergencias.
       await prefs.setString('user_data', jsonEncode(_user!.toJson()));
-      
+
       notifyListeners();
       return true;
     } catch (e) {
@@ -79,6 +80,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Registra una cuenta normal (email + contraseña).
+  ///
+  /// NO hace auto-login: el backend envía un email de verificación y la
+  /// app debe mostrar [EmailVerificationScreen]. El usuario loguea después
+  /// de verificar. Las cuentas de Google no pasan por acá (ver
+  /// [loginWithGoogle], que loguea directo sin verificación).
   Future<bool> register(UsuarioCreate userCreate) async {
     try {
       await _authService.register(
@@ -89,7 +96,57 @@ class AuthProvider with ChangeNotifier {
           carreraIds: userCreate.carreraIds,
         ),
       );
-      return await login(userCreate.email, userCreate.contrasena);
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = _parseErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Login/registro con Google Sign-In.
+  /// Si el usuario ya existe → login normal.
+  /// Si es nuevo → registro automático (sin verificación de email).
+  Future<bool> loginWithGoogle() async {
+    try {
+      // 1. Obtener ID token de Google
+      final googleResult = await _googleAuthService.signIn();
+
+      // 2. Enviar al backend
+      final tokenResponse = await _authService.loginGoogle(
+        GoogleLoginRequest(credential: googleResult.idToken),
+      );
+
+      // 3. Guardar sesión (mismo flujo que login normal)
+      _token = tokenResponse.accessToken;
+      _client.setToken(_token!);
+      _user = tokenResponse.toUsuario();
+      _errorMessage = null;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', _token!);
+      await prefs.setString('refresh_token', tokenResponse.refreshToken);
+      await prefs.setString('user_data', jsonEncode(_user!.toJson()));
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = _parseErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Solicita un link de recuperación de contraseña por email.
+  /// POST /auth/forgot-password — el backend manda el email con el link.
+  Future<bool> forgotPassword(String email) async {
+    try {
+      await _authService.forgotPassword(ForgotPasswordRequest(email: email));
+      _errorMessage = null;
+      notifyListeners();
+      return true;
     } catch (e) {
       _errorMessage = _parseErrorMessage(e);
       notifyListeners();
@@ -109,7 +166,7 @@ class AuthProvider with ChangeNotifier {
         if (json is Map && json.containsKey('detail')) {
           final detail = json['detail'].toString();
           // Traducir mensajes comunes del backend
-          if (detail.toLowerCase().contains('incorrect') || 
+          if (detail.toLowerCase().contains('incorrect') ||
               detail.toLowerCase().contains('invalid')) {
             return 'Email o contraseña incorrectos';
           }
@@ -123,7 +180,8 @@ class AuthProvider with ChangeNotifier {
       }
     }
     // Mensaje por defecto si no se puede extraer
-    if (errorStr.contains('SocketException') || errorStr.contains('Connection')) {
+    if (errorStr.contains('SocketException') ||
+        errorStr.contains('Connection')) {
       return 'No se pudo conectar al servidor. Verificá tu conexión a internet.';
     }
     return 'Ocurrió un error. Por favor intentá de nuevo.';

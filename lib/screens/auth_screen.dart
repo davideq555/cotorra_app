@@ -8,7 +8,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/common/facultad_dropdown.dart';
 import '../widgets/common/carrera_dropdown.dart';
-
+import 'email_verification_screen.dart';
+import 'forgot_password_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -20,7 +21,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
   final _formKey = GlobalKey<FormState>();
-  
+
   final _nombreController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -35,7 +36,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     if (!_isLogin && _selectedCarrera == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -45,12 +46,13 @@ class _AuthScreenState extends State<AuthScreen> {
       );
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     bool success = false;
-    
+    String? registeredEmail;
+
     if (_isLogin) {
       success = await authProvider.login(
         _emailController.text.trim(),
@@ -65,27 +67,69 @@ class _AuthScreenState extends State<AuthScreen> {
         carreraIds: [_selectedCarrera!.id],
       );
       success = await authProvider.register(userCreate);
+      if (success) registeredEmail = userCreate.email;
     }
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (!success) {
+      final errorMsg = authProvider.errorMessage;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMsg ??
+                (_isLogin ? 'Error al iniciar sesión' : 'Error al registrarse'),
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    // Registro normal: mostrar pantalla de verificación de email.
+    // (Las cuentas de Google loguean directo, sin este paso.)
+    if (registeredEmail != null) {
+      final wentToLogin = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => EmailVerificationScreen(email: registeredEmail!),
+        ),
+      );
+      // Si el usuario verificó y volvió, pasamos el formulario a login
+      // y limpiamos la contraseña para que la vuelva a escribir.
+      if (wentToLogin == true && mounted) {
+        setState(() {
+          _isLogin = true;
+          _passwordController.clear();
+          _confirmPasswordController.clear();
+        });
+      }
+    }
+  }
+
+  void _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.loginWithGoogle();
 
     setState(() => _isLoading = false);
 
     if (!success && mounted) {
       final errorMsg = authProvider.errorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            errorMsg ?? (_isLogin ? 'Error al iniciar sesión' : 'Error al registrarse'),
-          ),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      // No mostrar error si el usuario canceló
+      if (errorMsg != null && !errorMsg.contains('canceló')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.redAccent),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     const primaryGreen = Color(0xFF7CB342);
-    
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -103,10 +147,12 @@ class _AuthScreenState extends State<AuthScreen> {
                       color: Colors.black.withOpacity(0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
-                    )
+                    ),
                   ],
                 ),
-                child: const Image(image: AssetImage('assets/images/logotipo.png')),
+                child: const Image(
+                  image: AssetImage('assets/images/logotipo.png'),
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -139,7 +185,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       color: Colors.black.withOpacity(0.04),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
-                    )
+                    ),
                   ],
                 ),
                 child: Form(
@@ -175,8 +221,9 @@ class _AuthScreenState extends State<AuthScreen> {
                               borderSide: BorderSide.none,
                             ),
                           ),
-                          validator: (value) =>
-                              value!.isEmpty ? 'Por favor ingresa tu nombre' : null,
+                          validator: (value) => value!.isEmpty
+                              ? 'Por favor ingresa tu nombre'
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -195,8 +242,9 @@ class _AuthScreenState extends State<AuthScreen> {
                               _selectedCarrera = null;
                             });
                             if (facultad != null) {
-                              _carreraDropdownKey.currentState
-                                  ?.resetAndLoad(facultad.id);
+                              _carreraDropdownKey.currentState?.resetAndLoad(
+                                facultad.id,
+                              );
                             }
                           },
                         ),
@@ -310,6 +358,30 @@ class _AuthScreenState extends State<AuthScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      // Link de recuperación: solo tiene sentido en login.
+                      if (_isLogin) ...[
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const ForgotPasswordScreen(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              '¿Olvidaste tu contraseña?',
+                              style: TextStyle(
+                                color: primaryGreen,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                       if (!_isLogin) ...[
                         const Text(
                           'Confirmar Contraseña',
@@ -343,7 +415,8 @@ class _AuthScreenState extends State<AuthScreen> {
                               ),
                               onPressed: () {
                                 setState(() {
-                                  _obscureConfirmPassword = !_obscureConfirmPassword;
+                                  _obscureConfirmPassword =
+                                      !_obscureConfirmPassword;
                                 });
                               },
                             ),
@@ -363,11 +436,17 @@ class _AuthScreenState extends State<AuthScreen> {
                       ],
                       const SizedBox(height: 8),
                       _isLoading
-                          ? const Center(child: CircularProgressIndicator(color: primaryGreen))
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: primaryGreen,
+                              ),
+                            )
                           : ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryGreen,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -382,6 +461,60 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ),
                               ),
                             ),
+                      const SizedBox(height: 20),
+                      // ─── Divider con "o" ───
+                      Row(
+                        children: [
+                          const Expanded(child: Divider(color: Colors.grey)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'o',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          const Expanded(child: Divider(color: Colors.grey)),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // ─── Botón Google Sign-In ───
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey[300]!),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: _isLoading ? null : _signInWithGoogle,
+                          icon: Image.asset(
+                            'assets/images/google_logo.png',
+                            height: 24,
+                            width: 24,
+                            errorBuilder: (context, error, stackTrace) {
+                              // Fallback si no hay imagen de Google
+                              return const Icon(
+                                Icons.g_mobiledata,
+                                size: 24,
+                                color: Colors.blue,
+                              );
+                            },
+                          ),
+                          label: Text(
+                            'Continuar con Google',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 20),
                       TextButton(
                         onPressed: () {

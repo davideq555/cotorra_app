@@ -26,7 +26,8 @@ class UrlLauncherUtil {
   }
 
   static bool isGoogleDrive(String url) {
-    return url.contains('drive.google.com') || url.contains('drive.usercontent.google.com');
+    return url.contains('drive.google.com') ||
+        url.contains('drive.usercontent.google.com');
   }
 
   static bool isGitHub(String url) {
@@ -77,11 +78,43 @@ class UrlLauncherUtil {
       return false;
     }
   }
+
+  /// Abre la app de correo del usuario (Android).
+  ///
+  /// Estrategia en capas:
+  /// 1. Gmail: la app registra un intent filter para mail.google.com, así
+  ///    que abrir ese link con externalApplication lanza la app de Gmail
+  ///    directo a la bandeja de entrada (si está instalada).
+  /// 2. Fallback: mailto: abre la app de email por defecto del sistema
+  ///    (Outlook, Yahoo, el cliente que el usuario tenga configurado).
+  ///
+  /// NOTA: url_launcher NO soporta la sintaxis intent://, por eso se usa
+  /// el deep link de Gmail. Si Gmail no está instalado y el navegador
+  /// intercepta el link, el usuario cae en Gmail web — igual puede leer
+  /// su correo ahí.
+  ///
+  /// Retorna true si logró abrir alguna, false si ninguna funcionó.
+  static Future<bool> openMailApp() async {
+    final gmailInbox = Uri.parse('https://mail.google.com/mail/u/0/#inbox');
+    try {
+      if (await launchUrl(gmailInbox, mode: LaunchMode.externalApplication)) {
+        return true;
+      }
+    } catch (_) {
+      // Gmail no disponible, probar con el cliente de mail por defecto.
+    }
+
+    final mailto = Uri.parse('mailto:');
+    try {
+      if (await launchUrl(mailto, mode: LaunchMode.externalApplication)) {
+        return true;
+      }
+    } catch (_) {
+      // Sin app de mail disponible.
+    }
+
+    return false;
+  }
 }
 
-enum UrlType {
-  youtube,
-  googleDrive,
-  github,
-  other,
-}
+enum UrlType { youtube, googleDrive, github, other }
