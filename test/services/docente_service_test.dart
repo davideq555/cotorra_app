@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cotorra_app/models/documento.dart';
+import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/usuario_materia.dart';
 import 'package:cotorra_app/services/api/docente_service.dart';
 import 'package:cotorra_app/services/api_client.dart';
@@ -120,6 +121,61 @@ void main() {
       final rows = await service.getMateriasSuscritas();
 
       expect(rows, isEmpty);
+    });
+  });
+
+  group('DocenteService.getMateriasGestion', () {
+    test(
+      'pide GET /materias-suscritas/gestion y mapea filas materia completas',
+      () async {
+        // Forma live-verificada (design addendum): cada fila es un objeto
+        // materia completo, no una suscripción usuario↔materia.
+        stubGet(
+          _json([
+            {
+              'id': 22,
+              'nombre': 'Álgebra I',
+              'descripcion': 'Estructuras algebraicas básicas',
+              'codigo': 'ALG-1',
+            },
+            {'id': 23, 'nombre': 'Análisis Matemático', 'codigo': 'ANA-1'},
+          ]),
+        );
+
+        final materias = await service.getMateriasGestion();
+
+        final uri = lastGetUri();
+        expect(uri.path, '/api/v1/materias-suscritas/gestion');
+        expect(uri.queryParameters, isEmpty);
+
+        expect(materias, hasLength(2));
+        final Materia primera = materias.first;
+        expect(primera.id, 22);
+        expect(primera.nombre, 'Álgebra I');
+        expect(primera.descripcion, 'Estructuras algebraicas básicas');
+        expect(primera.codigo, 'ALG-1');
+        expect(materias[1].descripcion, isNull);
+        expect(materias[1].codigo, 'ANA-1');
+      },
+    );
+
+    test('respuesta vacía retorna lista vacía, no null', () async {
+      stubGet(_json([]));
+
+      final materias = await service.getMateriasGestion();
+
+      expect(materias, isEmpty);
+    });
+
+    test('403 fuera de scope lanza ApiException con statusCode', () async {
+      stubGet(_json({'detail': 'No sos docente'}, 403));
+
+      await expectLater(
+        service.getMateriasGestion(),
+        throwsA(
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 403),
+        ),
+      );
     });
   });
 

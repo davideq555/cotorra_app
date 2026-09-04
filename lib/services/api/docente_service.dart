@@ -1,4 +1,5 @@
 import 'package:cotorra_app/models/documento.dart';
+import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/usuario_materia.dart';
 import 'package:cotorra_app/services/api_client.dart';
 
@@ -30,6 +31,23 @@ class DocenteService {
     return (data as List<dynamic>?)
             ?.map((j) => UsuarioMateria.fromJson(j))
             .toList() ??
+        [];
+  }
+
+  /// GET /materias-suscritas/gestion — materias a cargo del docente
+  /// autenticado, verificadas en vivo (2026-09-04): cada fila es un objeto
+  /// materia completo {id, nombre, descripcion, codigo}, no una suscripción
+  /// usuario↔materia; el servidor ya resuelve los nombres.
+  ///
+  /// NOTA DE CONTRATO: este endpoint todavía NO figura en openapi.json
+  /// (pendiente de sincronización por el usuario). Implementado contra la
+  /// forma verificada en vivo; [Materia.fromJson] ya la tolera (campos
+  /// opcionales con defaults) sin afectar a consumidores existentes.
+  /// Devuelve la lista completa: el endpoint no pagina (design addendum).
+  Future<List<Materia>> getMateriasGestion() async {
+    final response = await _client.get('/materias-suscritas/gestion');
+    final data = _client.decodeResponse(response);
+    return (data as List<dynamic>?)?.map((j) => Materia.fromJson(j)).toList() ??
         [];
   }
 
