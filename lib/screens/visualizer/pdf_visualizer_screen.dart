@@ -50,7 +50,8 @@ class _PdfVisualizerScreenState extends State<PdfVisualizerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryGreen = const Color(0xFF7CB342);
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -79,10 +80,11 @@ class _PdfVisualizerScreenState extends State<PdfVisualizerScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            // Theme-aware: en oscuro usa la misma superficie que las cards.
+            color: isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade100,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -94,9 +96,10 @@ class _PdfVisualizerScreenState extends State<PdfVisualizerScreen> {
               if (_totalPages > 0)
                 Text(
                   'Página $_currentPage de $_totalPages',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 )
               else
@@ -108,7 +111,7 @@ class _PdfVisualizerScreenState extends State<PdfVisualizerScreen> {
                       icon: const Icon(Icons.offline_pin, size: 20),
                       onPressed: null,
                       tooltip: 'Disponible offline',
-                      color: primaryGreen,
+                      color: primaryColor,
                     )
                   else
                     const SizedBox.shrink(),

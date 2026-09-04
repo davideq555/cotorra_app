@@ -158,13 +158,24 @@ class AuthProvider with ChangeNotifier {
   /// Si el usuario ya existe → login normal.
   /// Si es nuevo → registro automático (sin verificación de email).
   Future<bool> loginWithGoogle() async {
+    debugPrint('[GoogleAuth] ── loginWithGoogle() BEGIN ──');
     try {
       // 1. Obtener ID token de Google
       final googleResult = await _googleAuthService.signIn();
+      debugPrint(
+        '[GoogleAuth] Paso 1 ok: idToken de ${googleResult.idToken.length} chars '
+        'para ${googleResult.email ?? '(sin email)'}',
+      );
 
       // 2. Enviar al backend
+      debugPrint('[GoogleAuth] Paso 2: POST /auth/google …');
       final tokenResponse = await _authService.loginGoogle(
         GoogleLoginRequest(credential: googleResult.idToken),
+      );
+      debugPrint(
+        '[GoogleAuth] Paso 2 ok: backend devolvió accessToken='
+        '${tokenResponse.accessToken.length} chars, '
+        'refreshToken=${tokenResponse.refreshToken.length} chars',
       );
 
       // 3. Guardar sesión (mismo flujo que login normal)
@@ -178,10 +189,19 @@ class AuthProvider with ChangeNotifier {
       await prefs.setString('refresh_token', tokenResponse.refreshToken);
       await prefs.setString('user_data', jsonEncode(_user!.toJson()));
 
+      debugPrint(
+        '[GoogleAuth] ✅ Paso 3 ok: sesión guardada para '
+        '${_user?.email ?? "(sin email)"} (userId=${_user?.id}) — loginWithGoogle() END',
+      );
       notifyListeners();
       return true;
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint(
+        '[GoogleAuth] ❌ loginWithGoogle() falló en ${e.runtimeType}: $e',
+      );
+      debugPrint('[GoogleAuth] stack: $st');
       _errorMessage = _parseErrorMessage(e);
+      debugPrint('[GoogleAuth] mensaje mostrado al usuario: "$_errorMessage"');
       notifyListeners();
       return false;
     }
@@ -204,6 +224,10 @@ class AuthProvider with ChangeNotifier {
 
   /// Extrae el mensaje de error del backend desde una Exception
   String _parseErrorMessage(dynamic error) {
+    // Los errores propios de Google Sign-In ya vienen con mensaje accionable.
+    if (error is GoogleSignInException) {
+      return error.message;
+    }
     final errorStr = error.toString();
     // Intentar extraer el JSON del mensaje de error
     // Formato: "Exception: Failed to login: {\"detail\": \"...\"}"

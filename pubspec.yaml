@@ -42,5 +42,6 @@ flutter:
   assets:
     - assets/images/free.png
     - assets/images/logotipo.png
+    - assets/images/logo-google.png
     - assets/images/search.png
     - .env

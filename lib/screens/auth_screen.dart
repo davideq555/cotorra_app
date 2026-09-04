@@ -108,19 +108,28 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _signInWithGoogle() async {
+    debugPrint('[GoogleAuth] Botón "Continuar con Google" presionado.');
     setState(() => _isLoading = true);
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.loginWithGoogle();
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
+    debugPrint('[GoogleAuth] Resultado en AuthScreen: success=$success');
     if (!success && mounted) {
       final errorMsg = authProvider.errorMessage;
       // No mostrar error si el usuario canceló
       if (errorMsg != null && !errorMsg.contains('canceló')) {
+        debugPrint('[GoogleAuth] Mostrando SnackBar de error: "$errorMsg"');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMsg), backgroundColor: Colors.redAccent),
+        );
+      } else {
+        debugPrint(
+          '[GoogleAuth] Sin SnackBar (cancelación del usuario). '
+          'errorMsg=${errorMsg == null ? "null" : '"$errorMsg"'}',
         );
       }
     }
@@ -133,13 +142,13 @@ class _AuthScreenState extends State<AuthScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+          padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: 120,
-                height: 120,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
@@ -154,29 +163,29 @@ class _AuthScreenState extends State<AuthScreen> {
                   image: AssetImage('assets/images/logotipo.png'),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               const Text(
                 'Cotorra',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: primaryGreen,
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 2),
               const Text(
                 'Tu plataforma colaborativa universitaria',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   color: Colors.grey,
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.all(28.0),
+                padding: const EdgeInsets.all(20.0),
                 decoration: BoxDecoration(
                   color: Colors.white10,
                   borderRadius: BorderRadius.circular(24),
@@ -201,7 +210,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 14),
                       if (!_isLogin) ...[
                         const Text(
                           'Nombre completo',
@@ -225,7 +234,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               ? 'Por favor ingresa tu nombre'
                               : null,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         const Text(
                           'Facultad',
                           style: TextStyle(
@@ -248,7 +257,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             }
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         const Text(
                           'Carrera',
                           style: TextStyle(
@@ -267,7 +276,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             });
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                       ],
                       const Text(
                         'Email',
@@ -303,7 +312,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         },
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       const Text(
                         'Contraseña',
                         style: TextStyle(
@@ -357,7 +366,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       // Link de recuperación: solo tiene sentido en login.
                       if (_isLogin) ...[
                         Align(
@@ -432,9 +441,9 @@ class _AuthScreenState extends State<AuthScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                       ],
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       _isLoading
                           ? const Center(
                               child: CircularProgressIndicator(
@@ -461,7 +470,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ),
                               ),
                             ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
                       // ─── Divider con "o" ───
                       Row(
                         children: [
@@ -479,7 +488,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           const Expanded(child: Divider(color: Colors.grey)),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
                       // ─── Botón Google Sign-In ───
                       SizedBox(
                         width: double.infinity,
@@ -493,11 +502,11 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                           onPressed: _isLoading ? null : _signInWithGoogle,
                           icon: Image.asset(
-                            'assets/images/google_logo.png',
+                            'assets/images/logo-google.png',
                             height: 24,
                             width: 24,
                             errorBuilder: (context, error, stackTrace) {
-                              // Fallback si no hay imagen de Google
+                              // Fallback si la imagen no está en el bundle
                               return const Icon(
                                 Icons.g_mobiledata,
                                 size: 24,
@@ -515,7 +524,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
                       TextButton(
                         onPressed: () {
                           setState(() {
