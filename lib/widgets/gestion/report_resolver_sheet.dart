@@ -121,9 +121,8 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
     // Borrar documento es destructivo: sin confirmación explícita no se envía.
     if (accion == AccionResolver.eliminar) {
       final confirmado = await _confirmarEliminar();
-      if (!confirmado)
-        return; // cancela → no se manda nada, el sheet sigue abierto
-      if (!mounted) return; // el sheet se cerró entre medias
+      // Cancelar deja el sheet abierto y no manda nada.
+      if (!confirmado || !mounted) return;
     }
 
     // Capturamos messenger y navigator ANTES del async gap: el sheet se
