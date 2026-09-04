@@ -1,4 +1,5 @@
 import 'package:cotorra_app/providers/auth_provider.dart';
+import 'package:cotorra_app/screens/gestion/docente_materias_screen.dart';
 import 'package:cotorra_app/screens/gestion/reportes_gestion_screen.dart';
 import 'package:cotorra_app/widgets/profile/settings_tile.dart';
 import 'package:flutter/material.dart';
@@ -46,9 +47,7 @@ class GestionScreen extends StatelessWidget {
                     title: 'Moderación de documentos',
                     subtitle: 'Materias a cargo y documentos pendientes',
                     icon: Icons.school_outlined,
-                    // TODO(T2.2): reemplazar el destino por DocenteMateriasScreen
-                    // cuando el flujo docente pase la verificación V1.
-                    onTap: () => _push(context, const _EnConstruccionScreen()),
+                    onTap: () => _push(context, const DocenteMateriasScreen()),
                   ),
                 ],
                 if (rol?.trim().toUpperCase() == 'COLABORADOR') ...[
@@ -88,50 +87,5 @@ class GestionScreen extends StatelessWidget {
 
   void _push(BuildContext context, Widget screen) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
-  }
-}
-
-/// Placeholder del flujo docente (T2.2), gated por la verificación V1 con
-/// credenciales DOCENTE reales. No es dead code: el tile DOCENTE debe existir
-/// y navegar a algo honesto hasta que la pantalla real aterrice en PR #1.
-class _EnConstruccionScreen extends StatelessWidget {
-  const _EnConstruccionScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Moderación docente',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.construction_outlined,
-                size: 48,
-                color: Colors.grey[500],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Esta sección está en construcción.\n'
-                'Depende de la verificación del acceso docente (V1).',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
