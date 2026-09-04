@@ -30,6 +30,49 @@ class _DatosPersonalesScreenState extends State<DatosPersonalesScreen> {
     _nombreController = TextEditingController(text: auth.userName ?? '');
     _usernameController = TextEditingController(text: auth.userUsername ?? '');
     _bioController = TextEditingController(text: auth.userBio ?? '');
+    // El LoginResponse no trae username ni bio, así que la sesión puede
+    // arrancar con esos campos vacíos: traemos el usuario completo.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _cargarDatosFrescos();
+    });
+  }
+
+  /// GET /auth/me — rellena los campos que quedaron vacíos (el username y la
+  /// bio no viajan en el login) y sincroniza el AuthProvider con el usuario
+  /// completo, de modo que también se corrije la sesión persistida.
+  Future<void> _cargarDatosFrescos() async {
+    final auth = context.read<AuthProvider>();
+    final token = auth.token;
+    if (token == null || token.isEmpty) return;
+
+    final hayCamposVacios =
+        _nombreController.text.trim().isEmpty ||
+        _usernameController.text.trim().isEmpty ||
+        _bioController.text.trim().isEmpty;
+    if (!hayCamposVacios) return;
+
+    try {
+      final client = ApiClient();
+      client.setToken(token);
+      final me = await UsersService(client).getMe();
+      // Aplica y persiste el usuario completo para el resto de la app.
+      await auth.applyUpdatedUser(me);
+      if (!mounted) return;
+      setState(() {
+        // Solo rellena lo que sigue vacío: no pisa lo que el usuario tipeó.
+        if (_nombreController.text.trim().isEmpty && me.nombre.isNotEmpty) {
+          _nombreController.text = me.nombre;
+        }
+        if (_usernameController.text.trim().isEmpty && me.username.isNotEmpty) {
+          _usernameController.text = me.username;
+        }
+        if (_bioController.text.trim().isEmpty && me.bio != null) {
+          _bioController.text = me.bio!;
+        }
+      });
+    } catch (_) {
+      // Falla silenciosa: los campos igual quedan editables para guardar.
+    }
   }
 
   @override

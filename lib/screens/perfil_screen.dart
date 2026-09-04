@@ -1,10 +1,13 @@
+import 'package:cotorra_app/models/usuario_stats.dart';
 import 'package:cotorra_app/providers/auth_provider.dart';
 import 'package:cotorra_app/providers/favorites_cache_provider.dart';
 import 'package:cotorra_app/providers/user_documents_cache_provider.dart';
+import 'package:cotorra_app/services/api/users_service.dart';
+import 'package:cotorra_app/services/api_client.dart';
 import 'package:cotorra_app/widgets/common/document_card.dart';
 import 'package:cotorra_app/widgets/common/refreshable_list.dart';
 import 'package:cotorra_app/widgets/profile/profile_info.dart';
-import 'package:cotorra_app/widgets/profile/stats_row.dart';
+import 'package:cotorra_app/widgets/profile/stats_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,11 +19,16 @@ class PerfilScreen extends StatefulWidget {
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
+  /// Estadísticas del backend (GET /usuarios/{id}/stats). Null mientras
+  /// carga o si falla — en ese caso la grilla usa fallbacks locales.
+  UsuarioStats? _stats;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadDocuments();
+      _loadStats();
     });
   }
 
@@ -35,6 +43,24 @@ class _PerfilScreenState extends State<PerfilScreen> {
       auth.updateFavoritesCount(
         (context.read<FavoritesCacheProvider>().favorites.length),
       );
+    }
+  }
+
+  /// GET /usuarios/{id}/stats — fallback silencioso: si falla se mantiene
+  /// null y la grilla muestra los valores locales.
+  Future<void> _loadStats() async {
+    final auth = context.read<AuthProvider>();
+    if (!auth.isAuthenticated) return;
+
+    try {
+      final client = ApiClient();
+      client.setToken(auth.token!);
+      final stats = await UsersService(client).getUsuarioStats(auth.userId!);
+      if (!mounted) return;
+      setState(() => _stats = stats);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _stats = null);
     }
   }
 
@@ -54,11 +80,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
           inicial: (auth.userName != null && auth.userName!.isNotEmpty)
               ? auth.userName![0].toUpperCase()
               : 'U',
+          bio: auth.userBio,
         ),
         const SizedBox(height: 32),
-        StatsRow(
-          favoritosCount: favProvider.favorites.length,
-          documentosCount: docsProvider.documentos.length,
+        StatsGrid(
+          subidas: _stats?.totalDocumentos ?? docsProvider.documentos.length,
+          descargas: _stats?.totalDescargas ?? 0,
+          favoritos: _stats?.totalFavoritos ?? favProvider.favorites.length,
+          karma: _stats?.karma ?? 0,
         ),
         const SizedBox(height: 32),
         const Text(
@@ -77,6 +106,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
             onRefresh: () async {
               if (auth.isAuthenticated) {
                 await docsProvider.reload(auth.token!, auth.userId!);
+                await _loadStats();
               }
             },
             itemBuilder: (context, doc, index) {

@@ -2,6 +2,7 @@ import 'package:cotorra_app/models/admin_models.dart';
 import 'package:cotorra_app/models/auth_models.dart';
 import 'package:cotorra_app/models/carrera.dart';
 import 'package:cotorra_app/models/usuario.dart';
+import 'package:cotorra_app/models/usuario_stats.dart';
 import 'package:cotorra_app/services/api_client.dart';
 
 /// Servicio de usuarios — perfil, carreras, contraseña.
@@ -43,9 +44,9 @@ class UsersService {
   }
 
   /// GET /usuarios/{id}/stats — Estadísticas de un usuario.
-  Future<Map<String, dynamic>> getUsuarioStats(int usuarioId) async {
+  Future<UsuarioStats> getUsuarioStats(int usuarioId) async {
     final response = await _client.get('/usuarios/$usuarioId/stats');
-    return _client.decodeResponse(response);
+    return UsuarioStats.fromJson(_client.decodeResponse(response));
   }
 
   // ─── Carreras del usuario ────────────────────────────────────────
