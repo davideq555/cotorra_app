@@ -16,10 +16,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// final response = await client.get('/auth/me');
 /// ```
 class ApiClient {
-  ApiClient({String? baseUrl}) : _baseUrlOverride = baseUrl;
+  /// [httpClient] es opcional y solo para tests: permite inyectar un client
+  /// mock. En producción se usa el client compartido de [_http] (mismo
+  /// comportamiento de keep-alive de las funciones top-level de package:http).
+  ApiClient({String? baseUrl, http.Client? httpClient})
+    : _baseUrlOverride = baseUrl,
+      _httpClient = httpClient;
 
   final String? _baseUrlOverride;
+  final http.Client? _httpClient;
   String? _token;
+
+  /// Client HTTP por defecto, compartido entre instancias sin inyectar
+  /// (réplica del singleton interno que usan http.get/http.post top-level).
+  static final http.Client _sharedClient = http.Client();
+
+  /// Client efectivo para los métodos verbos: inyectado o compartido.
+  http.Client get _http => _httpClient ?? _sharedClient;
 
   /// Función async para refrescar el access_token usando el refresh_token.
   /// Inyectada por AuthProvider tras login.
@@ -108,7 +121,7 @@ class ApiClient {
       final uri = Uri.parse(
         '$baseUrl$path',
       ).replace(queryParameters: queryParams);
-      return http.get(uri, headers: _jsonHeaders(includeAuth: requireAuth));
+      return _http.get(uri, headers: _jsonHeaders(includeAuth: requireAuth));
     }, skip: skipRefresh);
   }
 
@@ -120,7 +133,7 @@ class ApiClient {
     bool skipRefresh = false,
   }) async {
     return _retryOn401(() {
-      return http.post(
+      return _http.post(
         Uri.parse('$baseUrl$path'),
         headers: _jsonHeaders(includeAuth: requireAuth),
         body: body != null ? jsonEncode(body) : null,
@@ -136,7 +149,7 @@ class ApiClient {
     bool skipRefresh = false,
   }) async {
     return _retryOn401(() {
-      return http.put(
+      return _http.put(
         Uri.parse('$baseUrl$path'),
         headers: _jsonHeaders(includeAuth: requireAuth),
         body: body != null ? jsonEncode(body) : null,
@@ -151,7 +164,7 @@ class ApiClient {
     bool skipRefresh = false,
   }) async {
     return _retryOn401(() {
-      return http.delete(
+      return _http.delete(
         Uri.parse('$baseUrl$path'),
         headers: _jsonHeaders(includeAuth: requireAuth),
       );
@@ -166,7 +179,7 @@ class ApiClient {
     bool skipRefresh = false,
   }) async {
     return _retryOn401(() {
-      return http.post(
+      return _http.post(
         Uri.parse('$baseUrl$path'),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -194,7 +207,10 @@ class ApiClient {
       request.fields.addAll(fields);
       request.files.addAll(files);
 
-      final streamedResponse = await request.send();
+      // Con client inyectado se enruta por él (permite mockear uploads);
+      // sin inyectar, request.send() conserva el comportamiento original.
+      final streamedResponse =
+          await (_httpClient?.send(request) ?? request.send());
       return http.Response.fromStream(streamedResponse);
     }, skip: skipRefresh);
   }

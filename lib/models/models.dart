@@ -12,5 +12,6 @@ export 'tag.dart';
 export 'comentario.dart';
 export 'valoracion.dart';
 export 'usuarioCarrera.dart';
+export 'usuario_materia.dart';
 export 'carreraMateria.dart';
 export 'documentoFavorito.dart';
