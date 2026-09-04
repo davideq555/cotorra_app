@@ -9,10 +9,6 @@
     {
       "url": "http://localhost:8000",
       "description": "Local"
-    },
-    {
-      "url": "http://localhost:8090",
-      "description": "Staging"
     }
   ],
   "paths": {
@@ -7415,6 +7411,72 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/api/v1/materias-suscritas/gestion": {
+      "get": {
+        "tags": [
+          "materias-suscritas"
+        ],
+        "summary": "Obtener Materias Gestionadas",
+        "description": "Devuelve todas las materias de tipo gestión (tipo_relacion=\"gestion\") del docente logueado.",
+        "operationId": "obtener_materias_gestionadas_api_v1_materias_suscritas_gestion_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Materia"
+                  },
+                  "title": "Response Obtener Materias Gestionadas Api V1 Materias Suscritas Gestion Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/materias-suscritas/check/{materia_id}": {

@@ -1,0 +1,95 @@
+import 'package:cotorra_app/models/documento.dart';
+import 'package:cotorra_app/models/materia.dart';
+import 'package:cotorra_app/models/usuario_materia.dart';
+import 'package:cotorra_app/services/api_client.dart';
+
+/// Servicio del flujo DOCENTE — endpoints scopeados de openapi.json.
+///
+/// El servidor restringe el scope por token: si el usuario no es docente
+/// de la materia/documento, responde 403 y [ApiClient.decodeResponse]
+/// lo propaga como [ApiException]. El cliente nunca simula permisos.
+class DocenteService {
+  final ApiClient _client;
+
+  DocenteService(this._client);
+
+  /// GET /materias-suscritas/ — suscripciones usuario↔materia del usuario
+  /// autenticado. Incluye también suscripciones de alumno: quien necesite
+  /// solo materias docentes filtra por [UsuarioMateria.tipoRelacion].
+  ///
+  /// Default [limit] 100: la pantalla de materias del docente toma todo
+  /// en una sola página (no se espera volumen mayor por docente).
+  Future<List<UsuarioMateria>> getMateriasSuscritas({
+    int skip = 0,
+    int limit = 100,
+  }) async {
+    final response = await _client.get(
+      '/materias-suscritas/',
+      queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
+    );
+    final data = _client.decodeResponse(response);
+    return (data as List<dynamic>?)
+            ?.map((j) => UsuarioMateria.fromJson(j))
+            .toList() ??
+        [];
+  }
+
+  /// GET /materias-suscritas/gestion — materias a cargo del docente
+  /// autenticado, verificadas en vivo (2026-09-04): cada fila es un objeto
+  /// materia completo {id, nombre, descripcion, codigo}, no una suscripción
+  /// usuario↔materia; el servidor ya resuelve los nombres.
+  ///
+  /// NOTA DE CONTRATO: este endpoint todavía NO figura en openapi.json
+  /// (pendiente de sincronización por el usuario). Implementado contra la
+  /// forma verificada en vivo; [Materia.fromJson] ya la tolera (campos
+  /// opcionales con defaults) sin afectar a consumidores existentes.
+  /// Devuelve la lista completa: el endpoint no pagina (design addendum).
+  Future<List<Materia>> getMateriasGestion() async {
+    final response = await _client.get('/materias-suscritas/gestion');
+    final data = _client.decodeResponse(response);
+    return (data as List<dynamic>?)?.map((j) => Materia.fromJson(j)).toList() ??
+        [];
+  }
+
+  /// GET /docente/materias/{id}/documentos — documentos de una materia
+  /// gestionada por el docente (array plano, sin paginación).
+  ///
+  /// [estado] es un filtro server-side sin enum documentado en openapi;
+  /// se expone solo como passthrough opcional. Según design D5 la UI no
+  /// lo usa: ordena pendientes-first en cliente.
+  Future<List<Documento>> getDocumentosMateria(
+    int materiaId, {
+    String? estado,
+  }) async {
+    final response = await _client.get(
+      '/docente/materias/$materiaId/documentos',
+      queryParams: estado != null && estado.isNotEmpty
+          ? {'estado': estado}
+          : null,
+    );
+    final data = _client.decodeResponse(response);
+    return (data as List<dynamic>?)
+            ?.map((j) => Documento.fromJson(j))
+            .toList() ??
+        [];
+  }
+
+  /// POST /docente/documentos/{id}/aprobar — aprueba un documento dentro
+  /// del scope del docente. El MessageResponse se descarta a propósito:
+  /// la pantalla refresca la lista desde el servidor (design D1).
+  Future<void> aprobarDocumento(int documentoId) async {
+    final response = await _client.post(
+      '/docente/documentos/$documentoId/aprobar',
+    );
+    _client.decodeResponse(response);
+  }
+
+  /// POST /docente/documentos/{id}/desaprobar — revierte la aprobación.
+  /// Mismo contrato que [aprobarDocumento]: refetch, sin optimistic UI.
+  Future<void> desaprobarDocumento(int documentoId) async {
+    final response = await _client.post(
+      '/docente/documentos/$documentoId/desaprobar',
+    );
+    _client.decodeResponse(response);
+  }
+}
