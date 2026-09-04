@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
+  /// Verde institucional de Cotorra — color de acento único del theme.
+  /// Debe coincidir con los `0xFF7CB342` que aún están hardcodeados en
+  /// algunas screens (pendiente centralizarlos acá).
+  static const Color primaryGreen = Color(0xFF7CB342);
+
   static ThemeData lightTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(
-      // seedColor: const Color(0xFF2E7D32), // Premium Green
-      primary: const Color(0xFF2E7D32),
+      seedColor: primaryGreen,
+      primary: primaryGreen,
       secondary: const Color(0xFF81C784),
       brightness: Brightness.light,
-      seedColor: Colors.blue,
     ),
     useMaterial3: true,
     fontFamily: 'Roboto',
@@ -32,13 +36,13 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 2),
+        borderSide: const BorderSide(color: primaryGreen, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: primaryGreen,
         foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -58,8 +62,8 @@ class AppTheme {
 
   static ThemeData darkTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2E7D32),
-      primary: const Color(0xFF81C784),
+      seedColor: primaryGreen,
+      primary: primaryGreen,
       secondary: const Color(0xFFA5D6A7),
       brightness: Brightness.dark,
     ),
@@ -90,14 +94,14 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF81C784), width: 2),
+        borderSide: const BorderSide(color: primaryGreen, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: primaryGreen,
         foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 16),
