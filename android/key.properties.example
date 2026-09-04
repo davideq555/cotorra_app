@@ -1,0 +1,10 @@
+# Template de credenciales de firma release.
+# Copiá este archivo a `key.properties` (mismo directorio) y completá tus valores.
+# `key.properties` está gitignoreado — jamás lo subas al repo.
+#
+# storeFile: ruta absoluta al keystore .jks, o relativa a android/app/
+# (ej: ../keys/mi-llave-produccion.jks).
+storeFile=/ruta/absoluta/a/mi-llave-produccion.jks
+storePassword=TU_PASSWORD
+keyAlias=TU_ALIAS
+keyPassword=TU_PASSWORD

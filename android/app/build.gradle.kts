@@ -1,7 +1,19 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android Gradle plugin.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Credenciales de firma leídas desde android/key.properties (gitignoreado).
+// Si no existe el archivo (otro dev, CI), cae a firma de debug sin romper el build.
+val keystorePropertiesFile: File = rootProject.file("key.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        load(FileInputStream(keystorePropertiesFile))
+    }
 }
 
 android {
@@ -27,19 +39,25 @@ android {
     
     signingConfigs {
         create("release") {
-            // En Kotlin DSL usamos comillas dobles y asignación explícita con "="
-            storeFile = file(System.getProperty("user.home") + "/mi-llave-produccion.jks")
-            storePassword = "contra55"
-            keyAlias = "deqa"
-            keyPassword = "contra55"
+            // Las credenciales viven en android/key.properties (nunca acá).
+            if (keystorePropertiesFile.exists()) {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
         }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                // Firma real con la llave de producción.
+                signingConfigs.getByName("release")
+            } else {
+                // Sin key.properties (otro dev / CI): usa debug para no romper el build.
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
