@@ -6,7 +6,16 @@ class DocumentCard extends StatelessWidget {
   final Documento doc;
   final Widget? trailing;
 
-  const DocumentCard({super.key, required this.doc, this.trailing});
+  /// Acción secundaria al mantener presionada la tarjeta. Default null:
+  /// las tarjetas fuera de Perfil no tienen comportamiento de long-press.
+  final VoidCallback? onLongPress;
+
+  const DocumentCard({
+    super.key,
+    required this.doc,
+    this.trailing,
+    this.onLongPress,
+  });
 
   IconData _getIcon() {
     final nombre = doc.formato?.nombre.toLowerCase() ?? '';
@@ -83,6 +92,7 @@ class DocumentCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
+        onLongPress: onLongPress,
         onTap: () {
           Navigator.push(
             context,
