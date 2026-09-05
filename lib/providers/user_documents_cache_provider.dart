@@ -7,7 +7,13 @@ import '../utils/cache_utils.dart';
 /// Proveedor de caché para los documentos subidos por el usuario.
 /// TTL: 15 minutos — datos del perfil cambian solo con acción del usuario.
 class UserDocumentsCacheProvider with ChangeNotifier {
-  final ApiClient _client = ApiClient();
+  /// [client] es opcional y solo para tests: permite inyectar un ApiClient
+  /// con HTTP mock. Sin inyectar, se comporta igual que antes (main.dart
+  /// construye `UserDocumentsCacheProvider()` sin argumentos).
+  UserDocumentsCacheProvider({ApiClient? client})
+    : _client = client ?? ApiClient();
+
+  final ApiClient _client;
   late final DocumentsService _docsService = DocumentsService(_client);
 
   static const String _cacheKey = 'cache_user_documents';
@@ -82,5 +88,67 @@ class UserDocumentsCacheProvider with ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Aplica una edición local tras un PUT exitoso (R5: coherencia de caché).
+  ///
+  /// Si el [updated] ya está en memoria: reemplaza en el lugar, re-persiste
+  /// `cache_user_documents` y notifica — sin GET extra. Si el id no está
+  /// (la lista local quedó desincronizada), la mutación no tiene dónde
+  /// aplicarse: se invalida la caché y se refresca desde el servidor, que
+  /// es la fuente de verdad.
+  Future<void> applyUpdate(
+    Documento updated, {
+    required String token,
+    required int userId,
+  }) async {
+    final index = _documentos.indexWhere((doc) => doc.id == updated.id);
+    if (index == -1) {
+      await _invalidateAndRefresh(token, userId);
+      return;
+    }
+    _documentos[index] = updated;
+    await _persistCacheAndNotify();
+  }
+
+  /// Aplica un borrado local tras un DELETE exitoso (R5: coherencia de caché).
+  ///
+  /// Quita el [id] de memoria, re-persiste la caché y notifica. Si el id no
+  /// estaba en la lista local (desincronización), invalida la caché y
+  /// refresca desde el servidor. Nota: al quedar la lista vacía,
+  /// `CacheUtils.getList` la trata como "sin caché" (retorna null), por lo
+  /// que la próxima apertura del perfil cargará del servidor y mostrará el
+  /// estado vacío — el id eliminado nunca resucita.
+  Future<void> applyDelete(
+    int id, {
+    required String token,
+    required int userId,
+  }) async {
+    final before = _documentos.length;
+    _documentos.removeWhere((doc) => doc.id == id);
+    if (_documentos.length == before) {
+      await _invalidateAndRefresh(token, userId);
+      return;
+    }
+    await _persistCacheAndNotify();
+  }
+
+  /// Re-persiste `cache_user_documents` con el estado actual y notifica.
+  /// Actualizar el timestamp en cada mutación es lo que garantiza que las
+  /// lecturas dentro del TTL vean el estado nuevo (R5).
+  Future<void> _persistCacheAndNotify() async {
+    await CacheUtils.setList<Documento>(
+      key: _cacheKey,
+      data: _documentos,
+      toJson: (doc) => doc.toJson(),
+    );
+    notifyListeners();
+  }
+
+  /// Manejo común de mutaciones sobre un id desconocido localmente:
+  /// invalidar la caché y traer el estado del servidor.
+  Future<void> _invalidateAndRefresh(String token, int userId) async {
+    await CacheUtils.invalidate(_cacheKey);
+    await _refresh(token, userId);
   }
 }
