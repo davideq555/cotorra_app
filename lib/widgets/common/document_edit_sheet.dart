@@ -90,6 +90,10 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
   bool _cargandoCatalogos = true;
   bool _isSubmitting = false;
 
+  /// Años que realmente se muestran: los estándar más, cuando hace falta, el
+  /// año legado del documento como opción sintética (ver [initState]).
+  late final List<int> _anosOpciones;
+
   @override
   void initState() {
     super.initState();
@@ -97,11 +101,23 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
     _tituloController = TextEditingController(text: doc.titulo);
     _descripcionController = TextEditingController(text: doc.descripcion ?? '');
     _autorController = TextEditingController(text: doc.autor ?? '');
-    // El año solo se prellenará si cae dentro de las opciones del dropdown.
+    // Semilla de las selecciones desde el documento tocado: así ningún valor
+    // es null ANTES de que carguen los catálogos — un guardado en esa ventana
+    // diffeaba null contra el valor real y borraba el campo en el servidor
+    // (verify WARNING-1). Además, "Guardar" queda deshabilitado en la carga.
+    _tipo = doc.tipo.toString();
+    _materiaId = doc.materiaId;
     final anoOriginal = int.tryParse(doc.anoAcademico ?? '');
-    if (_anosAcademicos.contains(anoOriginal)) {
-      _anoAcademico = anoOriginal;
+    if (anoOriginal != null && !_anosAcademicos.contains(anoOriginal)) {
+      // Año legado fuera del rango 2020–2026: misma estrategia que la materia
+      // sintética — se ofrece como opción extra y queda preseleccionado, así
+      // un documento intocado no mete `año_academico` en el diff ni lo borra
+      // (verify WARNING-2), y el usuario puede cambiar a un año estándar.
+      _anosOpciones = [anoOriginal, ..._anosAcademicos];
+    } else {
+      _anosOpciones = _anosAcademicos;
     }
+    _anoAcademico = anoOriginal;
     _cargarCatalogos();
   }
 
@@ -139,7 +155,10 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
     setState(() {
       _tipos = tipos;
       _materias = materias;
-      if (tipos.any((t) => t.id == doc.tipo)) _tipo = doc.tipo.toString();
+      // Si el tipo semilla no quedó en el catálogo (o la carga falló), se
+      // deselecciona: DropdownButton exige value ∈ items, y con _tipo null
+      // buildUpdateBody omite la clave y el tipo original se conserva.
+      if (!tipos.any((t) => t.id == doc.tipo)) _tipo = null;
       if (doc.materiaId != null && materias.any((m) => m.id == doc.materiaId)) {
         _materiaId = doc.materiaId;
       }
@@ -148,7 +167,9 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
   }
 
   Future<void> _guardar() async {
-    if (_isSubmitting) return;
+    // Doble resguardo (verify WARNING-1): el botón ya está deshabilitado durante
+    // la carga de catálogos, pero el handler tampoco debe correr ahí.
+    if (_isSubmitting || _cargandoCatalogos) return;
 
     if (_tituloController.text.trim().isEmpty) {
       // Espejo del validator del upload: el título nunca viaja vacío.
@@ -388,7 +409,7 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
                             etiqueta: 'Año académico',
                             value: _anoAcademico,
                             hint: 'Sin año',
-                            items: _anosAcademicos
+                            items: _anosOpciones
                                 .map(
                                   (ano) => DropdownMenuItem(
                                     value: ano,
@@ -413,7 +434,9 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: _isSubmitting ? null : _guardar,
+              // Inhabilitado hasta que los catálogos carguen (verify
+              // WARNING-1): guardar en esa ventana podía difear materia null.
+              onPressed: _isSubmitting || _cargandoCatalogos ? null : _guardar,
               child: _isSubmitting
                   ? const SizedBox(
                       width: 22,
