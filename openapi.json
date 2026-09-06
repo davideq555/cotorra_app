@@ -8743,18 +8743,6 @@
           "usuario_id": {
             "type": "integer",
             "title": "Usuario Id"
-          },
-          "aprobado": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Aprobado",
-            "default": false
           }
         },
         "type": "object",
@@ -8926,6 +8914,17 @@
             ],
             "title": "Tipo"
           },
+          "formato_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formato Id"
+          },
           "materia_id": {
             "anyOf": [
               {
@@ -8947,17 +8946,6 @@
               }
             ],
             "title": "Año Academico"
-          },
-          "aprobado": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Aprobado"
           }
         },
         "type": "object",
