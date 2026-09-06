@@ -4,7 +4,9 @@ import 'enums.dart';
 class Usuario {
   final int id;
   final String nombre;
+  final String username;
   final String email;
+  final String? bio;
   final RolEnum rol;
   final String? fechaCreacion;
   final bool verificado;
@@ -13,7 +15,9 @@ class Usuario {
   Usuario({
     required this.id,
     required this.nombre,
+    this.username = '',
     required this.email,
+    this.bio,
     required this.rol,
     this.fechaCreacion,
     this.verificado = false,
@@ -24,14 +28,17 @@ class Usuario {
     return Usuario(
       id: json['id'] ?? 0,
       nombre: json['nombre'] ?? '',
+      username: json['username'] ?? '',
       email: json['email'] ?? '',
+      bio: json['bio'],
       rol: RolEnum.values.firstWhere(
         (e) => e.toString().split('.').last == json['rol'],
         orElse: () => RolEnum.ALUMNO,
       ),
       fechaCreacion: json['fecha_creacion'],
       verificado: json['verificado'] ?? false,
-      carreras: (json['carreras'] as List<dynamic>?)
+      carreras:
+          (json['carreras'] as List<dynamic>?)
               ?.map((c) => Carrera.fromJson(c))
               .toList() ??
           [],
@@ -42,7 +49,9 @@ class Usuario {
     return {
       'id': id,
       'nombre': nombre,
+      'username': username,
       'email': email,
+      'bio': bio,
       'rol': rol.toString().split('.').last,
       'fecha_creacion': fechaCreacion,
       'verificado': verificado,

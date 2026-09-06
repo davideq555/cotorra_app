@@ -15,8 +15,8 @@ class UsuarioCarrera {
     return UsuarioCarrera(
       usuarioId: json['usuario_id'] ?? 0,
       carreraId: json['carrera_id'] ?? 0,
-      fechaInicio: json['fecha_inicio'] != null 
-          ? DateTime.parse(json['fecha_inicio']) 
+      fechaInicio: json['fecha_inicio'] != null
+          ? DateTime.parse(json['fecha_inicio'])
           : null,
       activa: json['activa'] ?? true,
     );

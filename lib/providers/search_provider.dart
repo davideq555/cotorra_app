@@ -3,13 +3,17 @@ import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/models/facultad.dart';
 import 'package:cotorra_app/models/materia.dart';
 import 'package:flutter/foundation.dart';
-import '../services/api_service.dart';
+import '../services/api_client.dart';
+import '../services/api/documents_service.dart';
+import '../services/api/catalogs_service.dart';
 import 'auth_provider.dart';
 
 class SearchProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiClient _client = ApiClient();
+  late final DocumentsService _docsService = DocumentsService(_client);
+  late final CatalogsService _catalogs = CatalogsService(_client);
   final AuthProvider authProvider;
-  
+
   List<Documento> _documentos = [];
   List<Materia> _materias = [];
   bool _isLoading = false;
@@ -17,7 +21,7 @@ class SearchProvider with ChangeNotifier {
   String? _errorMessage;
   String _selectedCategory = 'Todos';
   bool _mejoresDocumentosLoaded = false;
-  
+
   // Advanced filters
   Materia? _selectedMateria;
   String? _selectedYear;
@@ -40,7 +44,9 @@ class SearchProvider with ChangeNotifier {
     if (_selectedCategory == 'Todos') {
       return _documentos;
     }
-    return _documentos.where((doc) => doc.materia?.nombre == _selectedCategory).toList();
+    return _documentos
+        .where((doc) => doc.materia?.nombre == _selectedCategory)
+        .toList();
   }
 
   bool get isLoading => _isLoading;
@@ -51,7 +57,8 @@ class SearchProvider with ChangeNotifier {
   List<Materia> get materias => _materias;
   bool get materiasLoading => _materiasLoading;
   bool get filtersExpanded => _filtersExpanded;
-  bool get hasActiveFilters => _selectedMateria != null || _selectedYear != null;
+  bool get hasActiveFilters =>
+      _selectedMateria != null || _selectedYear != null;
 
   // Cascade getters
   List<Facultad> get facultades => _facultades;
@@ -62,34 +69,35 @@ class SearchProvider with ChangeNotifier {
   bool get facultadesLoading => _facultadesLoading;
   bool get carrerasLoading => _carrerasLoading;
   bool get carreraMateriasLoading => _carreraMateriasLoading;
-  bool get hasCascadeFilters => _selectedCarrera != null || _selectedMateria != null;
+  bool get hasCascadeFilters =>
+      _selectedCarrera != null || _selectedMateria != null;
 
   void setCategory(String category) {
     _selectedCategory = category;
     notifyListeners();
   }
-  
+
   void toggleFiltersExpanded() {
     _filtersExpanded = !_filtersExpanded;
     notifyListeners();
   }
-  
+
   void setSelectedMateria(Materia? materia) {
     _selectedMateria = materia;
     notifyListeners();
   }
-  
+
   void setSelectedYear(String? year) {
     _selectedYear = year;
     notifyListeners();
   }
-  
+
   void clearFilters() {
     _selectedMateria = null;
     _selectedYear = null;
     notifyListeners();
   }
-  
+
   /// Generates list of academic years (current year down to 2020)
   List<String> getAvailableYears() {
     final currentYear = DateTime.now().year;
@@ -98,21 +106,21 @@ class SearchProvider with ChangeNotifier {
       (index) => (currentYear - index).toString(),
     );
   }
-  
+
   /// Loads all materias for the dropdown filter
   Future<void> loadMaterias() async {
     if (_materias.isNotEmpty) return;
-    
+
     _materiasLoading = true;
     notifyListeners();
-    
+
     try {
-      _materias = await _apiService.getMaterias();
+      _materias = await _catalogs.getMaterias();
     } catch (e) {
       print('Error loading materias: $e');
       _materias = [];
     }
-    
+
     _materiasLoading = false;
     notifyListeners();
   }
@@ -120,17 +128,17 @@ class SearchProvider with ChangeNotifier {
   /// Loads facultades for cascade filter
   Future<void> loadFacultades() async {
     if (_facultades.isNotEmpty) return;
-    
+
     _facultadesLoading = true;
     notifyListeners();
-    
+
     try {
-      _facultades = await _apiService.getFacultades();
+      _facultades = await _catalogs.getFacultades();
     } catch (e) {
       print('Error loading facultades: $e');
       _facultades = [];
     }
-    
+
     _facultadesLoading = false;
     notifyListeners();
   }
@@ -142,14 +150,14 @@ class SearchProvider with ChangeNotifier {
     _selectedCarrera = null;
     _selectedMateria = null;
     notifyListeners();
-    
+
     try {
-      _carreras = await _apiService.getCarrerasPorFacultad(facultadId);
+      _carreras = await _catalogs.getCarrerasByFacultadId(facultadId);
     } catch (e) {
       print('Error loading carreras: $e');
       _carreras = [];
     }
-    
+
     _carrerasLoading = false;
     notifyListeners();
   }
@@ -161,7 +169,7 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _carreraMaterias = await _apiService.getMateriasPorCarrera(carreraId);
+      _carreraMaterias = await _catalogs.getMateriasByCarreraId(carreraId);
     } catch (e) {
       print('Error loading materias: $e');
       _carreraMaterias = [];
@@ -188,7 +196,7 @@ class SearchProvider with ChangeNotifier {
     _selectedMateria = null;
     _carreras = [];
     _carreraMaterias = [];
-    
+
     if (facultad != null) {
       loadCarrerasPorFacultad(facultad.id);
     } else {
@@ -201,7 +209,7 @@ class SearchProvider with ChangeNotifier {
     _selectedCarrera = carrera;
     _selectedMateria = null;
     _carreraMaterias = [];
-    
+
     if (carrera != null) {
       loadMateriasPorCarrera(carrera.id);
     } else {
@@ -227,11 +235,12 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _documentos = await _apiService.getMejoresDocumentos();
+      _documentos = await _docsService.getMejoresDocumentos();
       _mejoresDocumentosLoaded = true;
     } catch (e) {
       print('Error loading best documents: $e');
-      _errorMessage = 'Error al cargar los documentos. Por favor intenta de nuevo.';
+      _errorMessage =
+          'Error al cargar los documentos. Por favor intenta de nuevo.';
       _documentos = [];
     }
 
@@ -249,7 +258,7 @@ class SearchProvider with ChangeNotifier {
     _searchQuery = query;
     await searchWithFilters();
   }
-  
+
   /// Performs search with all active filters
   Future<void> searchWithFilters() async {
     if (!authProvider.isAuthenticated) {
@@ -257,21 +266,24 @@ class SearchProvider with ChangeNotifier {
       notifyListeners();
       return;
     }
-    
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _documentos = await _apiService.getDocumentos(
-        authProvider.token!,
+      if (authProvider.token != null) {
+        _client.setToken(authProvider.token!);
+      }
+      _documentos = await _docsService.getDocumentos(
         query: _searchQuery.isNotEmpty ? _searchQuery : null,
         materiaId: _selectedMateria?.id,
         anoAcademico: _selectedYear,
       );
     } catch (e) {
       print('Error searching documents: $e');
-      _errorMessage = 'Error al cargar los documentos. Por favor intenta de nuevo.';
+      _errorMessage =
+          'Error al cargar los documentos. Por favor intenta de nuevo.';
       _documentos = [];
     }
 

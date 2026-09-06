@@ -10,7 +10,7 @@ class LinkVisualizerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF7CB342);
+    final primaryColor = Theme.of(context).colorScheme.primary;
     final url = documento.archivoUrlPublica ?? documento.archivoUrl;
     final urlType = UrlLauncherUtil.getUrlType(url);
 
@@ -25,14 +25,11 @@ class LinkVisualizerScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
+                  // Tinte del primario: funciona en claro y oscuro.
+                  color: primaryColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  _getIcon(urlType),
-                  size: 32,
-                  color: primaryGreen,
-                ),
+                child: Icon(_getIcon(urlType), size: 32, color: primaryColor),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -60,7 +57,8 @@ class LinkVisualizerScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          if (documento.descripcion != null && documento.descripcion!.isNotEmpty) ...[
+          if (documento.descripcion != null &&
+              documento.descripcion!.isNotEmpty) ...[
             _buildInfoSection(
               'Descripción',
               documento.descripcion!,
@@ -73,6 +71,7 @@ class LinkVisualizerScreen extends StatelessWidget {
               if (documento.autor != null && documento.autor!.isNotEmpty)
                 Expanded(
                   child: _buildInfoChip(
+                    context,
                     Icons.person_outline,
                     documento.autor!,
                   ),
@@ -81,6 +80,7 @@ class LinkVisualizerScreen extends StatelessWidget {
                 if (documento.autor != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildInfoChip(
+                    context,
                     Icons.calendar_today_outlined,
                     documento.anoAcademico!,
                   ),
@@ -91,6 +91,7 @@ class LinkVisualizerScreen extends StatelessWidget {
           const SizedBox(height: 16),
           if (documento.tipoDocumento != null)
             _buildInfoChip(
+              context,
               Icons.category_outlined,
               documento.tipoDocumento!.nombre,
             ),
@@ -101,16 +102,19 @@ class LinkVisualizerScreen extends StatelessWidget {
               runSpacing: 8,
               children: documento.tags!.map((tag) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: primaryGreen.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     tag.nombre,
                     style: TextStyle(
                       fontSize: 12,
-                      color: primaryGreen,
+                      color: primaryColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -120,10 +124,12 @@ class LinkVisualizerScreen extends StatelessWidget {
           ],
           const SizedBox(height: 24),
           Card(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.grey.shade200),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
             ),
             child: InkWell(
               onTap: () => _copyToClipboard(context),
@@ -137,8 +143,8 @@ class LinkVisualizerScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         url,
-                        style: const TextStyle(
-                          color: primaryGreen,
+                        style: TextStyle(
+                          color: primaryColor,
                           fontWeight: FontWeight.w500,
                           fontSize: 13,
                         ),
@@ -146,7 +152,7 @@ class LinkVisualizerScreen extends StatelessWidget {
                         maxLines: 2,
                       ),
                     ),
-                    const Icon(Icons.copy, color: primaryGreen, size: 20),
+                    Icon(Icons.copy, color: primaryColor, size: 20),
                   ],
                 ),
               ),
@@ -157,7 +163,7 @@ class LinkVisualizerScreen extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryGreen,
+                backgroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -221,33 +227,29 @@ class LinkVisualizerScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 14),
-        ),
+        Text(value, style: const TextStyle(fontSize: 14)),
       ],
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
+  Widget _buildInfoChip(BuildContext context, IconData icon, String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.grey.shade600),
+          Icon(icon, size: 16, color: onSurfaceVariant),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey.shade700,
-              ),
+              style: TextStyle(fontSize: 13, color: onSurfaceVariant),
               overflow: TextOverflow.ellipsis,
             ),
           ),

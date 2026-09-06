@@ -55,7 +55,10 @@ class _SearchScreenState extends State<SearchScreen> {
           _FiltersToggle(
             isExpanded: searchProvider.filtersExpanded,
             onToggle: () {
-              final provider = Provider.of<SearchProvider>(context, listen: false);
+              final provider = Provider.of<SearchProvider>(
+                context,
+                listen: false,
+              );
               if (!provider.filtersExpanded) {
                 provider.initUserFilters();
               }
@@ -77,7 +80,9 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildResultsAndChips(
-      SearchProvider searchProvider, Color primaryColor) {
+    SearchProvider searchProvider,
+    Color primaryColor,
+  ) {
     return Column(
       children: [
         // Active filters chips (when filters are active and results exist)
@@ -93,9 +98,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
 
         // Results
-        Expanded(
-          child: _buildResults(searchProvider),
-        ),
+        Expanded(child: _buildResults(searchProvider)),
       ],
     );
   }
@@ -108,7 +111,8 @@ class _SearchScreenState extends State<SearchScreen> {
     final displayDocs = searchProvider.documentos;
 
     if (displayDocs.isEmpty) {
-      final hasSearched = _searchController.text.isNotEmpty ||
+      final hasSearched =
+          _searchController.text.isNotEmpty ||
           searchProvider.hasActiveFilters ||
           searchProvider.hasCascadeFilters;
 
@@ -219,12 +223,8 @@ class _FiltersToggle extends StatelessWidget {
             isExpanded ? Icons.expand_less : Icons.expand_more,
             size: 20,
           ),
-          label: Text(
-            isExpanded ? 'Ocultar filtros' : 'Filtros avanzados',
-          ),
-          style: TextButton.styleFrom(
-            foregroundColor: primaryColor,
-          ),
+          label: Text(isExpanded ? 'Ocultar filtros' : 'Filtros avanzados'),
+          style: TextButton.styleFrom(foregroundColor: primaryColor),
         ),
       ],
     );
@@ -257,10 +257,7 @@ class _ActiveFiltersChips extends StatelessWidget {
             color: primaryColor,
           ),
         if (searchProvider.selectedYear != null)
-          _FilterChip(
-            label: searchProvider.selectedYear!,
-            color: primaryColor,
-          ),
+          _FilterChip(label: searchProvider.selectedYear!, color: primaryColor),
       ],
     );
   }
@@ -270,10 +267,7 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final Color color;
 
-  const _FilterChip({
-    required this.label,
-    required this.color,
-  });
+  const _FilterChip({required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {

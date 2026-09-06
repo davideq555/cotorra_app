@@ -9,12 +9,7 @@ class DashboardHeader extends StatelessWidget {
     final primaryGreen = Theme.of(context).colorScheme.primary;
 
     return Container(
-      padding: const EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 40,
-        bottom: 24,
-      ),
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 24),
       decoration: BoxDecoration(
         color: primaryGreen,
         borderRadius: const BorderRadius.only(
@@ -76,11 +71,7 @@ class DashboardHeader extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 22,
-                  ),
+                  icon: const Icon(Icons.add, color: Colors.white, size: 22),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -96,10 +87,7 @@ class DashboardHeader extends StatelessWidget {
           const SizedBox(height: 24),
           // Material disponible Card
           Container(
-            padding: const EdgeInsets.symmetric(
-              vertical: 20,
-              horizontal: 24,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.18),
               borderRadius: BorderRadius.circular(20),

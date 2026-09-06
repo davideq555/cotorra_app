@@ -1,11 +1,14 @@
 import 'package:cotorra_app/models/usuario.dart';
 import 'package:flutter/foundation.dart';
+import '../services/api_client.dart';
+import '../services/api/users_service.dart';
 import '../utils/cache_utils.dart';
 
 /// Proveedor de caché para el perfil de usuario.
 /// TTL: 15 minutos — datos de perfil no cambian frecuentemente.
-/// Nota: usar ApiService cuando el backend tenga endpoint GET /usuarios/{id}
 class UserCacheProvider with ChangeNotifier {
+  final ApiClient _client = ApiClient();
+  late final UsersService _usersService = UsersService(_client);
   static const String _cacheKey = 'cache_user_profile';
   static const Duration _ttl = Duration(minutes: 15);
 
@@ -68,14 +71,16 @@ class UserCacheProvider with ChangeNotifier {
 
   Future<void> _refresh(String token, int userId) async {
     try {
-      // Asumiendo que existe un endpoint GET /usuarios/{id}
-      // Si no existe, usar getDocumentos del usuario para validar que sigue autenticado
-      // y usar datos del token si están disponibles
-      // Por ahora, solo guardamos en caché cuando vienen del servidor
-      // Este método se puede adaptar cuando el backend tenga endpoint de perfil
+      _client.setToken(token);
+      final user = await _usersService.getMe();
+      _user = user;
       _errorMessage = null;
+      await CacheUtils.set<Usuario>(
+        key: _cacheKey,
+        data: user,
+        toJson: (u) => u.toJson(),
+      );
     } catch (e) {
-      print('Error refreshing user profile: $e');
       if (_user == null) {
         _errorMessage = 'Error al cargar el perfil.';
       }

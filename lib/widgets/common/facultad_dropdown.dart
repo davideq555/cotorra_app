@@ -84,7 +84,10 @@ class _FacultadDropdownState extends State<FacultadDropdown> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 14,
+        ),
       ),
       hint: Text(widget.hint ?? 'Seleccionar ${widget.label}'),
       isExpanded: true,

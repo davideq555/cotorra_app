@@ -36,4 +36,8 @@ class Env {
   /// Password para tests de integración
   static String get testUserPassword =>
       dotenv.env['TEST_USER_PASSWORD'] ?? '123456';
+
+  /// Client ID de Google OAuth 2.0 para Sign-In
+  static String get googleWebClientId =>
+      dotenv.env['GOOGLE_WEB_CLIENT_ID'] ?? '';
 }

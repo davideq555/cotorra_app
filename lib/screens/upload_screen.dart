@@ -56,7 +56,7 @@ class _UploadScreenState extends State<UploadScreen> {
     '2023',
     '2022',
     '2021',
-    '2020'
+    '2020',
   ];
 
   @override
@@ -77,6 +77,9 @@ class _UploadScreenState extends State<UploadScreen> {
     }
   }
 
+  // Usado por la UI de tags (bloque comentado temporalmente ~línea 500);
+  // _tags y _removeTag siguen activos para los chips existentes.
+  // ignore: unused_element
   void _addTag() {
     final text = _tagController.text.trim();
     if (text.isNotEmpty && !_tags.contains(text)) {
@@ -217,8 +220,9 @@ class _UploadScreenState extends State<UploadScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('¡Documento subido con éxito! Pendiente de aprobación.'),
+            content: Text(
+              '¡Documento subido con éxito! Pendiente de aprobación.',
+            ),
             backgroundColor: Color(0xFF7CB342),
           ),
         );
@@ -333,7 +337,9 @@ class _UploadScreenState extends State<UploadScreen> {
                             Text(
                               'PDF, DOCX, TXT hasta 20MB',
                               style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade500),
+                                fontSize: 11,
+                                color: Colors.grey.shade500,
+                              ),
                             ),
                           ],
                         ],
@@ -407,12 +413,15 @@ class _UploadScreenState extends State<UploadScreen> {
                     ),
                   ),
                   isExpanded: true,
-                  items:
-                      context.watch<AuthProvider>().userCarreras.map((carrera) {
+                  items: context.watch<AuthProvider>().userCarreras.map((
+                    carrera,
+                  ) {
                     return DropdownMenuItem<int>(
                       value: carrera.id,
-                      child:
-                          Text(carrera.nombre, overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        carrera.nombre,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -534,8 +543,11 @@ class _UploadScreenState extends State<UploadScreen> {
                             fontSize: 12,
                           ),
                         ),
-                        deleteIcon: const Icon(Icons.close,
-                            size: 14, color: primaryGreen),
+                        deleteIcon: const Icon(
+                          Icons.close,
+                          size: 14,
+                          color: primaryGreen,
+                        ),
                         onDeleted: () => _removeTag(tag),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -546,7 +558,8 @@ class _UploadScreenState extends State<UploadScreen> {
                 const SizedBox(height: 32),
                 _isUploading
                     ? const Center(
-                        child: CircularProgressIndicator(color: primaryGreen))
+                        child: CircularProgressIndicator(color: primaryGreen),
+                      )
                     : ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryGreen,

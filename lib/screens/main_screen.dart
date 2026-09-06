@@ -1,5 +1,7 @@
 import 'package:cotorra_app/screens/dashboard_screen.dart';
+import 'package:cotorra_app/screens/gestion/gestion_screen.dart';
 import 'package:cotorra_app/screens/my_favorities_screen.dart';
+import 'package:cotorra_app/screens/profile/configuracion_screen.dart';
 import 'package:cotorra_app/screens/search_screen.dart';
 import 'package:cotorra_app/screens/perfil_screen.dart';
 
@@ -7,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/search_provider.dart';
-
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -33,6 +34,9 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     const primaryGreen = Color(0xFF7CB342);
 
+    // watch: el icono de gestión debe desaparecer al logout/cambiar de rol.
+    final userRol = context.watch<AuthProvider>().userRol;
+
     return Scaffold(
       // backgroundColor: Colors.white,
       appBar: _selectedIndex == 0
@@ -50,6 +54,32 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               actions: [
+                if (_selectedIndex == 3 && GestionScreen.gatedRole(userRol))
+                  IconButton(
+                    icon: const Icon(Icons.admin_panel_settings_outlined),
+                    tooltip: 'Gestión',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const GestionScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                if (_selectedIndex == 3)
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    tooltip: 'Configuración',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ConfiguracionScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 IconButton(
                   icon: const Icon(Icons.logout),
                   onPressed: () {
@@ -77,8 +107,14 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _selectedIndex,
           onTap: (index) {
             if (_selectedIndex == 1) {
-              Provider.of<SearchProvider>(context, listen: false).clearCascadeFilters();
-              Provider.of<SearchProvider>(context, listen: false).clearFilters();
+              Provider.of<SearchProvider>(
+                context,
+                listen: false,
+              ).clearCascadeFilters();
+              Provider.of<SearchProvider>(
+                context,
+                listen: false,
+              ).clearFilters();
             }
             setState(() {
               _selectedIndex = index;
@@ -99,10 +135,7 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icon(Icons.home_filled),
               label: 'Inicio',
             ),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.search),
-                label: 'Buscar',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite_border),
               label: 'Favoritos',

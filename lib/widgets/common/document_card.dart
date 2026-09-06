@@ -6,10 +6,15 @@ class DocumentCard extends StatelessWidget {
   final Documento doc;
   final Widget? trailing;
 
+  /// Acción secundaria al mantener presionada la tarjeta. Default null:
+  /// las tarjetas fuera de Perfil no tienen comportamiento de long-press.
+  final VoidCallback? onLongPress;
+
   const DocumentCard({
     super.key,
     required this.doc,
     this.trailing,
+    this.onLongPress,
   });
 
   IconData _getIcon() {
@@ -34,7 +39,10 @@ class DocumentCard extends StatelessWidget {
       return Icons.slideshow;
     } else if (ext.contains('zip') || ext.contains('rar')) {
       return Icons.folder_zip;
-    } else if (ext.contains('jpg') || ext.contains('png') || ext.contains('jpeg') || ext.contains('gif')) {
+    } else if (ext.contains('jpg') ||
+        ext.contains('png') ||
+        ext.contains('jpeg') ||
+        ext.contains('gif')) {
       return Icons.image;
     }
     return Icons.description;
@@ -84,6 +92,7 @@ class DocumentCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
+        onLongPress: onLongPress,
         onTap: () {
           Navigator.push(
             context,
@@ -123,23 +132,34 @@ class DocumentCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: primaryGreen.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            doc.materia?.nombre ?? 'General',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: primaryGreen,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: primaryGreen.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              doc.materia?.nombre ?? 'General',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: primaryGreen,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.fiber_manual_record, size: 4, color: Colors.grey),
+                        const Icon(
+                          Icons.fiber_manual_record,
+                          size: 4,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -158,33 +178,52 @@ class DocumentCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            doc.tipoDocumento?.nombre ?? '',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.amber.shade800,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              doc.tipoDocumento?.nombre ?? '',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber.shade800,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.access_time, size: 12, color: Colors.grey),
+                        const Icon(
+                          Icons.access_time,
+                          size: 12,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
-                        Text(
-                          _getTimeAgo(),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade500,
+                        Flexible(
+                          child: Text(
+                            _getTimeAgo(),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const Spacer(),
-                        const Icon(Icons.download, size: 12, color: Colors.grey),
+                        const Icon(
+                          Icons.download,
+                          size: 12,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${doc.descargas}',
@@ -198,10 +237,7 @@ class DocumentCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailing != null) ...[
-                const SizedBox(width: 8),
-                trailing!,
-              ]
+              if (trailing != null) ...[const SizedBox(width: 8), trailing!],
             ],
           ),
         ),

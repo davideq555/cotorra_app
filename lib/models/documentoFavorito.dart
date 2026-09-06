@@ -13,8 +13,8 @@ class DocumentoFavorito {
     return DocumentoFavorito(
       usuarioId: json['usuario_id'] ?? 0,
       documentoId: json['documento_id'] ?? 0,
-      fechaAgregado: json['fecha_agregado'] != null 
-          ? DateTime.parse(json['fecha_agregado']) 
+      fechaAgregado: json['fecha_agregado'] != null
+          ? DateTime.parse(json['fecha_agregado'])
           : null,
     );
   }

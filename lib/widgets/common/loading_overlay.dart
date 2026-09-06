@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class LoadingOverlay extends StatelessWidget {
   final String message;
 
-  const LoadingOverlay({
-    super.key,
-    required this.message,
-  });
+  const LoadingOverlay({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
