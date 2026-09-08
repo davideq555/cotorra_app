@@ -17,9 +17,10 @@ class DocumentActionsSheet extends StatelessWidget {
 
   /// Abre el sheet sobre [context]. Retorna la acción elegida o null.
   static Future<DocumentAction?> show(BuildContext context) {
+    // El sheet sigue el theme activo (claro/oscuro) en vez de forzar blanco.
     return showModalBottomSheet<DocumentAction>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -29,6 +30,7 @@ class DocumentActionsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -42,7 +44,7 @@ class DocumentActionsSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: theme.colorScheme.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

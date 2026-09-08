@@ -48,10 +48,12 @@ class DocumentEditSheet extends StatefulWidget {
     BuildContext context, {
     required Documento original,
   }) {
+    // El sheet sigue el theme activo (claro/oscuro) en vez de forzar blanco.
+    final theme = Theme.of(context);
     return showModalBottomSheet<DocumentEditResult>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -247,10 +249,10 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
   }
 
   InputDecoration _decoracion(String etiqueta) {
+    // `filled`/`fillColor` vienen del inputDecorationTheme del app
+    // (gris claro en modo claro, 0xFF1E1E1E en dark).
     return InputDecoration(
       labelText: etiqueta,
-      filled: true,
-      fillColor: const Color(0xFFF5F5F5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
@@ -281,6 +283,7 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
     required ValueChanged<T?> onChanged,
     String? hint,
   }) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -288,13 +291,18 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
         children: [
           Text(
             etiqueta,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
+              // Misma tonalidad que los inputs de texto (inputDecorationTheme).
+              color: theme.inputDecorationTheme.fillColor ??
+                  theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
             ),
             child: DropdownButtonHideUnderline(
@@ -307,7 +315,7 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
                         hint,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey.shade500,
+                          color: theme.hintColor,
                         ),
                       ),
                 items: items,
@@ -322,6 +330,7 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -335,7 +344,7 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: theme.colorScheme.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -350,7 +359,10 @@ class _DocumentEditSheetState extends State<DocumentEditSheet> {
               widget.original.titulo,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 8),
             Flexible(

@@ -26,10 +26,12 @@ class DocumentReportSheet extends StatefulWidget {
     required int documentoId,
     required String documentoTitulo,
   }) {
+    // El sheet sigue el theme activo (claro/oscuro) en vez de forzar blanco.
+    final theme = Theme.of(context);
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -156,6 +158,7 @@ class _DocumentReportSheetState extends State<DocumentReportSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -169,7 +172,7 @@ class _DocumentReportSheetState extends State<DocumentReportSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: theme.colorScheme.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -184,7 +187,10 @@ class _DocumentReportSheetState extends State<DocumentReportSheet> {
               widget.documentoTitulo,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 8),
             Flexible(
@@ -218,7 +224,7 @@ class _DocumentReportSheetState extends State<DocumentReportSheet> {
                                   _iconFor(motivo),
                                   color: _selected == motivo
                                       ? primaryGreen
-                                      : Colors.grey[600],
+                                      : theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             )
@@ -245,8 +251,8 @@ class _DocumentReportSheetState extends State<DocumentReportSheet> {
                           hintText:
                               'Ej: el material es de otro sitio y no está '
                               'autorizado…',
-                          filled: true,
-                          fillColor: const Color(0xFFF5F5F5),
+                          // `filled`/`fillColor` vienen del inputDecorationTheme
+                          // del app (gris claro en modo claro, 0xFF1E1E1E en dark).
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
