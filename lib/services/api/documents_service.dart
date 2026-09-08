@@ -49,6 +49,23 @@ class DocumentsService {
     return items.map((json) => Documento.fromJson(json)).toList();
   }
 
+  /// GET /documentos/?skip=0&limit=1 — Cantidad total de documentos aprobados.
+  /// Usa meta.total de la respuesta paginada (independiente del limit).
+  Future<int> getDocumentosTotal() async {
+    final response = await _client.get(
+      '/documentos/',
+      queryParams: {'skip': '0', 'limit': '1'},
+    );
+    final data = _client.decodeResponse(response);
+    if (data is Map<String, dynamic>) {
+      final meta = data['meta'];
+      if (meta is Map<String, dynamic>) {
+        return (meta['total'] as num?)?.toInt() ?? 0;
+      }
+    }
+    return 0;
+  }
+
   /// GET /documentos/mejores — Los 6 documentos mejor rankeados.
   Future<List<Documento>> getMejoresDocumentos() async {
     final response = await _client.get('/documentos/mejores');

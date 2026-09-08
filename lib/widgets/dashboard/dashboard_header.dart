@@ -1,8 +1,38 @@
 import 'package:flutter/material.dart';
 import '../../screens/upload_screen.dart';
+import '../../services/api/documents_service.dart';
+import '../../services/api_client.dart';
 
-class DashboardHeader extends StatelessWidget {
+class DashboardHeader extends StatefulWidget {
   const DashboardHeader({super.key});
+
+  @override
+  State<DashboardHeader> createState() => _DashboardHeaderState();
+}
+
+class _DashboardHeaderState extends State<DashboardHeader> {
+  late final Future<int?> _totalFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _totalFuture = _fetchDocumentosTotal();
+  }
+
+  Future<int?> _fetchDocumentosTotal() async {
+    try {
+      return await DocumentsService(ApiClient()).getDocumentosTotal();
+    } catch (_) {
+      return null; // fallback: la UI muestra '—'
+    }
+  }
+
+  String _formatTotal(int total) {
+    return total.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+$)'),
+      (m) => '${m[1]},',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +122,10 @@ class DashboardHeader extends StatelessWidget {
               color: Colors.white.withOpacity(0.18),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Material disponible',
                   style: TextStyle(
                     fontSize: 13,
@@ -103,14 +133,27 @@ class DashboardHeader extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  '1,247 documentos',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const SizedBox(height: 4),
+                FutureBuilder<int?>(
+                  future: _totalFuture,
+                  builder: (context, snapshot) {
+                    String label;
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      label = '…';
+                    } else if (snapshot.hasError || snapshot.data == null) {
+                      label = '—';
+                    } else {
+                      label = _formatTotal(snapshot.data!);
+                    }
+                    return Text(
+                      '$label documentos',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

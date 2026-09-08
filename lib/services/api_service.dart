@@ -117,6 +117,8 @@ class ApiService {
   Future<Documento> getDocumento(int documentoId) =>
       _docs.getDocumento(documentoId);
 
+  Future<int> getDocumentosTotal() => _docs.getDocumentosTotal();
+
   Future<List<Documento>> getMejoresDocumentos() =>
       _docs.getMejoresDocumentos();
 
