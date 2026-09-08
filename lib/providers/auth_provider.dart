@@ -25,17 +25,32 @@ class AuthProvider with ChangeNotifier {
     _client.tokenRefresher = _refreshAccessToken;
     // Cuando el refresh falla, forzamos logout + redirect a login.
     _client.onSessionExpired = _handleSessionExpired;
+
+    // Registro compartido: TODA instancia nueva de ApiClient hereda el
+    // refresh-on-401 y el logout al fallar el refresh.
+    ApiClient.sharedTokenRefresher = _refreshAccessToken;
+    ApiClient.sharedOnSessionExpired = _handleSessionExpired;
   }
 
   /// Callback para ApiClient: refresca el access_token usando el refresh_token.
+  /// También sincroniza [_token] para que `authProvider.token` devuelva el
+  /// token fresco (si no, los flujos que hacen setToken(authProvider.token!)
+  /// re-setean el token vencido).
   Future<String> _refreshAccessToken(String refreshToken) async {
     final result = await _authService.refreshToken(refreshToken);
+    _token = result.accessToken;
     return result.accessToken;
   }
 
+  /// True mientras un logout por sesión expirada está en curso; evita que
+  /// múltiples clientes con token stale disparen logouts concurrentes.
+  bool _sessionExpiredHandling = false;
+
   /// Callback para ApiClient: sesión realmente expirada → logout.
   void _handleSessionExpired() {
-    logout(); // async fire-and-forget; limpia estado y notifica
+    if (_sessionExpiredHandling) return;
+    _sessionExpiredHandling = true;
+    logout().whenComplete(() => _sessionExpiredHandling = false);
   }
 
   String? get errorMessage => _errorMessage;

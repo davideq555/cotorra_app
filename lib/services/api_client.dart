@@ -7,10 +7,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Centraliza: baseUrl, headers Authorization, parsing de errores, multipart,
 /// y refresh-on-401 transparente (single-flight retry).
 ///
+/// Registro de callbacks de sesión:
+/// AuthProvider setea `ApiClient.sharedTokenRefresher` y
+/// `ApiClient.sharedOnSessionExpired` en su constructor, UNA sola vez; TODA
+/// instancia de ApiClient hereda esos callbacks como fallback, por lo que el
+/// refresh-on-401 funciona también en clientes ad-hoc (pantallas, sheets,
+/// providers) sin cablear cada uno. Una instancia puede hacer override con
+/// sus propios callbacks de instancia (tienen precedencia sobre los
+/// estáticos compartidos).
+///
 /// Uso:
 /// ```dart
 /// final client = ApiClient();
 /// client.setToken('mi-jwt');
+/// // Opcional: callbacks de instancia (preceden a los estáticos compartidos).
 /// client.tokenRefresher = (refreshToken) async => ...; // inyectado por AuthProvider
 /// client.onSessionExpired = () { /* redirect a login */ };
 /// final response = await client.get('/auth/me');
@@ -41,6 +51,15 @@ class ApiClient {
   /// Callback llamado cuando el refresh falla (sesión realmente expirada).
   void Function()? onSessionExpired;
 
+  /// Refresher compartido de sesión: AuthProvider lo registra UNA vez y TODAS
+  /// las instancias de ApiClient lo usan como fallback cuando no definen los
+  /// suyos propios. Así el refresh-on-401 funciona en clientes ad-hoc
+  /// (pantallas, sheets, providers) sin cablear cada uno.
+  static Future<String> Function(String refreshToken)? sharedTokenRefresher;
+
+  /// Handler compartido de sesión expirada (fallback análogo al anterior).
+  static void Function()? sharedOnSessionExpired;
+
   bool _refreshInProgress = false;
 
   /// Base URL usada por este cliente (incluye /api/v1).
@@ -70,14 +89,17 @@ class ApiClient {
   /// Intenta refrescar el access_token usando el refresh_token almacenado.
   /// Retorna el nuevo access_token si tuvo éxito, null si falló.
   Future<String?> _tryRefreshToken() async {
-    if (_refreshInProgress || tokenRefresher == null) return null;
+    // Fallback instancia → estático: si esta instancia no definió su propio
+    // refresher, usamos el compartido registrado por AuthProvider.
+    final refresher = tokenRefresher ?? sharedTokenRefresher;
+    if (_refreshInProgress || refresher == null) return null;
     _refreshInProgress = true;
     try {
       final prefs = await SharedPreferences.getInstance();
       final refreshToken = prefs.getString('refresh_token');
       if (refreshToken == null || refreshToken.isEmpty) return null;
 
-      final newAccessToken = await tokenRefresher!(refreshToken);
+      final newAccessToken = await refresher(refreshToken);
       _token = newAccessToken;
       await prefs.setString('token', newAccessToken);
       return newAccessToken;
@@ -102,7 +124,11 @@ class ApiClient {
       if (newToken != null) {
         response = await doRequest(); // reintento único con token nuevo
       } else {
-        onSessionExpired?.call();
+        // Fallback instancia → estático: handler compartido si la instancia
+        // no definió el suyo.
+        final sessionExpiredHandler =
+            onSessionExpired ?? sharedOnSessionExpired;
+        sessionExpiredHandler?.call();
       }
     }
     return response;
