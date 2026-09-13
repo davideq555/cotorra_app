@@ -1,136 +1,174 @@
 import 'package:cotorra_app/config/env.dart';
-import 'package:cotorra_app/models/auth_models.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-/// Servicio de autenticación con Google.
+/// Servicio de autenticación con Google (google_sign_in 7.x).
+///
+/// En v7 la API cambió por completo: `GoogleSignIn` es un singleton que exige
+/// `initialize()` **una sola vez** antes de cualquier otro método, y la
+/// autenticación (`authenticate`) es un paso separado de la autorización.
+/// En Android esto corre sobre Credential Manager (la API que reemplazó al
+/// Google Sign-In SDK deprecado de v6).
 ///
 /// Flujo:
-/// 1. Abre el flujo de Google Sign-In
-/// 2. Obtiene el ID token de Google
-/// 3. Lo envía al backend POST /auth/google
-/// 4. Retorna el LoginResponse (mismo que login normal)
+/// 1. `initialize()` con el WEB client ID como `serverClientId`
+/// 2. `authenticate()` abre el selector y devuelve la cuenta elegida
+/// 3. El `idToken` se envía al backend POST /auth/google
+/// 4. Retorna el [LoginResult] (mismo que login normal)
 class GoogleAuthService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
-    // En Android, el serverClientID se usa para intercambiar el ID token
-    // por un access token en el servidor. El Web Client ID se usa aquí
-    // para que Google pueda validar el token.
-    serverClientId: Env.googleWebClientId,
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
-  /// Inicia el flujo de Google Sign-In.
-  ///
-  /// Retorna el [LoginResponse] del backend si fue exitoso.
-  /// Lanza [GoogleSignInException] si el usuario cancela o hay error.
-  Future<LoginResult> signIn() async {
-    // 0. Diagnóstico: el client ID vacío/mal configurado es la causa #1 de
-    // fallos silenciosos de Google Sign-In en Android.
-    final clientId = Env.googleWebClientId;
-    if (clientId.isEmpty) {
+  /// `initialize()` debe llamarse exactamente una vez en la vida del proceso.
+  /// Cachear el Future garantiza eso aunque signIn/signOut se llamen en paralelo.
+  Future<void>? _initFuture;
+
+  Future<void> _ensureInitialized() => _initFuture ??= _initialize();
+
+  Future<void> _initialize() async {
+    final webClientId = Env.googleWebClientId;
+    if (webClientId.isEmpty) {
       debugPrint(
         '[GoogleAuth] ⚠️ GOOGLE_WEB_CLIENT_ID está VACÍO en .env — '
-        'el flujo de Google NO puede funcionar. Configuralo en Google Cloud Console.',
+        'sin google-services.json, Android NO puede autenticar sin serverClientId.',
       );
     } else {
       debugPrint(
-        '[GoogleAuth] signIn() iniciado. '
-        'serverClientId=${clientId.substring(0, clientId.length > 22 ? 22 : clientId.length)}… (${clientId.length} chars)',
+        '[GoogleAuth] initialize() — serverClientId='
+        '${webClientId.substring(0, webClientId.length > 22 ? 22 : webClientId.length)}… '
+        '(${webClientId.length} chars)',
       );
     }
 
-    // 1. Iniciar sesión con Google
-    GoogleSignInAccount? googleUser;
-    try {
-      googleUser = await _googleSignIn.signIn();
-    } catch (e, st) {
-      debugPrint('[GoogleAuth] ❌ signIn() lanzó ${e.runtimeType}: $e');
-      debugPrint('[GoogleAuth] stack: $st');
-      if (e is PlatformException) throw _mapPlatformError(e);
-      rethrow;
-    }
+    // Este proyecto NO usa google-services.json: según la doc de
+    // google_sign_in_android, en ese caso es obligatorio pasar el client ID
+    // de la app WEB registrada como serverClientId. Play Services identifica
+    // a la app Android por package name + huella SHA-1 de la consola.
+    await _googleSignIn.initialize(serverClientId: webClientId);
+    debugPrint('[GoogleAuth] ✅ initialize() completado.');
+  }
 
-    if (googleUser == null) {
+  /// Inicia el flujo de Google Sign-In.
+  ///
+  /// Retorna el [LoginResult] del backend si fue exitoso.
+  /// Lanza [GoogleAuthException] si el usuario cancela o hay error.
+  Future<LoginResult> signIn() async {
+    await _ensureInitialized();
+
+    if (!_googleSignIn.supportsAuthenticate()) {
       debugPrint(
-        '[GoogleAuth] ⚠️ signIn() devolvió null — el usuario cerró el selector '
-        'o Google abortó el flujo sin aviso (pasá el log por filtro [GoogleAuth]).',
+        '[GoogleAuth] ❌ supportsAuthenticate() = false — esta plataforma no '
+        'permite disparar el login con UI propia.',
       );
-      throw GoogleSignInException('El usuario canceló el inicio de sesión');
+      throw GoogleAuthException(
+        'Esta plataforma no permite iniciar sesión con Google desde la app.',
+      );
     }
+
+    // 1. Abrir el selector de cuentas y autenticar
+    GoogleSignInAccount account;
+    try {
+      account = await _googleSignIn.authenticate();
+    } on GoogleSignInException catch (e, st) {
+      debugPrint(
+        '[GoogleAuth] ❌ authenticate() lanzó code=${e.code.name} '
+        'description=${e.description ?? '(sin descripción)'}',
+      );
+      debugPrint('[GoogleAuth] stack: $st');
+      throw _mapException(e);
+    }
+
     debugPrint(
-      '[GoogleAuth] Cuenta elegida: ${googleUser.email} '
-      '(nombre: ${googleUser.displayName}, id: ${googleUser.id})',
+      '[GoogleAuth] Cuenta elegida: ${account.email} '
+      '(nombre: ${account.displayName}, id: ${account.id})',
     );
 
-    // 2. Obtener los detalles de autenticación
-    GoogleSignInAuthentication googleAuth;
-    try {
-      googleAuth = await googleUser.authentication;
-    } catch (e, st) {
-      debugPrint(
-        '[GoogleAuth] ❌ googleUser.authentication lanzó ${e.runtimeType}: $e',
-      );
-      debugPrint('[GoogleAuth] stack: $st');
-      if (e is PlatformException) throw _mapPlatformError(e);
-      rethrow;
-    }
+    // 2. En v7 el token viene directo de la cuenta (authentication es síncrono,
+    //    sin llamada extra como en v6). Es válido por poco tiempo: se envía ya.
+    final idToken = account.authentication.idToken;
     debugPrint(
-      '[GoogleAuth] authentication obtenido. '
-      'accessToken=${googleAuth.accessToken != null ? '${googleAuth.accessToken!.length} chars' : 'NULL'}, '
-      'idToken=${googleAuth.idToken != null ? '${googleAuth.idToken!.length} chars' : 'NULL'}',
+      '[GoogleAuth] idToken=${idToken != null ? '${idToken.length} chars' : 'NULL'}',
     );
 
-    if (googleAuth.idToken == null) {
+    if (idToken == null) {
       debugPrint(
         '[GoogleAuth] ❌ idToken nulo. Causas típicas en Android: '
-        '(1) GOOGLE_WEB_CLIENT_ID no corresponde al proyecto OAuth de la app, '
-        '(2) falta la huella SHA-1 (debug y release) cargada en Google Cloud Console / Firebase, '
-        '(3) package name distinto al registrado. Revisá google-services.json y .env.',
+        '(1) serverClientId (web client ID) no corresponde al proyecto OAuth, '
+        '(2) falta la huella SHA-1 (debug y release) en Google Cloud Console, '
+        '(3) package name distinto al registrado.',
       );
-      throw GoogleSignInException('No se pudo obtener el token de Google');
+      throw GoogleAuthException('No se pudo obtener el token de Google');
     }
 
     // 3. Retornar el ID token para que el provider lo envíe al backend
     debugPrint('[GoogleAuth] ✅ ID token listo para enviar al backend.');
     return LoginResult(
-      idToken: googleAuth.idToken!,
-      displayName: googleUser.displayName,
-      email: googleUser.email,
+      idToken: idToken,
+      displayName: account.displayName,
+      email: account.email,
     );
   }
 
-  /// Cierra la sesión de Google (local).
+  /// Cierra la sesión de Google (local al dispositivo).
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    try {
+      await _ensureInitialized();
+      await _googleSignIn.signOut();
+      debugPrint('[GoogleAuth] signOut() completado.');
+    } catch (e) {
+      // No truncar el logout de la app por un fallo del logout de Google.
+      debugPrint('[GoogleAuth] ⚠️ signOut() falló: ${e.runtimeType}: $e');
+    }
   }
 
-  /// Convierte los PlatformException de google_sign_in (códigos de
-  /// GoogleApi ApiException) en mensajes accionables para el usuario.
-  GoogleSignInException _mapPlatformError(PlatformException e) {
-    final msg = e.message ?? '';
-    debugPrint('[GoogleAuth] _mapPlatformError code=${e.code} message=$msg');
-    // ApiException 10 = DEVELOPER_ERROR: esta build (package + SHA-1) no está
-    // registrada como OAuth client de Android en Google Cloud Console.
-    if (msg.contains('ApiException: 10') || msg.contains('DeveloperError')) {
-      return GoogleSignInException(
-        'Google rechazó la configuración de la app (error 10). '
-        'Falta registrar el package name y la huella SHA-1 de esta build '
-        'como OAuth client de Android en Google Cloud Console.',
-      );
+  /// Traduce los [GoogleSignInException] de v7 a mensajes accionables.
+  GoogleAuthException _mapException(GoogleSignInException e) {
+    switch (e.code) {
+      case GoogleSignInExceptionCode.canceled:
+        // El plugin pasa tal cual el mensaje crudo de Credential Manager, así
+        // que por acá llegan dos casos MUY distintos: una cancelación real del
+        // usuario, o un error de cuenta/configuración que Credential Manager
+        // reporta como "canceled" (ver troubleshooting de google_sign_in_android).
+        final description = e.description ?? '';
+        final pareceCancelacion =
+            description.isEmpty || description.toLowerCase().contains('cancel');
+
+        if (pareceCancelacion) {
+          debugPrint('[GoogleAuth] Cancelación real del usuario.');
+          return GoogleAuthException('El usuario canceló el inicio de sesión');
+        }
+
+        debugPrint(
+          '[GoogleAuth] ⚠️ code=canceled con descripción "$description" — NO es '
+          'una cancelación real: Credential Manager está enmascarando un error '
+          '(cuenta que exige reauth, o configuración SHA-1/package/serverClientId).',
+        );
+        return GoogleAuthException(
+          'No se pudo completar el inicio de sesión con Google. '
+          'Intentá de nuevo; si persiste, revisá la cuenta de Google del '
+          'dispositivo y la configuración de la app en Google Cloud Console.',
+        );
+      case GoogleSignInExceptionCode.clientConfigurationError:
+      case GoogleSignInExceptionCode.providerConfigurationError:
+        return GoogleAuthException(
+          'Google rechazó la configuración de la app (${e.code.name}). '
+          'Verificá el package name, la huella SHA-1 de esta build y el '
+          'serverClientId en Google Cloud Console.',
+        );
+      case GoogleSignInExceptionCode.interrupted:
+        return GoogleAuthException(
+          'El inicio de sesión se interrumpió. Intentá de nuevo.',
+        );
+      case GoogleSignInExceptionCode.uiUnavailable:
+        return GoogleAuthException(
+          'No hay una interfaz de Google disponible en este dispositivo. '
+          'Verificá que Google Play Services esté actualizado.',
+        );
+      default:
+        return GoogleAuthException(
+          'Falló Google Sign-In (${e.code.name}'
+          '${e.description != null ? ': ${e.description}' : ''})',
+        );
     }
-    if (msg.contains('ApiException: 12501') || e.code == 'canceled') {
-      return GoogleSignInException('El usuario canceló el inicio de sesión');
-    }
-    if (msg.contains('ApiException: 12500')) {
-      return GoogleSignInException(
-        'No se pudo contactar a Google (error 12500). '
-        'Puede ser la conexión o el Play Services del dispositivo.',
-      );
-    }
-    return GoogleSignInException(
-      'Falló Google Sign-In (${e.code}${msg.isNotEmpty ? ': $msg' : ''})',
-    );
   }
 }
 
@@ -143,10 +181,13 @@ class LoginResult {
   LoginResult({required this.idToken, this.displayName, this.email});
 }
 
-/// Excepción personalizada para errores de Google Sign-In.
-class GoogleSignInException implements Exception {
+/// Excepción propia del flujo de Google con mensaje ya listo para mostrar.
+///
+/// Se llama `GoogleAuthException` (y no `GoogleSignInException`) para no
+/// colisionar con la excepción homónima que exporta google_sign_in 7.x.
+class GoogleAuthException implements Exception {
   final String message;
-  GoogleSignInException(this.message);
+  GoogleAuthException(this.message);
 
   @override
   String toString() => message;

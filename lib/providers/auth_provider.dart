@@ -240,7 +240,7 @@ class AuthProvider with ChangeNotifier {
   /// Extrae el mensaje de error del backend desde una Exception
   String _parseErrorMessage(dynamic error) {
     // Los errores propios de Google Sign-In ya vienen con mensaje accionable.
-    if (error is GoogleSignInException) {
+    if (error is GoogleAuthException) {
       return error.message;
     }
     final errorStr = error.toString();

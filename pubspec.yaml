@@ -24,7 +24,7 @@ dependencies:
   dio: ^5.4.0
   flutter_launcher_icons: ^0.14.4
   rename_app: ^1.6.6
-  google_sign_in: ^6.2.2
+  google_sign_in: ^7.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

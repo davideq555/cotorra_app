@@ -210,10 +210,10 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
       }
       return 'El sistema no permitió guardar en Descargas: ${e.message ?? e.code}';
     }
-    // TEMPORAL (debug): muestra el error crudo para diagnosticar sin adb.
-    final brief = e.toString();
-    return 'No se pudo descargar: '
-        '${brief.length > 160 ? '${brief.substring(0, 160)}…' : brief}';
+    // Error no clasificado: se registra completo para diagnóstico y se le
+    // muestra al usuario un mensaje entendible (no el texto crudo técnico).
+    debugPrint('[Download] error no clasificado: $e');
+    return 'No se pudo descargar. Intentá de nuevo en unos minutos.';
   }
 
   Future<void> _toggleFavorite() async {
