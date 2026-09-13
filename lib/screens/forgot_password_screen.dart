@@ -79,13 +79,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF212121),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF212121)),
+          icon: const Icon(Icons.arrow_back),
           onPressed: _backToLogin,
         ),
       ),
@@ -121,12 +118,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Recuperar contraseña',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF212121),
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
           ),
@@ -136,7 +133,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             'contraseña nueva.',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               height: 1.5,
             ),
             textAlign: TextAlign.center,
@@ -153,7 +150,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             decoration: InputDecoration(
               hintText: 'tu.email@universidad.edu',
               filled: true,
-              fillColor: const Color(0xFFF5F5F5),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -235,12 +231,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           '¡Email enviado!',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF212121),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           textAlign: TextAlign.center,
         ),
@@ -248,7 +244,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Text(
           'Si el email existe en Cotorra, vas a recibir un link para '
           'resetear tu contraseña en',
-          style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
+          style: TextStyle(
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            height: 1.5,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
@@ -272,7 +272,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 8),
         Text(
           'Si no lo encontrás, revisá la carpeta de spam.',
-          style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+          style: TextStyle(
+            fontSize: 13,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
