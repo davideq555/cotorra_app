@@ -232,6 +232,22 @@ class DocumentCard extends StatelessWidget {
                             color: Colors.grey.shade500,
                           ),
                         ),
+                        // Favoritos del documento (total_favoritos, v1.5.1):
+                        // misma fila de métricas, junto a las descargas.
+                        const SizedBox(width: 10),
+                        const Icon(
+                          Icons.favorite,
+                          size: 12,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${doc.totalFavoritos}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
                       ],
                     ),
                   ],

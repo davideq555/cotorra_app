@@ -409,7 +409,7 @@
           "authentication"
         ],
         "summary": "Logout",
-        "description": "Cerrar sesión en este dispositivo.",
+        "description": "Cerrar sesión en este dispositivo.\n\nRequiere el header X-Refresh-Token para identificar la sesión a revocar.",
         "operationId": "auth_logout",
         "responses": {
           "200": {
@@ -6322,6 +6322,30 @@
               "title": "Estado"
             },
             "description": "Filtrar por estado (default: todos)"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Ordenar por: fecha_creacion",
+              "default": "fecha_creacion",
+              "title": "Sort By"
+            },
+            "description": "Ordenar por: fecha_creacion"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Orden: asc o desc",
+              "default": "desc",
+              "title": "Sort Order"
+            },
+            "description": "Orden: asc o desc"
           }
         ],
         "responses": {
@@ -6330,11 +6354,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReporteAdmin"
-                  },
-                  "title": "Response Admin Reportes List"
+                  "$ref": "#/components/schemas/ReportePaginatedResponse"
                 }
               }
             }
@@ -10498,6 +10518,26 @@
           "motivo"
         ],
         "title": "ReporteCreate"
+      },
+      "ReportePaginatedResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReporteAdmin"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "meta"
+        ],
+        "title": "ReportePaginatedResponse"
       },
       "ReporteResponse": {
         "properties": {

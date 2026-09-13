@@ -54,7 +54,7 @@ class GestionScreen extends StatelessWidget {
                   _sectionHeader('Colaborador'),
                   SettingsTile(
                     title: 'Cola de reportes',
-                    subtitle: 'Reportes de documentos pendientes de resolución',
+                    subtitle: 'Reportes de documentos y comentarios pendientes',
                     icon: Icons.report_gmailerrorred_outlined,
                     onTap: () => _push(context, const ReportesGestionScreen()),
                   ),

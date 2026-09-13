@@ -11,10 +11,12 @@ enum AccionResolver { eliminar, descartar, revisar }
 extension AccionResolverX on AccionResolver {
   String get apiValue => name;
 
-  String get label {
+  /// [esComentario] ajusta la etiqueta al sujeto reportado (documento vs
+  /// comentario); el valor `accion` de la API es el mismo ("eliminar").
+  String label({required bool esComentario}) {
     switch (this) {
       case AccionResolver.eliminar:
-        return 'Eliminar documento';
+        return esComentario ? 'Eliminar comentario' : 'Eliminar documento';
       case AccionResolver.descartar:
         return 'Descartar reporte';
       case AccionResolver.revisar:
@@ -22,13 +24,16 @@ extension AccionResolverX on AccionResolver {
     }
   }
 
-  String get descripcion {
+  String descripcion({required bool esComentario}) {
     switch (this) {
       case AccionResolver.eliminar:
-        return 'Elimina el documento reportado. Es destructivo: no hay '
+        final sujeto = esComentario ? 'comentario' : 'documento';
+        return 'Elimina el $sujeto reportado. Es destructivo: no hay '
             'restauración desde la app.';
       case AccionResolver.descartar:
-        return 'Cierra el reporte sin tocar el documento.';
+        return esComentario
+            ? 'Cierra el reporte sin tocar el comentario.'
+            : 'Cierra el reporte sin tocar el documento.';
       case AccionResolver.revisar:
         return 'Deja el reporte en estado REVISADO para seguimiento posterior.';
     }
@@ -63,7 +68,6 @@ class ReportResolverSheet extends StatefulWidget {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -88,15 +92,27 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
   final _notaController = TextEditingController();
   bool _isSubmitting = false;
 
+  /// Título del sujeto reportado (documento o comentario); si el backend no
+  /// lo trae, cae al id. La lógica vive en [Reporte.tituloMostrado].
+  String get _tituloDocumento => widget.reporte.tituloMostrado;
+
+  /// Sujeto de la confirmación de borrado, según el tipo de reporte.
+  String get _sujetoEliminar {
+    if (!widget.reporte.esComentario) return '«$_tituloDocumento»';
+    final usuario = widget.reporte.usuarioUsername;
+    return usuario != null && usuario.trim().isNotEmpty
+        ? 'el comentario de @$usuario'
+        : 'el comentario reportado';
+  }
+
   Future<bool> _confirmarEliminar() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Confirmar eliminación'),
         content: Text(
-          'Vas a eliminar el documento ${widget.reporte.documentoId ?? '—'} '
-          'de forma permanente. Esta acción no se puede deshacer desde la '
-          'app.\n\n¿Eliminar el documento?',
+          'Vas a eliminar $_sujetoEliminar de forma permanente. Esta '
+          'acción no se puede deshacer desde la app.\n\n¿Eliminar?',
         ),
         actions: [
           TextButton(
@@ -151,7 +167,8 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'Reporte #${widget.reporte.id} resuelto: ${accion.label.toLowerCase()}.',
+            'Reporte #${widget.reporte.id} resuelto: '
+            '${accion.label(esComentario: widget.reporte.esComentario).toLowerCase()}.',
           ),
           backgroundColor: primaryGreen,
         ),
@@ -189,6 +206,7 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final esComentario = widget.reporte.esComentario;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -202,7 +220,7 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -214,11 +232,24 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
             ),
             const SizedBox(height: 4),
             Text(
+              _tituloDocumento,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
               'Reporte #${widget.reporte.id} · '
               '${widget.reporte.motivo.replaceAll('_', ' ')}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 8),
             Flexible(
@@ -244,14 +275,16 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
                                     : primaryGreen,
                                 contentPadding: EdgeInsets.zero,
                                 title: Text(
-                                  accion.label,
+                                  accion.label(esComentario: esComentario),
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 subtitle: Text(
-                                  accion.descripcion,
+                                  accion.descripcion(
+                                    esComentario: esComentario,
+                                  ),
                                   style: const TextStyle(fontSize: 12),
                                 ),
                                 secondary: Icon(
@@ -260,7 +293,9 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
                                       ? (accion == AccionResolver.eliminar
                                             ? Colors.red
                                             : primaryGreen)
-                                      : Colors.grey[600],
+                                      : Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             )
@@ -288,7 +323,6 @@ class _ReportResolverSheetState extends State<ReportResolverSheet> {
                             'Ej: material duplicado, ya existía en la '
                             'materia…',
                         filled: true,
-                        fillColor: const Color(0xFFF5F5F5),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,

@@ -19,6 +19,10 @@ class Documento {
   final String? fechaSubida;
   final bool aprobado;
   final int descargas;
+
+  /// Total de favoritos/marcadores del documento. Lo trae el backend desde
+  /// openapi v1.5.1 en el schema Documento.
+  final int totalFavoritos;
   final int usuarioId;
   final bool eliminado;
   final double valoracionPromedio;
@@ -44,6 +48,7 @@ class Documento {
     this.fechaSubida,
     this.aprobado = false,
     this.descargas = 0,
+    this.totalFavoritos = 0,
     required this.usuarioId,
     this.eliminado = false,
     this.valoracionPromedio = 0.0,
@@ -72,6 +77,7 @@ class Documento {
       fechaSubida: json['fecha_subida'],
       aprobado: json['aprobado'] ?? false,
       descargas: json['descargas'] ?? 0,
+      totalFavoritos: json['total_favoritos'] ?? 0,
       usuarioId: json['usuario_id'] ?? 0,
       eliminado: json['eliminado'] ?? false,
       valoracionPromedio: (json['valoracion_promedio'] ?? 0.0).toDouble(),
@@ -105,6 +111,7 @@ class Documento {
       'fecha_subida': fechaSubida,
       'aprobado': aprobado,
       'descargas': descargas,
+      'total_favoritos': totalFavoritos,
       'usuario_id': usuarioId,
       'eliminado': eliminado,
       'valoracion_promedio': valoracionPromedio,

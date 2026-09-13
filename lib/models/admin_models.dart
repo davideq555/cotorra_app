@@ -1,5 +1,5 @@
 // ─── Admin Models ────────────────────────────────────────────────────
-// DTOs de request/response para los 28 endpoints de administración.
+// DTOs de request/response para los endpoints de administración.
 // Basados en openapi.json v1.5.1 — components/schemas.
 // ─────────────────────────────────────────────────────────────────────
 
@@ -479,6 +479,18 @@ class Reporte {
   final int id;
   final int? documentoId;
   final int? comentarioId;
+
+  /// Título del documento reportado. Lo trae GET /admin/reportes/
+  /// (schema ReporteAdmin); en otras respuestas de Reporte puede venir null.
+  final String? documentoTitulo;
+
+  /// Tipo de sujeto reportado: "documento" o "comentario" (schema
+  /// ReporteAdmin). El schema Reporte del endpoint de resolución no lo
+  /// incluye, por eso es nullable.
+  final String? tipo;
+
+  /// Username del autor del reporte (schema ReporteAdmin).
+  final String? usuarioUsername;
   final int usuarioId;
   final String motivo;
   final String? descripcion;
@@ -492,6 +504,9 @@ class Reporte {
     required this.id,
     this.documentoId,
     this.comentarioId,
+    this.documentoTitulo,
+    this.tipo,
+    this.usuarioUsername,
     required this.usuarioId,
     required this.motivo,
     this.descripcion,
@@ -507,6 +522,9 @@ class Reporte {
       id: json['id'] ?? 0,
       documentoId: json['documento_id'],
       comentarioId: json['comentario_id'],
+      documentoTitulo: json['documento_titulo'],
+      tipo: json['tipo'],
+      usuarioUsername: json['usuario_username'],
       usuarioId: json['usuario_id'] ?? 0,
       motivo: json['motivo'] ?? '',
       descripcion: json['descripcion'],
@@ -515,6 +533,43 @@ class Reporte {
       resueltoPor: json['resuelto_por'],
       fechaResolucion: json['fecha_resolucion'],
       notaResolucion: json['nota_resolucion'],
+    );
+  }
+
+  /// True si el reporte es sobre un comentario (no sobre un documento).
+  bool get esComentario =>
+      comentarioId != null || (tipo?.toLowerCase().contains('coment') ?? false);
+
+  /// Etiqueta para mostrar el sujeto reportado.
+  String get tituloMostrado {
+    final titulo = documentoTitulo;
+    if (titulo != null && titulo.trim().isNotEmpty) return titulo;
+    if (esComentario) {
+      final u = usuarioUsername;
+      if (u != null && u.trim().isNotEmpty) return 'Comentario de $u';
+      return 'Comentario #${comentarioId ?? '—'}';
+    }
+    return 'Documento ${documentoId ?? '—'}';
+  }
+}
+
+/// ReportePaginatedResponse — 200 de GET /admin/reportes/ (v1.5.1+).
+/// Envuelve los items (schema ReporteAdmin, parseado por [Reporte]) con
+/// [PaginationMeta] {total, skip, limit, has_more}.
+class ReportePaginatedResponse {
+  final List<Reporte> items;
+  final PaginationMeta meta;
+
+  ReportePaginatedResponse({required this.items, required this.meta});
+
+  factory ReportePaginatedResponse.fromJson(Map<String, dynamic> json) {
+    return ReportePaginatedResponse(
+      items:
+          (json['items'] as List<dynamic>?)
+              ?.map((i) => Reporte.fromJson(i))
+              .toList() ??
+          [],
+      meta: PaginationMeta.fromJson(json['meta'] ?? {}),
     );
   }
 }

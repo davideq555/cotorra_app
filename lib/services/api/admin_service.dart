@@ -5,7 +5,9 @@ import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/universidad.dart';
 import 'package:cotorra_app/services/api_client.dart';
 
-/// Servicio de administración — 28 endpoints de openapi.json tag "admin".
+/// Servicio de administración — endpoints de openapi.json tag "admin"
+/// (openapi v1.5.1: reportes de documento y comentario unificados en
+/// /admin/reportes/ paginado; ya no existe /admin/reportes-comentarios/).
 ///
 /// Todos los endpoints requieren rol ADMIN o COLABORADOR.
 class AdminService {
@@ -269,20 +271,39 @@ class AdminService {
     );
   }
 
-  // ─── 23-24. Reportes ─────────────────────────────────────────────
+  // ─── 23-24. Reportes (documento + comentario unificados) ─────────
 
-  /// GET /admin/reportes/ — Lista reportes de documentos.
-  Future<List<Reporte>> getReportes({int skip = 0, int limit = 20}) async {
-    final response = await _client.get(
-      '/admin/reportes/',
-      queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
-    );
-    final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)?.map((r) => Reporte.fromJson(r)).toList() ??
-        [];
+  /// GET /admin/reportes/ — Lista reportes de documento y comentario en un
+  /// único endpoint paginado ({items, meta}, openapi v1.5.1).
+  ///
+  /// [tipo] filtra por sujeto: 'documento' o 'comentario' (null = todos).
+  /// [estado] filtra por EstadoReporteEnum: PENDIENTE | REVISADO |
+  /// DESCARTADO | RESUELTO (null = todos).
+  /// [sortBy]/[sortOrder] se envían como `sort_by`/`sort_order`
+  /// (fecha_creacion + desc por defecto: los más recientes primero).
+  Future<ReportePaginatedResponse> getReportes({
+    int skip = 0,
+    int limit = 20,
+    String? tipo,
+    String? estado,
+    String sortBy = 'fecha_creacion',
+    String sortOrder = 'desc',
+  }) async {
+    final params = <String, String>{
+      'skip': skip.toString(),
+      'limit': limit.toString(),
+      'sort_by': sortBy,
+      'sort_order': sortOrder,
+    };
+    if (tipo != null && tipo.isNotEmpty) params['tipo'] = tipo;
+    if (estado != null && estado.isNotEmpty) params['estado'] = estado;
+
+    final response = await _client.get('/admin/reportes/', queryParams: params);
+    return ReportePaginatedResponse.fromJson(_client.decodeResponse(response));
   }
 
-  /// PUT /admin/reportes/{id}/resolver — Resuelve un reporte.
+  /// PUT /admin/reportes/{id}/resolver — Resuelve un reporte (único resolver
+  /// para reportes de documento y de comentario).
   Future<Reporte> resolverReporte(
     int reporteId,
     ResolverReporteRequest request,
@@ -294,35 +315,7 @@ class AdminService {
     return Reporte.fromJson(_client.decodeResponse(response));
   }
 
-  // ─── 25-26. Reportes de Comentarios ──────────────────────────────
-
-  /// GET /admin/reportes-comentarios/ — Lista reportes de comentarios.
-  Future<List<Reporte>> getReportesComentarios({
-    int skip = 0,
-    int limit = 20,
-  }) async {
-    final response = await _client.get(
-      '/admin/reportes-comentarios/',
-      queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
-    );
-    final data = _client.decodeResponse(response);
-    return (data as List<dynamic>?)?.map((r) => Reporte.fromJson(r)).toList() ??
-        [];
-  }
-
-  /// PUT /admin/reportes-comentarios/{id}/resolver — Resuelve reporte de comentario.
-  Future<Reporte> resolverReporteComentario(
-    int reporteId,
-    ResolverReporteRequest request,
-  ) async {
-    final response = await _client.put(
-      '/admin/reportes-comentarios/$reporteId/resolver',
-      body: request.toJson(),
-    );
-    return Reporte.fromJson(_client.decodeResponse(response));
-  }
-
-  // ─── 27-28. Solicitudes de Rol ───────────────────────────────────
+  // ─── 25-26. Solicitudes de Rol ───────────────────────────────────
 
   /// GET /admin/solicitudes-rol/ — Lista solicitudes de cambio de rol.
   Future<List<SolicitudCambioRol>> getSolicitudesRol({
