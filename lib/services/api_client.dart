@@ -152,16 +152,24 @@ class ApiClient {
   }
 
   /// POST request with JSON body.
+  ///
+  /// [headers] permite agregar headers propios del caller (p. ej.
+  /// `X-Refresh-Token` en logout) sobre los headers JSON base. Si un header
+  /// del caller coincide con uno base, el del caller tiene precedencia.
   Future<http.Response> post(
     String path, {
     Object? body,
     bool requireAuth = true,
     bool skipRefresh = false,
+    Map<String, String>? headers,
   }) async {
     return _retryOn401(() {
       return _http.post(
         Uri.parse('$baseUrl$path'),
-        headers: _jsonHeaders(includeAuth: requireAuth),
+        headers: {
+          ..._jsonHeaders(includeAuth: requireAuth),
+          ...?headers,
+        },
         body: body != null ? jsonEncode(body) : null,
       );
     }, skip: skipRefresh);

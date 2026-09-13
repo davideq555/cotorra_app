@@ -28,6 +28,31 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  /// Pide confirmación antes de cerrar sesión. Descartar el diálogo
+  /// (Cancelar o tocar afuera) no cierra la sesión.
+  Future<void> _confirmarLogout() async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Text('¿Seguro que querés salir de la aplicación?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Salir'),
+          ),
+        ],
+      ),
+    );
+    if (confirmado != true || !mounted) return;
+    await Provider.of<AuthProvider>(context, listen: false).logout();
+  }
+
   /////////////////////////////////////////////////////////////////
 
   @override
@@ -82,9 +107,8 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 IconButton(
                   icon: const Icon(Icons.logout),
-                  onPressed: () {
-                    Provider.of<AuthProvider>(context, listen: false).logout();
-                  },
+                  tooltip: 'Cerrar sesión',
+                  onPressed: _confirmarLogout,
                 ),
               ],
             ),

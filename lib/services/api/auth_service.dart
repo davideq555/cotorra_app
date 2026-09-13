@@ -138,14 +138,33 @@ class AuthService {
 
   // ─── 11. Logout ──────────────────────────────────────────────────
   /// POST /auth/logout — Cierra sesión en este dispositivo.
-  Future<void> logout() async {
-    await _client.post('/auth/logout', skipRefresh: true);
+  ///
+  /// Si [refreshToken] no es null ni vacío, se envía en el header
+  /// `X-Refresh-Token` para que el backend finalice la sesión server-side.
+  Future<void> logout({String? refreshToken}) async {
+    await _client.post(
+      '/auth/logout',
+      skipRefresh: true,
+      headers: _refreshTokenHeaders(refreshToken),
+    );
   }
 
   // ─── 12. Logout All ──────────────────────────────────────────────
   /// POST /auth/logout-all — Cierra sesión en TODOS los dispositivos.
-  Future<void> logoutAll() async {
-    await _client.post('/auth/logout-all');
+  ///
+  /// Si [refreshToken] no es null ni vacío, se envía en el header
+  /// `X-Refresh-Token` para que el backend finalice la sesión server-side.
+  Future<void> logoutAll({String? refreshToken}) async {
+    await _client.post(
+      '/auth/logout-all',
+      headers: _refreshTokenHeaders(refreshToken),
+    );
+  }
+
+  /// Arma el header `X-Refresh-Token` solo si [refreshToken] tiene valor.
+  Map<String, String>? _refreshTokenHeaders(String? refreshToken) {
+    if (refreshToken == null || refreshToken.isEmpty) return null;
+    return {'X-Refresh-Token': refreshToken};
   }
 
   // ─── 13. Sessions List ───────────────────────────────────────────

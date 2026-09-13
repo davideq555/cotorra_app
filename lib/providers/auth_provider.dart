@@ -275,10 +275,15 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
-    try {
-      await _authService.logout();
-    } catch (_) {}
     final prefs = await SharedPreferences.getInstance();
+    try {
+      // Leer el refresh_token ANTES de limpiar la sesión, porque el backend
+      // lo requiere en el header X-Refresh-Token para finalizar la sesión.
+      final refreshToken = prefs.getString('refresh_token');
+      await _authService.logout(refreshToken: refreshToken);
+    } catch (_) {
+      // Nunca lanzar desde logout: la sesión local debe limpiarse igual.
+    }
     await _clearSession(prefs);
     notifyListeners();
   }

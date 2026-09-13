@@ -2215,7 +2215,7 @@
           "carreras"
         ],
         "summary": "Read Carrera Materias",
-        "description": "Obtener materias de una carrera con sus detalles. En desarrollo permite acceso sin autenticación.",
+        "description": "Obtener materias de una carrera con sus detalles, incluyendo el año académico\ny el cuatrimestre en que se dictan. En desarrollo permite acceso sin autenticación.",
         "operationId": "carreras_materias",
         "parameters": [
           {
@@ -2236,7 +2236,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CarreraMateria"
+                    "$ref": "#/components/schemas/MateriaEnCarrera"
                   },
                   "title": "Response Carreras Materias"
                 }
@@ -2434,49 +2434,6 @@
         }
       }
     },
-    "/api/v1/materias/{materia_id}": {
-      "get": {
-        "tags": [
-          "materias"
-        ],
-        "summary": "Read Materia",
-        "description": "Obtener una materia por ID. En desarrollo permite acceso sin autenticación.",
-        "operationId": "materias_get_by_id",
-        "parameters": [
-          {
-            "name": "materia_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Materia Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Materia"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/materias/buscar": {
       "get": {
         "tags": [
@@ -2526,13 +2483,56 @@
         }
       }
     },
+    "/api/v1/materias/{materia_id}": {
+      "get": {
+        "tags": [
+          "materias"
+        ],
+        "summary": "Read Materia",
+        "description": "Obtener una materia por ID junto con las carreras donde se dicta.\nEn desarrollo permite acceso sin autenticación.",
+        "operationId": "materias_get_by_id",
+        "parameters": [
+          {
+            "name": "materia_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Materia Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MateriaConCarreras"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/materias/carrera/{carrera_id}": {
       "get": {
         "tags": [
           "materias"
         ],
         "summary": "Read Materias By Carrera",
-        "description": "Obtener materias de una carrera. En desarrollo permite acceso sin autenticación.",
+        "description": "Obtener materias de una carrera, incluyendo el año académico y el cuatrimestre\nen que se dictan según la relación CarreraMateria.\nEn desarrollo permite acceso sin autenticación.",
         "operationId": "materias_by_carrera",
         "parameters": [
           {
@@ -2553,7 +2553,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Materia"
+                    "$ref": "#/components/schemas/MateriaEnCarrera"
                   },
                   "title": "Response Materias By Carrera"
                 }
@@ -5546,6 +5546,53 @@
         }
       }
     },
+    "/api/v1/admin/importar-carreras": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Importar Carreras",
+        "description": "Importar carreras, materias y asociaciones de una facultad de forma masiva\ne idempotente. Solo administradores.\n\nCon `dry_run=true` calcula el resumen sin persistir nada.",
+        "operationId": "admin_importar_carreras",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportarCarrerasRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportarCarrerasResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/carrera-materias": {
       "post": {
         "tags": [
@@ -6209,7 +6256,7 @@
           "admin"
         ],
         "summary": "Read Reportes",
-        "description": "Listar reportes pendientes de documentos.\nADMIN ve todos, DOCENTE/COLABORADOR ven solo su scope.",
+        "description": "Listar reportes (documento y comentario) con filtros opcionales.\nADMIN ve todos, DOCENTE/COLABORADOR ven solo su scope.",
         "operationId": "admin_reportes_list",
         "security": [
           {
@@ -6239,6 +6286,42 @@
               "default": 20,
               "title": "Limit"
             }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por tipo: documento o comentario",
+              "title": "Tipo"
+            },
+            "description": "Filtrar por tipo: documento o comentario"
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EstadoReporteEnum"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por estado (default: todos)",
+              "title": "Estado"
+            },
+            "description": "Filtrar por estado (default: todos)"
           }
         ],
         "responses": {
@@ -6249,7 +6332,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Reporte"
+                    "$ref": "#/components/schemas/ReporteAdmin"
                   },
                   "title": "Response Admin Reportes List"
                 }
@@ -6275,132 +6358,8 @@
           "admin"
         ],
         "summary": "Resolver Reporte",
-        "description": "Resolver un reporte. Acciones disponibles:\n- \"eliminar\": elimina el documento permanentemente\n- \"descartar\": descarta el reporte, el documento sigue visible\n- \"revisar\": marca el reporte como revisado sin acción adicional",
+        "description": "Resolver un reporte (de documento o de comentario). Acciones disponibles:\n- \"eliminar\": da de baja el documento (eliminación lógica) o el comentario\n- \"descartar\": descarta el reporte, el contenido sigue visible\n- \"revisar\": marca el reporte como revisado sin acción adicional",
         "operationId": "admin_reportes_resolver",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "reporte_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Reporte Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResolverReporteRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Reporte"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/admin/reportes-comentarios/": {
-      "get": {
-        "tags": [
-          "admin"
-        ],
-        "summary": "Read Reportes Comentarios",
-        "description": "Listar reportes pendientes de comentarios.\nADMIN ve todos, DOCENTE/COLABORADOR ven solo su scope.",
-        "operationId": "admin_reportes_comentarios_list",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "skip",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0,
-              "title": "Skip"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 20,
-              "title": "Limit"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Reporte"
-                  },
-                  "title": "Response Admin Reportes Comentarios List"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/admin/reportes-comentarios/{reporte_id}/resolver": {
-      "put": {
-        "tags": [
-          "admin"
-        ],
-        "summary": "Resolver Reporte Comentario",
-        "description": "Resolver un reporte de comentario. Acciones disponibles:\n- \"eliminar\": da de baja el comentario (eliminación lógica)\n- \"descartar\": descarta el reporte, el comentario sigue visible\n- \"revisar\": marca el reporte como revisado sin acción adicional",
-        "operationId": "admin_reportes_comentarios_resolver",
         "security": [
           {
             "HTTPBearer": []
@@ -8029,6 +7988,160 @@
         ],
         "title": "CarreraCreate"
       },
+      "CarreraEnMateria": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          },
+          "duracion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duracion"
+          },
+          "url_informacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Informacion"
+          },
+          "facultad_id": {
+            "type": "integer",
+            "title": "Facultad Id"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "facultad": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Facultad"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "año_academico": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Año Academico"
+          },
+          "cuatrimestre": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cuatrimestre"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "facultad_id",
+          "id"
+        ],
+        "title": "CarreraEnMateria",
+        "description": "Carrera donde se dicta una materia, con su ubicación en el plan (CarreraMateria).\n\n`año_academico` y `cuatrimestre` provienen de la relación CarreraMateria."
+      },
+      "CarreraImportItem": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Nombre"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          },
+          "duracion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duracion"
+          },
+          "url_informacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Informacion"
+          },
+          "materias": {
+            "items": {
+              "$ref": "#/components/schemas/MateriaImportItem"
+            },
+            "type": "array",
+            "title": "Materias"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre"
+        ],
+        "title": "CarreraImportItem"
+      },
       "CarreraInfo": {
         "properties": {
           "id": {
@@ -8364,6 +8477,11 @@
             "type": "integer",
             "title": "Profundidad",
             "default": 0
+          },
+          "eliminado": {
+            "type": "boolean",
+            "title": "Eliminado",
+            "default": false
           },
           "respuestas": {
             "items": {
@@ -8972,6 +9090,10 @@
       },
       "Facultad": {
         "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
           "nombre": {
             "type": "string",
             "title": "Nombre"
@@ -8986,33 +9108,15 @@
               }
             ],
             "title": "Descripcion"
-          },
-          "universidad_id": {
-            "type": "integer",
-            "title": "Universidad Id"
-          },
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "universidad": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Universidad"
-              },
-              {
-                "type": "null"
-              }
-            ]
           }
         },
         "type": "object",
         "required": [
-          "nombre",
-          "universidad_id",
-          "id"
+          "id",
+          "nombre"
         ],
-        "title": "Facultad"
+        "title": "Facultad",
+        "description": "Respuesta pública de Facultad.\n\nOmite deliberadamente `universidad_id` y `universidad`: la app está enfocada\nen una única universidad, así que no se exponen en las respuestas. Los datos\nde universidad se siguen aceptando en FacultadCreate/FacultadUpdate."
       },
       "FacultadCreate": {
         "properties": {
@@ -9312,6 +9416,96 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "ImportacionResumen": {
+        "properties": {
+          "carreras_creadas": {
+            "type": "integer",
+            "title": "Carreras Creadas",
+            "default": 0
+          },
+          "carreras_reutilizadas": {
+            "type": "integer",
+            "title": "Carreras Reutilizadas",
+            "default": 0
+          },
+          "materias_creadas": {
+            "type": "integer",
+            "title": "Materias Creadas",
+            "default": 0
+          },
+          "materias_reutilizadas": {
+            "type": "integer",
+            "title": "Materias Reutilizadas",
+            "default": 0
+          },
+          "asociaciones_creadas": {
+            "type": "integer",
+            "title": "Asociaciones Creadas",
+            "default": 0
+          },
+          "asociaciones_actualizadas": {
+            "type": "integer",
+            "title": "Asociaciones Actualizadas",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ImportacionResumen"
+      },
+      "ImportarCarrerasRequest": {
+        "properties": {
+          "facultad_id": {
+            "type": "integer",
+            "title": "Facultad Id"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          },
+          "carreras": {
+            "items": {
+              "$ref": "#/components/schemas/CarreraImportItem"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Carreras"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facultad_id",
+          "carreras"
+        ],
+        "title": "ImportarCarrerasRequest"
+      },
+      "ImportarCarrerasResponse": {
+        "properties": {
+          "facultad_id": {
+            "type": "integer",
+            "title": "Facultad Id"
+          },
+          "facultad_nombre": {
+            "type": "string",
+            "title": "Facultad Nombre"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run"
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/ImportacionResumen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facultad_id",
+          "facultad_nombre",
+          "dry_run",
+          "resumen"
+        ],
+        "title": "ImportarCarrerasResponse"
+      },
       "LoginRequest": {
         "properties": {
           "email": {
@@ -9423,6 +9617,55 @@
         ],
         "title": "Materia"
       },
+      "MateriaConCarreras": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          },
+          "codigo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Codigo"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "carreras": {
+            "items": {
+              "$ref": "#/components/schemas/CarreraEnMateria"
+            },
+            "type": "array",
+            "title": "Carreras",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "id"
+        ],
+        "title": "MateriaConCarreras",
+        "description": "Materia individual junto con las carreras donde se dicta (CarreraMateria)."
+      },
       "MateriaCreate": {
         "properties": {
           "nombre": {
@@ -9503,6 +9746,69 @@
         ],
         "title": "MateriaDisponibleResponse"
       },
+      "MateriaEnCarrera": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          },
+          "codigo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Codigo"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "año_academico": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Año Academico"
+          },
+          "cuatrimestre": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cuatrimestre"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "id"
+        ],
+        "title": "MateriaEnCarrera",
+        "description": "Materia junto con su ubicación en el plan de estudios de una carrera.\n\n`año_academico` y `cuatrimestre` provienen de la relación CarreraMateria."
+      },
       "MateriaGestionResponse": {
         "properties": {
           "id": {
@@ -9547,6 +9853,64 @@
           "nombre"
         ],
         "title": "MateriaGestionResponse"
+      },
+      "MateriaImportItem": {
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Codigo"
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Nombre"
+          },
+          "anio": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anio"
+          },
+          "año_academico": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Año Academico"
+          },
+          "cuatrimestre": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cuatrimestre",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo",
+          "nombre"
+        ],
+        "title": "MateriaImportItem"
       },
       "MateriaSuscripcionCheckResponse": {
         "properties": {
@@ -9878,6 +10242,17 @@
             "type": "integer",
             "title": "Usuario Id"
           },
+          "usuario_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usuario Username"
+          },
           "motivo": {
             "$ref": "#/components/schemas/MotivoReporteEnum"
           },
@@ -9948,6 +10323,136 @@
           "nota_resolucion"
         ],
         "title": "Reporte"
+      },
+      "ReporteAdmin": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "documento_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documento Id"
+          },
+          "comentario_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comentario Id"
+          },
+          "usuario_id": {
+            "type": "integer",
+            "title": "Usuario Id"
+          },
+          "usuario_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usuario Username"
+          },
+          "motivo": {
+            "$ref": "#/components/schemas/MotivoReporteEnum"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoReporteEnum"
+          },
+          "fecha_creacion": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Creacion"
+          },
+          "resuelto_por": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resuelto Por"
+          },
+          "fecha_resolucion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Resolucion"
+          },
+          "nota_resolucion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nota Resolucion"
+          },
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "documento_titulo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documento Titulo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "usuario_id",
+          "motivo",
+          "descripcion",
+          "estado",
+          "fecha_creacion",
+          "resuelto_por",
+          "fecha_resolucion",
+          "nota_resolucion",
+          "tipo"
+        ],
+        "title": "ReporteAdmin"
       },
       "ReporteCreate": {
         "properties": {
