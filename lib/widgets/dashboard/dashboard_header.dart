@@ -59,7 +59,7 @@ class _DashboardHeaderState extends State<DashboardHeader> {
                 child: Image.asset(
                   'assets/images/free.png',
                   errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     child: const Icon(
                       Icons.pets,
                       color: Colors.white,
@@ -97,7 +97,7 @@ class _DashboardHeaderState extends State<DashboardHeader> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
@@ -119,7 +119,7 @@ class _DashboardHeaderState extends State<DashboardHeader> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(

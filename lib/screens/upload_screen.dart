@@ -306,7 +306,7 @@ class _UploadScreenState extends State<UploadScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: primaryGreen.withOpacity(0.4),
+                          color: primaryGreen.withValues(alpha: 0.4),
                           width: 2,
                         ),
                       ),

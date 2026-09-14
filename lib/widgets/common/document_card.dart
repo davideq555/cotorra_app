@@ -88,7 +88,7 @@ class DocumentCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
+        side: BorderSide(color: Colors.grey.withValues(alpha: 0.1), width: 1),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -110,7 +110,7 @@ class DocumentCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: primaryGreen.withOpacity(0.1),
+                  color: primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: primaryGreen, size: 24),
@@ -139,7 +139,7 @@ class DocumentCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: primaryGreen.withOpacity(0.1),
+                              color: primaryGreen.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -185,7 +185,7 @@ class DocumentCard extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.amber.withOpacity(0.2),
+                              color: Colors.amber.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
