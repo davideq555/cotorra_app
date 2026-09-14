@@ -76,7 +76,7 @@ class _FacultadDropdownState extends State<FacultadDropdown> {
     }
 
     return DropdownButtonFormField<int>(
-      value: widget.value?.id,
+      initialValue: widget.value?.id,
       decoration: InputDecoration(
         filled: true,
         // fillColor: widget.enabled ? Colors.white : Colors.grey.shade200,

@@ -117,7 +117,7 @@ class SearchProvider with ChangeNotifier {
     try {
       _materias = await _catalogs.getMaterias();
     } catch (e) {
-      print('Error loading materias: $e');
+      debugPrint('Error loading materias: $e');
       _materias = [];
     }
 
@@ -135,7 +135,7 @@ class SearchProvider with ChangeNotifier {
     try {
       _facultades = await _catalogs.getFacultades();
     } catch (e) {
-      print('Error loading facultades: $e');
+      debugPrint('Error loading facultades: $e');
       _facultades = [];
     }
 
@@ -154,7 +154,7 @@ class SearchProvider with ChangeNotifier {
     try {
       _carreras = await _catalogs.getCarrerasByFacultadId(facultadId);
     } catch (e) {
-      print('Error loading carreras: $e');
+      debugPrint('Error loading carreras: $e');
       _carreras = [];
     }
 
@@ -171,7 +171,7 @@ class SearchProvider with ChangeNotifier {
     try {
       _carreraMaterias = await _catalogs.getMateriasByCarreraId(carreraId);
     } catch (e) {
-      print('Error loading materias: $e');
+      debugPrint('Error loading materias: $e');
       _carreraMaterias = [];
     }
 
@@ -238,7 +238,7 @@ class SearchProvider with ChangeNotifier {
       _documentos = await _docsService.getMejoresDocumentos();
       _mejoresDocumentosLoaded = true;
     } catch (e) {
-      print('Error loading best documents: $e');
+      debugPrint('Error loading best documents: $e');
       _errorMessage =
           'Error al cargar los documentos. Por favor intenta de nuevo.';
       _documentos = [];
@@ -281,7 +281,7 @@ class SearchProvider with ChangeNotifier {
         anoAcademico: _selectedYear,
       );
     } catch (e) {
-      print('Error searching documents: $e');
+      debugPrint('Error searching documents: $e');
       _errorMessage =
           'Error al cargar los documentos. Por favor intenta de nuevo.';
       _documentos = [];

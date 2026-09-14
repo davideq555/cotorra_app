@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UrlLauncherUtil {
@@ -74,7 +75,7 @@ class UrlLauncherUtil {
     try {
       return await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      print('Error opening URL: $e');
+      debugPrint('Error opening URL: $e');
       return false;
     }
   }

@@ -1,6 +1,6 @@
 import 'package:cotorra_app/models/carrera.dart';
 import 'package:cotorra_app/models/facultad.dart';
-import 'package:cotorra_app/models/usuarioCreate.dart';
+import 'package:cotorra_app/models/usuario_create.dart';
 import 'package:cotorra_app/models/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -153,7 +153,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -191,7 +191,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),

@@ -164,23 +164,6 @@ class _UploadScreenState extends State<UploadScreen> {
       final auth = context.read<AuthProvider>();
       final token = auth.token;
 
-      print('=== UPLOAD SUBMIT ===');
-      print('titulo: ${_titleController.text.trim()}');
-      print('tipo: $_selectedTipoDocumentoId');
-      print('carreraId: $_selectedCarreraId');
-      print('materiaId: ${_selectedMateria?.id}');
-      print('anoAcademico: $_selectedAnoAcademico');
-      print('autor: ${_autorController.text.trim()}');
-      print('descripcion: ${_descripcionController.text.trim()}');
-      print('uploadType: $_uploadType');
-      if (_uploadType == UploadType.archivo) {
-        print('fileName: $_fileName');
-        print('fileBase64 length: ${_fileBase64?.length}');
-      } else {
-        print('url: ${_urlController.text.trim()}');
-      }
-      print('======================');
-
       if (token == null) {
         throw Exception('No hay sesión activa');
       }
@@ -306,7 +289,7 @@ class _UploadScreenState extends State<UploadScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: primaryGreen.withOpacity(0.4),
+                          color: primaryGreen.withValues(alpha: 0.4),
                           width: 2,
                         ),
                       ),
@@ -384,7 +367,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
-                  value: _selectedTipoDocumentoId,
+                  initialValue: _selectedTipoDocumentoId,
                   decoration: InputDecoration(
                     labelText: 'Tipo de documento',
                     border: OutlineInputBorder(
@@ -405,7 +388,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
-                  value: _selectedCarreraId,
+                  initialValue: _selectedCarreraId,
                   decoration: InputDecoration(
                     labelText: 'Carrera',
                     border: OutlineInputBorder(
@@ -449,7 +432,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _selectedAnoAcademico,
+                  initialValue: _selectedAnoAcademico,
                   decoration: InputDecoration(
                     labelText: 'Año académico',
                     border: OutlineInputBorder(

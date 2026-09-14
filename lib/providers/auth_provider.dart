@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:cotorra_app/models/auth_models.dart';
 import 'package:cotorra_app/models/carrera.dart';
 import 'package:cotorra_app/models/usuario.dart';
-import 'package:cotorra_app/models/usuarioCreate.dart';
+import 'package:cotorra_app/models/usuario_create.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_client.dart';

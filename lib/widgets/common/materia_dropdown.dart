@@ -70,7 +70,7 @@ class MateriaDropdownState extends State<MateriaDropdown> {
         : (widget.hint ?? 'Seleccionar ${widget.label}');
 
     return DropdownButtonFormField<int>(
-      value: widget.value?.id,
+      initialValue: widget.value?.id,
       decoration: InputDecoration(
         filled: true,
         // fillColor: widget.enabled && _materias.isNotEmpty

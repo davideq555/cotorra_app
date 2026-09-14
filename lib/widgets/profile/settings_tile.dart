@@ -24,7 +24,7 @@ class SettingsTile extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: primaryGreen.withOpacity(0.1),
+            color: primaryGreen.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: primaryGreen, size: 20),

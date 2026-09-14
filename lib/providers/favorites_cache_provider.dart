@@ -87,7 +87,7 @@ class FavoritesCacheProvider with ChangeNotifier {
       );
       await _persistCount(_favorites.length);
     } catch (e) {
-      print('Error refreshing favorites: $e');
+      debugPrint('Error refreshing favorites: $e');
       if (_favorites.isEmpty) {
         _errorMessage = 'Error al cargar favoritos.';
       }
@@ -126,7 +126,7 @@ class FavoritesCacheProvider with ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('Error toggling favorite: $e');
+      debugPrint('Error toggling favorite: $e');
       _errorMessage = 'Error al actualizar favorito.';
       notifyListeners();
     }

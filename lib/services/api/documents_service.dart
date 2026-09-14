@@ -130,10 +130,10 @@ class DocumentsService {
       fields: {
         'titulo': titulo,
         'tipo': tipo.toString(),
-        if (descripcion != null) 'descripcion': descripcion,
-        if (autor != null) 'autor': autor,
+        'descripcion': ?descripcion,
+        'autor': ?autor,
         if (materiaId != null) 'materia_id': materiaId.toString(),
-        if (anoAcademico != null) 'año_academico': anoAcademico,
+        'año_academico': ?anoAcademico,
         if (tags != null) 'tags': tags.join(','),
       },
       files: [
@@ -164,11 +164,11 @@ class DocumentsService {
         'titulo': titulo,
         'url_externa': urlExterna,
         'tipo': tipo,
-        if (descripcion != null) 'descripcion': descripcion,
-        if (autor != null) 'autor': autor,
-        if (materiaId != null) 'materia_id': materiaId,
-        if (anoAcademico != null) 'año_academico': anoAcademico,
-        if (tags != null) 'tags': tags,
+        'descripcion': ?descripcion,
+        'autor': ?autor,
+        'materia_id': ?materiaId,
+        'año_academico': ?anoAcademico,
+        'tags': ?tags,
       },
     );
     return Documento.fromJson(_client.decodeResponse(response));
