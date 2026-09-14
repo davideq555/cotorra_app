@@ -1,0 +1,66 @@
+# Integración continua: análisis estático + tests unitarios.
+# Corre en cada push/PR a master y también manualmente desde la pestaña Actions.
+#
+# NO requiere secretos: crea un .env de CI con valores placeholder.
+# NO corre los tests de integración (esos pegan al backend real y hacen escrituras).
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+# Si se empujan varios commits seguidos, cancela el run anterior en curso.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-test:
+    name: Analyze + unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Java 17: es el target declarado en android/app/build.gradle.kts
+      # (sourceCompatibility/targetCompatibility = VERSION_17).
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Flutter 3.47.2 (stable) = versión local. Trae Dart 3.13.2.
+      # cache: true guarda el SDK entre runs para acelerar.
+      - name: Setup Flutter 3.47.2
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      # .env es dependencia dura del build (asset de pubspec + dotenv.load no opcional).
+      # Se genera con valores de CI para no necesitar secretos.
+      - name: Crear .env de CI
+        run: |
+          printf '%s\n' \
+            'API_BASE_URL=https://apicotorra.deqa.com.ar/api/v1' \
+            'ENVIRONMENT=development' \
+            'GOOGLE_WEB_CLIENT_ID=ci-placeholder.apps.googleusercontent.com' \
+            'TEST_USER_EMAIL=ci@example.com' \
+            'TEST_USER_PASSWORD=ci-placeholder' > .env
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      # --no-fatal-infos: el proyecto tiene 80 avisos "info" (APIs deprecadas de Flutter).
+      # Con el default (fatal-infos) el step fallaría; así el CI queda verde y sigue
+      # mostrando los avisos en el log. Errores y warnings SÍ hacen fallar el job.
+      - name: Análisis estático
+        run: flutter analyze --no-fatal-infos
+
+      - name: Tests unitarios
+        run: flutter test test/services/api_service_test.dart
