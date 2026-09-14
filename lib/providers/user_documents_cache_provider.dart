@@ -76,7 +76,7 @@ class UserDocumentsCacheProvider with ChangeNotifier {
         toJson: (doc) => doc.toJson(),
       );
     } catch (e) {
-      print('Error refreshing user documents: $e');
+      debugPrint('Error refreshing user documents: $e');
       _isLoading = false;
       if (_documentos.isEmpty) {
         _errorMessage = 'Error al cargar los documentos.';

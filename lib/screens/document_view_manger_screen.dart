@@ -46,14 +46,16 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
   }
 
   Future<void> _loadDocumento() async {
-    print('[DocumentViewScreen] Cargando documento ID: ${widget.documento.id}');
+    debugPrint(
+      '[DocumentViewScreen] Cargando documento ID: ${widget.documento.id}',
+    );
     try {
       final doc = await _apiService.getDocumento(widget.documento.id);
-      print('[DocumentViewScreen] Documento cargado: ${doc.titulo}');
-      print(
+      debugPrint('[DocumentViewScreen] Documento cargado: ${doc.titulo}');
+      debugPrint(
         '[DocumentViewScreen] Formato: ${doc.formato?.nombre} (id: ${doc.formatoId})',
       );
-      print('[DocumentViewScreen] URL: ${doc.archivoUrl}');
+      debugPrint('[DocumentViewScreen] URL: ${doc.archivoUrl}');
       if (mounted) {
         setState(() {
           _documento = doc;
@@ -62,7 +64,7 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
         _checkFavoriteState();
       }
     } catch (e) {
-      print('[DocumentViewScreen] Error al cargar documento: $e');
+      debugPrint('[DocumentViewScreen] Error al cargar documento: $e');
       if (mounted) {
         setState(() {
           _errorMessage = 'Error al cargar el documento: $e';
@@ -373,7 +375,7 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
     final documento = _documento ?? widget.documento;
     final formatoNombre = documento.formato?.nombre.toUpperCase();
 
-    print(
+    debugPrint(
       '[DocumentViewScreen] _buildVisualizer - formatoNombre: $formatoNombre, titulo: ${documento.titulo}',
     );
 
@@ -382,7 +384,7 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
           documento.titulo.toLowerCase().contains('laboratorio') ||
           documento.titulo.toLowerCase().contains('imagen');
       final isLink = documento.archivoUrl.startsWith('http');
-      print(
+      debugPrint(
         '[DocumentViewScreen] Formato null, fallback heuristica - isImage: $isImage, isLink: $isLink',
       );
 
@@ -393,20 +395,22 @@ class _DocumentViewScreenState extends State<DocumentViewScreen> {
 
     switch (formatoNombre) {
       case 'PDF':
-        print('[DocumentViewScreen] Selecionando PdfVisualizerScreen');
+        debugPrint('[DocumentViewScreen] Selecionando PdfVisualizerScreen');
         return PdfVisualizerScreen(documento: documento);
       case 'IMAGEN':
-        print('[DocumentViewScreen] Selecionando ImageVisualizerScreen');
+        debugPrint('[DocumentViewScreen] Selecionando ImageVisualizerScreen');
         return ImageVisualizerScreen(documento: documento);
       case 'ENLACE':
-        print('[DocumentViewScreen] Selecionando LinkVisualizerScreen');
+        debugPrint('[DocumentViewScreen] Selecionando LinkVisualizerScreen');
         return LinkVisualizerScreen(documento: documento);
       default:
         if (_unsupportedFormats.contains(formatoNombre)) {
-          print('[DocumentViewScreen] Formato no soportado: $formatoNombre');
+          debugPrint(
+            '[DocumentViewScreen] Formato no soportado: $formatoNombre',
+          );
           return _UnsupportedFormatView(formato: formatoNombre);
         }
-        print(
+        debugPrint(
           '[DocumentViewScreen] Formato desconocido, usando PdfVisualizerScreen por defecto',
         );
         return PdfVisualizerScreen(documento: documento);

@@ -90,7 +90,7 @@ class DocumentCacheProvider with ChangeNotifier {
         toJson: (doc) => doc.toJson(),
       );
     } catch (e) {
-      print('Error refreshing best documents: $e');
+      debugPrint('Error refreshing best documents: $e');
       _errorMessage = 'Error al cargar los documentos: $e';
       // Si ya tenemos datos en caché, no mostrar error
       if (_documentos.isEmpty) {

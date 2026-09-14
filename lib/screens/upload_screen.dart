@@ -164,23 +164,6 @@ class _UploadScreenState extends State<UploadScreen> {
       final auth = context.read<AuthProvider>();
       final token = auth.token;
 
-      print('=== UPLOAD SUBMIT ===');
-      print('titulo: ${_titleController.text.trim()}');
-      print('tipo: $_selectedTipoDocumentoId');
-      print('carreraId: $_selectedCarreraId');
-      print('materiaId: ${_selectedMateria?.id}');
-      print('anoAcademico: $_selectedAnoAcademico');
-      print('autor: ${_autorController.text.trim()}');
-      print('descripcion: ${_descripcionController.text.trim()}');
-      print('uploadType: $_uploadType');
-      if (_uploadType == UploadType.archivo) {
-        print('fileName: $_fileName');
-        print('fileBase64 length: ${_fileBase64?.length}');
-      } else {
-        print('url: ${_urlController.text.trim()}');
-      }
-      print('======================');
-
       if (token == null) {
         throw Exception('No hay sesión activa');
       }
