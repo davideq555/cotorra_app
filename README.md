@@ -7,6 +7,7 @@
 [![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Auth](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)](#)
 [![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-yellow)](#)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 Aplicación móvil oficial de Cotorra desarrollada en Flutter.
 
@@ -223,6 +224,15 @@ flutter build apk
 
 ## Licencia
 
+Este proyecto se distribuye bajo la **Apache License 2.0**.
+
+* Texto completo: [`LICENSE`](LICENSE)
+* Avisos de atribución y marca: [`NOTICE`](NOTICE)
+
+Podés usar, modificar y distribuir el código libremente (incluso con fines comerciales) siempre que conserves la atribución y el aviso de licencia.
+
+> **Marca "Cotorra":** la licencia **no** cede derechos sobre el nombre, el logotipo ni la marca **Cotorra** (Apache 2.0, Sección 6). Se puede reutilizar el código, pero no presentar un derivado como "Cotorra" ni dar a entender que está respaldado por el proyecto.
+
 Proyecto desarrollado como parte del trabajo final de la carrera de la **Universidad Nacional de Salta (UNSA)**.
 
-© Cotorra — Todos los derechos reservados.
+© 2026 David Aramayo — Cotorra
