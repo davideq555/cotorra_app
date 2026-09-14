@@ -32,7 +32,7 @@ Esta aplicación móvil consume la API desarrollada en FastAPI y busca ofrecer u
 Este repositorio corresponde al **cliente móvil** de Cotorra, desarrollado en el marco del **trabajo final de la carrera de Programador Universitario de la Universidad Nacional de Salta (UNSA)**.
 
 * **Institución:** Universidad Nacional de Salta (UNSA)
-* **Carrera:** Programador Universitario
+* **Carrera:** Tecnico Universitario en Programacion
 * **Tipo de proyecto:** Trabajo final
 * **Alcance de este repositorio:** aplicación móvil (cliente). El backend es un servicio FastAPI independiente.
 * **Sitio de la universidad:** [unsa.edu.ar](https://www.unsa.edu.ar)
@@ -223,6 +223,6 @@ flutter build apk
 
 ## Licencia
 
-Proyecto desarrollado como parte del trabajo final de la carrera de Programador Universitario de la **Universidad Nacional de Salta (UNSA)**.
+Proyecto desarrollado como parte del trabajo final de la carrera de la **Universidad Nacional de Salta (UNSA)**.
 
 © Cotorra — Todos los derechos reservados.
