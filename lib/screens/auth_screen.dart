@@ -1,6 +1,6 @@
 import 'package:cotorra_app/models/carrera.dart';
 import 'package:cotorra_app/models/facultad.dart';
-import 'package:cotorra_app/models/usuarioCreate.dart';
+import 'package:cotorra_app/models/usuario_create.dart';
 import 'package:cotorra_app/models/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

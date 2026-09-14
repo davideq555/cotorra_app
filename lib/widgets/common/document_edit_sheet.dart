@@ -1,6 +1,6 @@
 import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/models/materia.dart';
-import 'package:cotorra_app/models/tipoDocumento.dart';
+import 'package:cotorra_app/models/tipo_documento.dart';
 import 'package:cotorra_app/providers/auth_provider.dart';
 import 'package:cotorra_app/services/api/catalogs_service.dart';
 import 'package:cotorra_app/services/api/documents_service.dart';

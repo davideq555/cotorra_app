@@ -4,7 +4,7 @@ import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/models/facultad.dart';
 import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/token.dart';
-import 'package:cotorra_app/models/usuarioCreate.dart';
+import 'package:cotorra_app/models/usuario_create.dart';
 import 'package:cotorra_app/services/api_client.dart';
 import 'package:cotorra_app/services/api/documents_service.dart';
 import 'package:cotorra_app/services/api/favorites_service.dart';

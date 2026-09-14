@@ -1,7 +1,7 @@
 import 'formato.dart';
 import 'materia.dart';
 import 'tag.dart';
-import 'tipoDocumento.dart';
+import 'tipo_documento.dart';
 import 'usuario.dart';
 
 class Documento {

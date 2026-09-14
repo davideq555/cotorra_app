@@ -1,9 +1,9 @@
 import 'package:cotorra_app/models/carrera.dart';
-import 'package:cotorra_app/models/carreraMateria.dart';
+import 'package:cotorra_app/models/carrera_materia.dart';
 import 'package:cotorra_app/models/facultad.dart';
 import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/models/tag.dart';
-import 'package:cotorra_app/models/tipoDocumento.dart';
+import 'package:cotorra_app/models/tipo_documento.dart';
 import 'package:cotorra_app/models/universidad.dart';
 import 'package:cotorra_app/services/api_client.dart';
 import 'package:cotorra_app/models/formato.dart';
