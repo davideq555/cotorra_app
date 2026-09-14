@@ -53,7 +53,7 @@ class AdvancedFilters extends StatelessWidget {
                     )
                   else
                     DropdownButtonFormField<int>(
-                      value: searchProvider.selectedCarrera?.id,
+                      initialValue: searchProvider.selectedCarrera?.id,
                       decoration: InputDecoration(
                         filled: true,
                         border: OutlineInputBorder(
@@ -100,7 +100,7 @@ class AdvancedFilters extends StatelessWidget {
                           ),
                         )
                       : DropdownButtonFormField<int>(
-                          value: searchProvider.selectedMateria?.id,
+                          initialValue: searchProvider.selectedMateria?.id,
                           decoration: InputDecoration(
                             filled: true,
                             // fillColor: isMateriaEnabled ? Colors.white : Colors.grey.shade200,

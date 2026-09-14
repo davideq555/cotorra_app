@@ -89,7 +89,7 @@ class CarreraDropdownState extends State<CarreraDropdown> {
         : (widget.hint ?? 'Seleccionar ${widget.label}');
 
     return DropdownButtonFormField<int>(
-      value: widget.value?.id,
+      initialValue: widget.value?.id,
       decoration: InputDecoration(
         filled: true,
         // fillColor: widget.enabled && _carreras.isNotEmpty

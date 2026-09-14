@@ -367,7 +367,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
-                  value: _selectedTipoDocumentoId,
+                  initialValue: _selectedTipoDocumentoId,
                   decoration: InputDecoration(
                     labelText: 'Tipo de documento',
                     border: OutlineInputBorder(
@@ -388,7 +388,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
-                  value: _selectedCarreraId,
+                  initialValue: _selectedCarreraId,
                   decoration: InputDecoration(
                     labelText: 'Carrera',
                     border: OutlineInputBorder(
@@ -432,7 +432,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _selectedAnoAcademico,
+                  initialValue: _selectedAnoAcademico,
                   decoration: InputDecoration(
                     labelText: 'Año académico',
                     border: OutlineInputBorder(
