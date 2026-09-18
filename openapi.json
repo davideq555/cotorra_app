@@ -882,54 +882,6 @@
         }
       }
     },
-    "/api/v1/usuarios/{usuario_id}/verificar": {
-      "post": {
-        "tags": [
-          "usuarios"
-        ],
-        "summary": "Verificar Usuario",
-        "description": "Verificar un usuario. Solo administradores.",
-        "operationId": "usuarios_verificar",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "usuario_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Usuario Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Usuario"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/usuarios/{usuario_id}/cambiar-rol": {
       "post": {
         "tags": [
@@ -3113,7 +3065,7 @@
           "documentos"
         ],
         "summary": "Read Mejores Documentos",
-        "description": "Obtener los 6 documentos mejor rankeados según descargas y valoración promedio.",
+        "description": "Obtener hasta 6 documentos mejor rankeados por engagement real:\n\n`total_favoritos * 5 + descargas * 1`\n\ncon `id` ascendente como desempate.\n\nLa valoración promedio no participa del puntaje: mientras haya pocos\nusuarios, una sola valoración dominaría el ranking. Puede devolver menos de\n6 documentos si no hay suficientes con interacciones.",
         "operationId": "documentos_mejores",
         "responses": {
           "200": {
@@ -5078,6 +5030,159 @@
         }
       }
     },
+    "/api/v1/admin/usuarios/{usuario_id}/verificar": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Verificar Usuario",
+        "description": "Verificar un usuario. Solo administradores.",
+        "operationId": "admin_usuarios_verificar",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/usuarios/{usuario_id}/des-verificar": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Des Verificar Usuario",
+        "description": "Des-verificar un usuario. Solo administradores.\n\nUn administrador no puede des-verificarse a sí mismo: `get_current_active_user`\nrechaza a todo usuario con `verificado=False`, por lo que se quedaría sin\nacceso a todos los endpoints protegidos y no podría revertirlo.",
+        "operationId": "admin_usuarios_des_verificar",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/stats/reconciliar": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Reconciliar Stats",
+        "description": "Dispara en segundo plano el recálculo de los contadores derivados de los usuarios.\n\nEs la red de seguridad del mantenimiento incremental: los caminos calientes\n(subir un documento, descargar, favoritear, votar) ajustan los contadores con\ndeltas O(1), y esto los vuelve a derivar cuando haga falta. Sin este camino,\nun incremento olvidado en cualquier rama se queda mal para siempre.\n\nDevuelve 202 en cuanto la corrida arranca (no cuando termina); el avance llega\npor WebSocket al admin que la disparó. Si ya hay una reconciliación en curso,\nresponde 409.",
+        "operationId": "admin_stats_reconciliar",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Reconciliar solo este usuario. Omitir para reconciliar todos.",
+              "title": "Usuario Id"
+            },
+            "description": "Reconciliar solo este usuario. Omitir para reconciliar todos."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/carreras": {
       "post": {
         "tags": [
@@ -6064,14 +6169,14 @@
         }
       }
     },
-    "/api/v1/admin/documentos/todos": {
+    "/api/v1/admin/documentos": {
       "get": {
         "tags": [
           "admin"
         ],
-        "summary": "Read Todos Documentos",
-        "description": "Todos los documentos independientemente del estado de aprobación.\nADMIN ve todos, DOCENTE/COLABORADOR ven solo su scope.\nIncluye paginación.",
-        "operationId": "admin_documentos_todos",
+        "summary": "Read Documentos",
+        "description": "Documentos visibles para administración.\n\nADMIN ve todos; COLABORADOR solo los de las materias de sus carreras\ninscriptas. `todos` incluye pendientes y aprobados, pero no eliminados.\nLos docentes usan /docente/documentos.",
+        "operationId": "admin_documentos_list",
         "security": [
           {
             "HTTPBearer": []
@@ -6100,130 +6205,19 @@
               "default": 20,
               "title": "Limit"
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DocumentoPaginatedResponse"
-                }
-              }
-            }
           },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/admin/documentos/pendientes": {
-      "get": {
-        "tags": [
-          "admin"
-        ],
-        "summary": "Read Documentos Pendientes",
-        "description": "Documentos pendientes de aprobación.\nADMIN ve todos, DOCENTE/COLABORADOR ven solo su scope.\nIncluye paginación.",
-        "operationId": "admin_documentos_pendientes",
-        "security": [
           {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "skip",
+            "name": "estado",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0,
-              "title": "Skip"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 20,
-              "title": "Limit"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DocumentoPaginatedResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/admin/documentos/eliminados": {
-      "get": {
-        "tags": [
-          "admin"
-        ],
-        "summary": "Read Documentos Eliminados",
-        "description": "Documentos eliminados lógicamente.\nADMIN ve todos, DOCENTE/COLABORADOR ven solo su scope.\nIncluye paginación.",
-        "operationId": "admin_documentos_eliminados",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "skip",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0,
-              "title": "Skip"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 20,
-              "title": "Limit"
-            }
+              "type": "string",
+              "pattern": "^(todos|pendientes|aprobados|eliminados)$",
+              "description": "Filtrar por estado del documento",
+              "default": "todos",
+              "title": "Estado"
+            },
+            "description": "Filtrar por estado del documento"
           }
         ],
         "responses": {
@@ -7565,13 +7559,14 @@
         }
       }
     },
-    "/api/v1/docente/documentos/{documento_id}/aprobar": {
-      "post": {
+    "/api/v1/docente/documentos": {
+      "get": {
         "tags": [
           "docente"
         ],
-        "summary": "Aprobar Documento",
-        "operationId": "aprobar_documento_api_v1_docente_documentos__documento_id__aprobar_post",
+        "summary": "Listar Documentos Gestionados",
+        "description": "Documentos de las materias que el docente gestiona.\n\nDOCENTE ve solo las materias que tiene asignadas como gestión: si no tiene\nninguna, la lista viene vacía. `todos` incluye pendientes y aprobados, pero\nno eliminados. ADMIN no tiene restricción.",
+        "operationId": "docente_documentos_list",
         "security": [
           {
             "HTTPBearer": []
@@ -7579,60 +7574,40 @@
         ],
         "parameters": [
           {
-            "name": "documento_id",
-            "in": "path",
-            "required": true,
+            "name": "skip",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "integer",
-              "title": "Documento Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
             }
           },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/docente/documentos/{documento_id}/desaprobar": {
-      "post": {
-        "tags": [
-          "docente"
-        ],
-        "summary": "Desaprobar Documento",
-        "operationId": "desaprobar_documento_api_v1_docente_documentos__documento_id__desaprobar_post",
-        "security": [
           {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "documento_id",
-            "in": "path",
-            "required": true,
+            "name": "limit",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "integer",
-              "title": "Documento Id"
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
             }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(todos|pendientes|aprobados|eliminados)$",
+              "description": "Filtrar por estado del documento",
+              "default": "todos",
+              "title": "Estado"
+            },
+            "description": "Filtrar por estado del documento"
           }
         ],
         "responses": {
@@ -7641,7 +7616,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
+                  "$ref": "#/components/schemas/DocumentoPaginatedResponse"
                 }
               }
             }
