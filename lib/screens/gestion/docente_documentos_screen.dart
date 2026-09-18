@@ -2,6 +2,7 @@ import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/models/materia.dart';
 import 'package:cotorra_app/providers/auth_provider.dart';
 import 'package:cotorra_app/services/api/docente_service.dart';
+import 'package:cotorra_app/services/api/documents_service.dart';
 import 'package:cotorra_app/services/api_client.dart';
 import 'package:cotorra_app/widgets/common/document_card.dart';
 import 'package:cotorra_app/widgets/common/refreshable_list.dart';
@@ -51,6 +52,15 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
     final token = Provider.of<AuthProvider>(context, listen: false).token;
     if (token != null && token.isNotEmpty) client.setToken(token);
     return DocenteService(client);
+  }
+
+  /// Igual que [_service] pero para las mutaciones de moderación, que viven
+  /// en las rutas globales /documentos/{id}/aprobar y /desaprobar.
+  DocumentsService _documentsService(BuildContext context) {
+    final client = ApiClient();
+    final token = Provider.of<AuthProvider>(context, listen: false).token;
+    if (token != null && token.isNotEmpty) client.setToken(token);
+    return DocumentsService(client);
   }
 
   Future<void> _loadInitial() => _fetch();
@@ -163,7 +173,7 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
     setState(() => _isProcessing = true);
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final service = _service(context);
+      final service = _documentsService(context);
       if (aprobar) {
         await service.aprobarDocumento(doc.id);
       } else {

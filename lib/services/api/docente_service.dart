@@ -39,10 +39,9 @@ class DocenteService {
   /// materia completo {id, nombre, descripcion, codigo}, no una suscripción
   /// usuario↔materia; el servidor ya resuelve los nombres.
   ///
-  /// NOTA DE CONTRATO: este endpoint todavía NO figura en openapi.json
-  /// (pendiente de sincronización por el usuario). Implementado contra la
-  /// forma verificada en vivo; [Materia.fromJson] ya la tolera (campos
-  /// opcionales con defaults) sin afectar a consumidores existentes.
+  /// NOTA DE CONTRATO: el endpoint ya figura en openapi.json. [Materia.fromJson]
+  /// tolera la forma verificada en vivo (campos opcionales con defaults) sin
+  /// afectar a consumidores existentes.
   /// Devuelve la lista completa: el endpoint no pagina (design addendum).
   Future<List<Materia>> getMateriasGestion() async {
     final response = await _client.get('/materias-suscritas/gestion');
@@ -72,24 +71,5 @@ class DocenteService {
             ?.map((j) => Documento.fromJson(j))
             .toList() ??
         [];
-  }
-
-  /// POST /docente/documentos/{id}/aprobar — aprueba un documento dentro
-  /// del scope del docente. El MessageResponse se descarta a propósito:
-  /// la pantalla refresca la lista desde el servidor (design D1).
-  Future<void> aprobarDocumento(int documentoId) async {
-    final response = await _client.post(
-      '/docente/documentos/$documentoId/aprobar',
-    );
-    _client.decodeResponse(response);
-  }
-
-  /// POST /docente/documentos/{id}/desaprobar — revierte la aprobación.
-  /// Mismo contrato que [aprobarDocumento]: refetch, sin optimistic UI.
-  Future<void> desaprobarDocumento(int documentoId) async {
-    final response = await _client.post(
-      '/docente/documentos/$documentoId/desaprobar',
-    );
-    _client.decodeResponse(response);
   }
 }

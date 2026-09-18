@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cotorra_app/models/documento.dart';
 import 'package:cotorra_app/services/api/documents_service.dart';
 import 'package:cotorra_app/services/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -103,5 +104,98 @@ void main() {
       // Assert
       expect(total, 0);
     });
+  });
+
+  group('DocumentsService - aprobar/desaprobar', () {
+    /// Documento JSON mínimo devuelto por ambas mutaciones de moderación.
+    const documentoJson = {
+      'id': 42,
+      'titulo': 'Parcial 1',
+      'archivo_url': 'https://files.example/p1.pdf',
+      'tipo': 1,
+      'usuario_id': 9,
+      'aprobado': true,
+    };
+
+    DocumentsService buildService() => DocumentsService(
+      ApiClient(baseUrl: 'https://test.example/api/v1', httpClient: mockClient),
+    );
+
+    test(
+      'aprobarDocumento hace POST y decodifica el Documento devuelto',
+      () async {
+        // Arrange
+        final response = http.Response(jsonEncode(documentoJson), 200);
+
+        when(
+          () => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => response);
+
+        // Act
+        final doc = await buildService().aprobarDocumento(42);
+
+        // Assert
+        expect(doc, isA<Documento>());
+        expect(doc.id, 42);
+        expect(doc.titulo, 'Parcial 1');
+        expect(doc.aprobado, isTrue);
+
+        // El método es POST y la ruta es la global /documentos/{id}/aprobar.
+        final capturedUris = verify(
+          () => mockClient.post(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = capturedUris.last as Uri;
+        expect(uri.path, '/api/v1/documentos/42/aprobar');
+      },
+    );
+
+    test(
+      'desaprobarDocumento hace POST y decodifica el Documento devuelto',
+      () async {
+        // Arrange
+        final response = http.Response(
+          jsonEncode({...documentoJson, 'aprobado': false}),
+          200,
+        );
+
+        when(
+          () => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => response);
+
+        // Act
+        final doc = await buildService().desaprobarDocumento(42);
+
+        // Assert
+        expect(doc, isA<Documento>());
+        expect(doc.id, 42);
+        expect(doc.titulo, 'Parcial 1');
+        expect(doc.aprobado, isFalse);
+
+        // El método es POST y la ruta es la global /documentos/{id}/desaprobar.
+        final capturedUris = verify(
+          () => mockClient.post(
+            captureAny(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).captured;
+
+        final uri = capturedUris.last as Uri;
+        expect(uri.path, '/api/v1/documentos/42/desaprobar');
+      },
+    );
   });
 }

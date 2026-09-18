@@ -49,33 +49,10 @@ void main() {
     ).thenAnswer((_) async => response);
   }
 
-  /// Stub de POST para el client inyectado.
-  void stubPost(http.Response response) {
-    when(
-      () => mockHttp.post(
-        any(),
-        headers: any(named: 'headers'),
-        body: any(named: 'body'),
-      ),
-    ).thenAnswer((_) async => response);
-  }
-
   /// Uri de la última invocación GET registrada en el mock.
   Uri lastGetUri() {
     final captured = verify(
       () => mockHttp.get(captureAny(), headers: any(named: 'headers')),
-    ).captured;
-    return captured.last as Uri;
-  }
-
-  /// Uri de la última invocación POST registrada en el mock.
-  Uri lastPostUri() {
-    final captured = verify(
-      () => mockHttp.post(
-        captureAny(),
-        headers: any(named: 'headers'),
-        body: any(named: 'body'),
-      ),
     ).captured;
     return captured.last as Uri;
   }
@@ -222,62 +199,6 @@ void main() {
         expect(uri.queryParameters['estado'], 'pendiente');
       },
     );
-  });
-
-  group('DocenteService.aprobar/desaprobar', () {
-    const messageBody = {'message': 'Documento aprobado', 'success': true};
-
-    test('aprobarDocumento hace POST a la ruta scopeada /docente/', () async {
-      stubPost(_json(messageBody));
-
-      await service.aprobarDocumento(3);
-
-      final uri = lastPostUri();
-      expect(uri.path, '/api/v1/docente/documentos/3/aprobar');
-    });
-
-    test(
-      'desaprobarDocumento hace POST a la ruta scopeada /docente/',
-      () async {
-        stubPost(_json({'message': 'ok', 'success': true}));
-
-        await service.desaprobarDocumento(3);
-
-        final uri = lastPostUri();
-        expect(uri.path, '/api/v1/docente/documentos/3/desaprobar');
-      },
-    );
-
-    test(
-      '403 fuera de scope lanza ApiException con statusCode y detalle',
-      () async {
-        stubPost(_json({'detail': 'No docente de esta materia'}, 403));
-
-        await expectLater(
-          service.aprobarDocumento(3),
-          throwsA(
-            isA<ApiException>()
-                .having((e) => e.statusCode, 'statusCode', 403)
-                .having(
-                  (e) => e.message,
-                  'message',
-                  contains('No docente de esta materia'),
-                ),
-          ),
-        );
-      },
-    );
-
-    test('desaprobar también propaga ApiException en 403', () async {
-      stubPost(_json({'detail': 'Sin permisos'}, 403));
-
-      await expectLater(
-        service.desaprobarDocumento(4),
-        throwsA(
-          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 403),
-        ),
-      );
-    });
   });
 
   group('UsuarioMateria (DTO)', () {
