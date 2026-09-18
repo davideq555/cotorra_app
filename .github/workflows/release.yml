@@ -29,6 +29,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Historial completo: el step "Armar release notes" necesita el tag
+          # anterior (git describe) y los commits del rango (git log).
+          fetch-depth: 0
 
       # Java 17: target declarado en android/app/build.gradle.kts.
       - name: Setup Java 17
@@ -102,9 +106,141 @@ jobs:
           path: build/app/outputs/flutter-apk/*.apk
           if-no-files-found: error
 
+      # Arma las release notes desde los commits del rango.
+      #
+      # Reemplaza la generación automática de GitHub (generate_release_notes):
+      # esa opción agrupa por labels (o autor/rama) definidos en
+      # .github/release.yml y por eso NO puede excluir los <chore>. Acá se
+      # listan solo <feature>, <fix> y <style>, más la tabla de APK (con los
+      # pesos reales de este build) y los contribuidores. El resultado se
+      # publica en el release vía body_path.
+      - name: Armar release notes
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          TAG="${GITHUB_REF_NAME}"
+          APK_DIR="build/app/outputs/flutter-apk"
+          NOTES="release_notes.md"
+
+          # Tag anterior alcanzable desde el padre del commit tageado.
+          PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
+
+          if [[ -n "$PREV_TAG" ]]; then
+            RANGE="${PREV_TAG}..${TAG}"
+            COMPARE_LINE="**Full Changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/${PREV_TAG}...${TAG}"
+          else
+            RANGE="${TAG}"
+            COMPARE_LINE=""
+          fi
+
+          # Peso del APK ya buildeado; guion largo si el archivo no existe.
+          size_of() {
+            local file="${APK_DIR}/$1"
+            if [[ -f "$file" ]]; then
+              awk -v b="$(stat -c%s "$file")" 'BEGIN { printf "~%.0f MB", b/1048576 }'
+            else
+              echo "—"
+            fi
+          }
+
+          {
+            echo "# 🦜 Cotorra ${TAG#v}"
+            echo
+
+            # Una sección por tipo; <chore> (y cualquier otro prefijo) queda afuera.
+            for TYPE in feature fix style; do
+              case "$TYPE" in
+                feature) TITLE="🌟 Novedades" ;;
+                fix)     TITLE="🐛 Correcciones" ;;
+                style)   TITLE="💅 Estilos y ajustes visuales" ;;
+              esac
+
+              SUBJECTS="$(git log --pretty=format:%s "$RANGE" | grep -E "^<${TYPE}> " | sed -E "s/^<${TYPE}> //" || true)"
+
+              if [[ -n "$SUBJECTS" ]]; then
+                echo "## ${TITLE}"
+                echo
+                while IFS= read -r subject; do
+                  if [[ -n "$subject" ]]; then
+                    echo "- ${subject^}"
+                  fi
+                done <<< "$SUBJECTS"
+                echo
+              fi
+            done
+
+            echo "## 📲 Instalación"
+            echo
+            echo "1. Descargá el APK desde los archivos adjuntos."
+            echo '2. Si Android lo pide, habilitá "Instalar apps de fuentes desconocidas".'
+            echo
+            echo "**¿Cuál descargo?**"
+            echo
+            echo "| Archivo | Cuándo usarlo | Peso |"
+            echo "|---|---|---|"
+            echo "| \`app-arm64-v8a-release.apk\` | ✅ **Recomendado** — casi todos los celulares modernos | $(size_of app-arm64-v8a-release.apk) |"
+            echo "| \`app-armeabi-v7a-release.apk\` | Celulares viejos de 32 bits | $(size_of app-armeabi-v7a-release.apk) |"
+            echo "| \`app-x86_64-release.apk\` | Emuladores y tablets con CPU Intel/AMD | $(size_of app-x86_64-release.apk) |"
+            echo "| \`app-release.apk\` | Universal, si no sabés cuál te toca | $(size_of app-release.apk) |"
+            echo
+            echo "> Requiere **Android 7.0 (API 24)** o superior."
+            echo
+          } > "$NOTES"
+
+          # Contribuidores del rango con UNA sola llamada (compare API). Si
+          # falla (p. ej. no hay tag previo), cae a los contribuidores del repo.
+          LOGINS=""
+          if [[ -n "$PREV_TAG" ]] && LOGINS="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${PREV_TAG}...${TAG}" --jq '[.commits[].author.login] | unique | .[]' 2>/dev/null)"; then
+            :
+          else
+            LOGINS=""
+          fi
+          if [[ -z "$LOGINS" ]]; then
+            if LOGINS="$(gh api "repos/${GITHUB_REPOSITORY}/contributors" --jq '.[].login' 2>/dev/null)"; then
+              :
+            else
+              LOGINS=""
+            fi
+          fi
+          # Créditos fijos: aparecen SIEMPRE, aunque no tengan commits en el
+          # rango o aunque la API falle. Va sin @, se agrega al renderizar.
+          ALWAYS_CONTRIBUTORS="joaquinale0"
+
+          # Solo logins plausibles (descarta restos de un error de la API),
+          # sin duplicados y con los créditos fijos al final.
+          LOGINS="$(printf '%s\n%s\n' "$LOGINS" "$ALWAYS_CONTRIBUTORS" | grep -E '^[A-Za-z0-9-]+$' | awk '!seen[$0]++' || true)"
+
+          if [[ -n "$LOGINS" ]]; then
+            MENTIONS="$(sed 's/^/@/' <<< "$LOGINS" | paste -sd',' - | sed 's/,/, /g')"
+            {
+              echo "## 👥 Contribuidores"
+              echo
+              echo "Gracias a quienes hacen posible Cotorra: ${MENTIONS}"
+              echo
+            } >> "$NOTES"
+          fi
+
+          if [[ -n "$COMPARE_LINE" ]]; then
+            {
+              echo "---"
+              echo
+              echo "$COMPARE_LINE"
+            } >> "$NOTES"
+          fi
+
+          echo "Notas generadas (${NOTES}):"
+          cat "$NOTES"
+
       - name: Adjuntar a GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
           files: build/app/outputs/flutter-apk/*.apk
-          generate_release_notes: true
+          # Notas propias del step "Armar release notes". Se usa body_path en
+          # vez de generate_release_notes porque esa opción ANTEPONE el body a
+          # las notas autogeneradas, que incluirían los <chore>.
+          body_path: release_notes.md
