@@ -55,7 +55,7 @@ class GestionScreen extends StatelessWidget {
                   _sectionHeader('Colaborador'),
                   SettingsTile(
                     title: 'Documentos de mis carreras',
-                    subtitle: 'Aprobar y desaprobar documentos de tus materias',
+                    subtitle: 'Aprobar y desaprobar documentos',
                     icon: Icons.folder_shared_outlined,
                     onTap: () =>
                         _push(context, const ColaboradorDocumentosScreen()),
