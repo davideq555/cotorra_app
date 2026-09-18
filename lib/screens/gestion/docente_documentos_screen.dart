@@ -13,20 +13,40 @@ import 'package:provider/provider.dart';
 ///
 /// Fuente: GET /docente/materias/{id}/documentos — array plano sin
 /// paginación: se pide solo esta materia (spec: lazy, sin fan-out).
-/// Orden pendientes-first en cliente (design D5: `estado` no tiene enum
-/// documentado, así que no se usa como filtro server-side). Los chips
-/// Pendientes/Aprobados/Todos filtran en cliente sobre el mismo listado.
+/// Los chips Pendientes/Aprobados/Todos viajan al servidor vía el query
+/// param `estado`; `todos` lo omite (el set de valores no está documentado
+/// en este endpoint, ver [DocenteDocumentosScreen.estadoParam]). Cada chip
+/// dispara un fetch y un guard de secuencia impide que una respuesta vieja
+/// pise a otra más nueva. El filtro y el orden pendientes-first se mantienen
+/// en cliente como red de seguridad y para un orden determinista.
 ///
 /// Aprobar/Desaprobar piden confirmación explícita; cancelar no envía
 /// nada. Errores (403 fuera de scope, red): SnackBar + refetch a la
 /// verdad del servidor, nunca éxito optimista; [_isProcessing] bloquea
 /// el doble envío (patrón MisCarrerasScreen).
-enum _FiltroDocumentos { pendientes, aprobados, todos }
+enum DocenteFiltroDocumentos { pendientes, aprobados, todos }
 
 class DocenteDocumentosScreen extends StatefulWidget {
   final Materia materia;
 
   const DocenteDocumentosScreen({super.key, required this.materia});
+
+  /// Única fuente de verdad chip → valor de wire del query param `estado`.
+  ///
+  /// El contrato de este endpoint declara `estado` como string plano, sin
+  /// enum ni pattern (a diferencia de /admin/documentos y /docente/documentos),
+  /// así que `todos` se OMITE en vez de enviar el literal 'todos': nunca se
+  /// depende de un valor no documentado. `null` = sin filtro server-side.
+  static String? estadoParam(DocenteFiltroDocumentos filtro) {
+    switch (filtro) {
+      case DocenteFiltroDocumentos.pendientes:
+        return 'pendientes';
+      case DocenteFiltroDocumentos.aprobados:
+        return 'aprobados';
+      case DocenteFiltroDocumentos.todos:
+        return null;
+    }
+  }
 
   @override
   State<DocenteDocumentosScreen> createState() =>
@@ -35,7 +55,12 @@ class DocenteDocumentosScreen extends StatefulWidget {
 
 class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
   final List<Documento> _documentos = [];
-  _FiltroDocumentos _filtro = _FiltroDocumentos.pendientes;
+  DocenteFiltroDocumentos _filtro = DocenteFiltroDocumentos.pendientes;
+
+  /// Contador de requests en vuelo: cada fetch toma su número y solo aplica
+  /// su resultado si sigue siendo el último. Evita que una respuesta lenta de
+  /// un chip anterior pise la selección más reciente.
+  int _fetchSeq = 0;
   bool _isLoading = false;
   bool _isProcessing = false;
   String? _errorMessage;
@@ -67,16 +92,25 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
 
   Future<void> _refresh() => _fetch();
 
-  Future<void> _fetch() async {
+  /// Trae los documentos de la materia con el filtro del chip activo.
+  ///
+  /// [showSpinner] fuerza el spinner aunque ya haya lista: se usa al cambiar
+  /// de chip, porque la lista visible pertenece al filtro anterior.
+  /// El servidor no garantiza orden ni que respete `estado`, así que el
+  /// resultado se ordena y se vuelve a filtrar en cliente (red de seguridad).
+  Future<void> _fetch({bool showSpinner = false}) async {
+    final seq = ++_fetchSeq;
     setState(() {
-      _isLoading = _documentos.isEmpty;
+      _isLoading = showSpinner || _documentos.isEmpty;
       _errorMessage = null;
     });
     try {
-      final docs = await _service(
-        context,
-      ).getDocumentosMateria(widget.materia.id);
-      if (!mounted) return;
+      final docs = await _service(context).getDocumentosMateria(
+        widget.materia.id,
+        estado: DocenteDocumentosScreen.estadoParam(_filtro),
+      );
+      // Un fetch más nuevo ya salió: este resultado quedó obsoleto.
+      if (!mounted || seq != _fetchSeq) return;
       setState(() {
         _documentos
           ..clear()
@@ -84,7 +118,7 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || seq != _fetchSeq) return;
       setState(() {
         _errorMessage = 'No se pudieron cargar los documentos.';
         _isLoading = false;
@@ -92,9 +126,22 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
     }
   }
 
-  /// Orden client-side (design D5): pendientes (!aprobado) primero;
-  /// dentro de cada grupo, fecha_subida descendente. Copia defensiva
-  /// para no mutar la lista que devuelve el servicio.
+  /// Cambia de chip y refetchea: la lista actual es de otro filtro, por eso
+  /// se muestra spinner y se limpia el error antes de pedir.
+  void _seleccionarFiltro(DocenteFiltroDocumentos valor) {
+    if (_filtro == valor) return;
+    setState(() {
+      _filtro = valor;
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    _fetch(showSpinner: true);
+  }
+
+  /// Orden client-side: pendientes (!aprobado) primero; dentro de cada
+  /// grupo, fecha_subida descendente. El servidor no garantiza orden, así
+  /// que se normaliza acá. Copia defensiva para no mutar la lista que
+  /// devuelve el servicio.
   static List<Documento> _ordenarPendientesPrimero(List<Documento> docs) {
     final copia = [...docs];
     copia.sort((a, b) {
@@ -114,25 +161,26 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
     return DateTime.tryParse(raw) ?? DateTime.fromMillisecondsSinceEpoch(0);
   }
 
-  /// Filtro client-side sobre el listado ya ordenado.
+  /// Filtro client-side sobre el listado ya ordenado. Red de seguridad: si
+  /// el backend ignorara `estado`, la UI igual muestra el subconjunto correcto.
   List<Documento> get _visibles {
     switch (_filtro) {
-      case _FiltroDocumentos.pendientes:
+      case DocenteFiltroDocumentos.pendientes:
         return _documentos.where((d) => !d.aprobado).toList();
-      case _FiltroDocumentos.aprobados:
+      case DocenteFiltroDocumentos.aprobados:
         return _documentos.where((d) => d.aprobado).toList();
-      case _FiltroDocumentos.todos:
+      case DocenteFiltroDocumentos.todos:
         return _documentos;
     }
   }
 
   String get _emptyMessage {
     switch (_filtro) {
-      case _FiltroDocumentos.pendientes:
+      case DocenteFiltroDocumentos.pendientes:
         return 'No hay documentos pendientes de revisión.';
-      case _FiltroDocumentos.aprobados:
+      case DocenteFiltroDocumentos.aprobados:
         return 'No hay documentos aprobados.';
-      case _FiltroDocumentos.todos:
+      case DocenteFiltroDocumentos.todos:
         return 'Esta materia todavía no tiene documentos.';
     }
   }
@@ -236,13 +284,13 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
     );
   }
 
-  Widget _chip(String label, _FiltroDocumentos valor, Color color) {
+  Widget _chip(String label, DocenteFiltroDocumentos valor, Color color) {
     final seleccionado = _filtro == valor;
     return ChoiceChip(
       label: Text(label),
       selected: seleccionado,
       showCheckmark: false,
-      onSelected: (_) => setState(() => _filtro = valor),
+      onSelected: (_) => _seleccionarFiltro(valor),
       selectedColor: color.withValues(alpha: 0.2),
       labelStyle: TextStyle(
         fontSize: 12,
@@ -269,7 +317,7 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
       ),
       body: Column(
         children: [
-          // Segmentos client-side (design D5): por defecto Pendientes,
+          // Chips con filtro server-side (`estado`); por defecto Pendientes,
           // que es el foco del flujo de moderación.
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -277,17 +325,17 @@ class _DocenteDocumentosScreenState extends State<DocenteDocumentosScreen> {
               children: [
                 _chip(
                   'Pendientes',
-                  _FiltroDocumentos.pendientes,
+                  DocenteFiltroDocumentos.pendientes,
                   Colors.orange,
                 ),
                 const SizedBox(width: 8),
                 _chip(
                   'Aprobados',
-                  _FiltroDocumentos.aprobados,
+                  DocenteFiltroDocumentos.aprobados,
                   const Color(0xFF7CB342),
                 ),
                 const SizedBox(width: 8),
-                _chip('Todos', _FiltroDocumentos.todos, Colors.blue),
+                _chip('Todos', DocenteFiltroDocumentos.todos, Colors.blue),
                 const Spacer(),
                 if (widget.materia.codigo != null &&
                     widget.materia.codigo!.isNotEmpty)

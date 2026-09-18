@@ -53,9 +53,12 @@ class DocenteService {
   /// GET /docente/materias/{id}/documentos — documentos de una materia
   /// gestionada por el docente (array plano, sin paginación).
   ///
-  /// [estado] es un filtro server-side sin enum documentado en openapi;
-  /// se expone solo como passthrough opcional. Según design D5 la UI no
-  /// lo usa: ordena pendientes-first en cliente.
+  /// [estado] es un filtro server-side. La UI ahora lo envía para los chips
+  /// Pendientes ('pendientes') y Aprobados ('aprobados'), y lo OMITE para
+  /// Todos: el set de valores NO está documentado en este endpoint (string
+  /// plano, sin enum), así que nunca se envía el literal 'todos'. El filtro
+  /// client-side se mantiene como red de seguridad por si el backend ignora
+  /// el parámetro.
   Future<List<Documento>> getDocumentosMateria(
     int materiaId, {
     String? estado,
