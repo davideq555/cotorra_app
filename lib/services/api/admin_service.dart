@@ -227,44 +227,29 @@ class AdminService {
         [];
   }
 
-  // ─── 20-22. Documentos Admin ─────────────────────────────────────
+  // ─── 20. Documentos Admin ────────────────────────────────────────
 
-  /// GET /admin/documentos/todos — Todos los documentos con paginación.
-  Future<DocumentoPaginatedResponse> getDocumentosTodos({
+  /// GET /admin/documentos — Documentos visibles para administración.
+  /// ADMIN ve todos; COLABORADOR solo los de las materias de sus carreras
+  /// inscriptas. `todos` incluye pendientes y aprobados, pero no eliminados.
+  /// Los docentes usan /docente/documentos.
+  ///
+  /// [estado] acepta el pattern documentado (todos|pendientes|aprobados|
+  /// eliminados) y se envía SIEMPRE, incluido el literal 'todos': acá el
+  /// valor sí está documentado, así que no hay que omitirlo como en otros
+  /// endpoints. [skip]/[limit] son la paginación estándar (limit 1..100).
+  Future<DocumentoPaginatedResponse> getDocumentos({
     int skip = 0,
     int limit = 20,
+    String estado = 'todos',
   }) async {
     final response = await _client.get(
-      '/admin/documentos/todos',
-      queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
-    );
-    return DocumentoPaginatedResponse.fromJson(
-      _client.decodeResponse(response),
-    );
-  }
-
-  /// GET /admin/documentos/pendientes — Documentos pendientes de aprobación.
-  Future<DocumentoPaginatedResponse> getDocumentosPendientes({
-    int skip = 0,
-    int limit = 20,
-  }) async {
-    final response = await _client.get(
-      '/admin/documentos/pendientes',
-      queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
-    );
-    return DocumentoPaginatedResponse.fromJson(
-      _client.decodeResponse(response),
-    );
-  }
-
-  /// GET /admin/documentos/eliminados — Documentos eliminados lógicamente.
-  Future<DocumentoPaginatedResponse> getDocumentosEliminados({
-    int skip = 0,
-    int limit = 20,
-  }) async {
-    final response = await _client.get(
-      '/admin/documentos/eliminados',
-      queryParams: {'skip': skip.toString(), 'limit': limit.toString()},
+      '/admin/documentos',
+      queryParams: {
+        'skip': skip.toString(),
+        'limit': limit.toString(),
+        'estado': estado,
+      },
     );
     return DocumentoPaginatedResponse.fromJson(
       _client.decodeResponse(response),

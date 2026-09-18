@@ -1,4 +1,5 @@
 import 'package:cotorra_app/providers/auth_provider.dart';
+import 'package:cotorra_app/screens/gestion/colaborador_documentos_screen.dart';
 import 'package:cotorra_app/screens/gestion/docente_materias_screen.dart';
 import 'package:cotorra_app/screens/gestion/reportes_gestion_screen.dart';
 import 'package:cotorra_app/widgets/profile/settings_tile.dart';
@@ -52,6 +53,13 @@ class GestionScreen extends StatelessWidget {
                 ],
                 if (rol?.trim().toUpperCase() == 'COLABORADOR') ...[
                   _sectionHeader('Colaborador'),
+                  SettingsTile(
+                    title: 'Documentos de mis carreras',
+                    subtitle: 'Aprobar y desaprobar documentos de tus materias',
+                    icon: Icons.folder_shared_outlined,
+                    onTap: () =>
+                        _push(context, const ColaboradorDocumentosScreen()),
+                  ),
                   SettingsTile(
                     title: 'Cola de reportes',
                     subtitle: 'Reportes de documentos y comentarios pendientes',
